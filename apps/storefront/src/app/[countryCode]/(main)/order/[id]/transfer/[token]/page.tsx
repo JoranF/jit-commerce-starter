@@ -1,13 +1,13 @@
-import { Heading, Text } from "@medusajs/ui"
+import { Heading, Text } from "@modules/common/components/ui"
 import TransferActions from "@modules/order/components/transfer-actions"
 import TransferImage from "@modules/order/components/transfer-image"
 
 export default async function TransferPage({
   params,
 }: {
-  params: { id: string; token: string }
+  params: Promise<{ id: string; token: string }>
 }) {
-  const { id, token } = params
+  const { id, token } = await params
 
   return (
     <div className="flex flex-col gap-y-4 items-start w-2/5 mx-auto mt-10 mb-20">

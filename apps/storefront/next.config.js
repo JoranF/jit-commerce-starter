@@ -8,10 +8,15 @@ checkEnvVariables()
 const S3_HOSTNAME = process.env.MEDUSA_CLOUD_S3_HOSTNAME
 const S3_PATHNAME = process.env.MEDUSA_CLOUD_S3_PATHNAME
 
+/** PostHog via eigen domein (/ingest) → minder last van adblockers. */
+const POSTHOG_INGEST = process.env.POSTHOG_API_HOST || "https://eu.i.posthog.com"
+const POSTHOG_ASSETS =
+  process.env.POSTHOG_ASSETS_HOST || "https://eu-assets.i.posthog.com"
+
 /** Publieke backend-URL (productfoto's staan op <backend>/static). */
 const PUBLIC_BACKEND = (() => {
   try {
-    return new URL(process.env.MEDUSA_PUBLIC_BACKEND_URL || "")
+    return new URL(process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "")
   } catch {
     return null
   }
@@ -20,34 +25,52 @@ const PUBLIC_BACKEND = (() => {
 /**
  * @type {import('next').NextConfig}
  */
-const POSTHOG_INGEST = process.env.POSTHOG_API_HOST || "https://eu.i.posthog.com"
-const POSTHOG_ASSETS =
-  process.env.POSTHOG_ASSETS_HOST || "https://eu-assets.i.posthog.com"
-
 const nextConfig = {
   reactStrictMode: true,
-  // PostHog via eigen domein (/ingest) → minder last van adblockers.
   skipTrailingSlashRedirect: true,
-  async rewrites() {
+  output: process.env.NEXT_OUTPUT_STANDALONE === "true" ? "standalone" : undefined,
+  async headers() {
     return [
-      { source: "/ingest/static/:path*", destination: `${POSTHOG_ASSETS}/static/:path*` },
-      { source: "/ingest/array/:path*", destination: `${POSTHOG_ASSETS}/array/:path*` },
-      { source: "/ingest/:path*", destination: `${POSTHOG_INGEST}/:path*` },
+      {
+        source: "/:path*",
+        headers: [{ key: "Link", value: '</.well-known/ucp>; rel="ucp"' }],
+      },
+      {
+        source: "/:countryCode/products/:handle",
+        headers: [{ key: "Vary", value: "Accept" }],
+      },
     ]
+  },
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: "/:countryCode/products/:handle([^/.]+).md",
+          destination: "/:countryCode/products/:handle/markdown",
+        },
+        {
+          source: "/:countryCode/products/:handle([^/.]+)",
+          has: [{ type: "header", key: "accept", value: ".*text/markdown.*" }],
+          destination: "/:countryCode/products/:handle/markdown",
+        },
+      ],
+      afterFiles: [
+        { source: "/ingest/static/:path*", destination: `${POSTHOG_ASSETS}/static/:path*` },
+        { source: "/ingest/array/:path*", destination: `${POSTHOG_ASSETS}/array/:path*` },
+        { source: "/ingest/:path*", destination: `${POSTHOG_INGEST}/:path*` },
+      ],
+    }
   },
   logging: {
     fetches: {
       fullUrl: true,
     },
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
-  output: process.env.NEXT_OUTPUT_STANDALONE === "true" ? "standalone" : undefined,
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "http",
@@ -55,15 +78,11 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "medusa-public-images.s3.eu-west-1.amazonaws.com",
+        hostname: "*.s3.*.amazonaws.com",
       },
       {
         protocol: "https",
-        hostname: "medusa-server-testing.s3.amazonaws.com",
-      },
-      {
-        protocol: "https",
-        hostname: "medusa-server-testing.s3.us-east-1.amazonaws.com",
+        hostname: "*.s3.amazonaws.com",
       },
       ...(PUBLIC_BACKEND
         ? [

@@ -3,9 +3,9 @@ set -e
 cd /app
 
 if [ "${MEDUSA_WORKER_MODE:-shared}" != "worker" ]; then
-  echo "▶ Database migraties…"
+  echo "▶ Database migraties (eerste keer: winkel + demo-producten seeden)…"
   ./node_modules/.bin/medusa db:migrate
-  echo "▶ Bootstrap (seed bij lege DB, publishable key, admin-gebruiker)…"
+  echo "▶ Bootstrap (vaste publishable key, admin-gebruiker)…"
   ./node_modules/.bin/medusa exec ./src/scripts/bootstrap.js || echo "⚠ bootstrap faalde, ga toch door"
 fi
 

@@ -7,8 +7,8 @@ const MOLLIE_API_KEY = process.env.MOLLIE_API_KEY
 const POSTHOG_EVENTS_KEY = process.env.POSTHOG_EVENTS_KEY
 
 /**
- * Productie (Dokploy): zet REDIS_URL, dan gebruiken event bus, workflows,
- * caching en locking Redis. Lokaal zonder Redis valt alles terug op in-memory.
+ * Productie (Dokploy): zet REDIS_URL, dan gebruiken event bus, workflows
+ * en locking Redis. Lokaal zonder Redis valt alles terug op in-memory.
  */
 const redisModules = REDIS_URL
   ? [
@@ -19,10 +19,6 @@ const redisModules = REDIS_URL
       {
         resolve: "@medusajs/medusa/workflow-engine-redis",
         options: { redis: { url: REDIS_URL } },
-      },
-      {
-        resolve: "@medusajs/medusa/cache-redis",
-        options: { redisUrl: REDIS_URL },
       },
       {
         resolve: "@medusajs/medusa/locking",

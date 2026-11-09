@@ -22,15 +22,18 @@ jobs:
       - run: npm run typecheck
       - run: npm test
 
-  backend:
+  apps:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/backend
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: corepack enable && yarn install --immutable
-      - run: yarn build
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @dtc/backend build
+      - run: pnpm --filter @dtc/storefront build
+        env:
+          NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: pk_ci
+          NEXT_PUBLIC_MEDUSA_BACKEND_URL: http://localhost:9000

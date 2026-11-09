@@ -1,13 +1,13 @@
 "use client"
 
-import React, { useEffect, useMemo, useActionState } from "react"
+import React, { useActionState, useEffect, useMemo } from "react"
 
 import Input from "@modules/common/components/input"
 import NativeSelect from "@modules/common/components/native-select"
 
-import AccountInfo from "../account-info"
-import { HttpTypes } from "@medusajs/types"
 import { addCustomerAddress, updateCustomerAddress } from "@lib/data/customer"
+import { HttpTypes } from "@medusajs/types"
+import AccountInfo from "../account-info"
 
 type MyInformationProps = {
   customer: HttpTypes.StoreCustomer
@@ -37,7 +37,7 @@ const ProfileBillingAddress: React.FC<MyInformationProps> = ({
     (addr) => addr.is_default_billing
   )
 
-  const initialState: Record<string, any> = {
+  const initialState: Record<string, unknown> = {
     isDefaultBilling: true,
     isDefaultShipping: false,
     error: false,
@@ -58,7 +58,7 @@ const ProfileBillingAddress: React.FC<MyInformationProps> = ({
   }
 
   useEffect(() => {
-    setSuccessState(state.success)
+    setSuccessState(!!state.success)
   }, [state])
 
   const currentInfo = useMemo(() => {

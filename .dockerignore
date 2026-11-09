@@ -1,0 +1,9 @@
+**/node_modules
+**/.next
+**/.medusa
+**/.turbo
+**/.env
+**/.env.local
+**/.env.*.local
+.git
+analytics/reports

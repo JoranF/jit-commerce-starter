@@ -39,7 +39,8 @@ services:
 
   backend:
     build:
-      context: ./apps/backend
+      context: .
+      dockerfile: apps/backend/Dockerfile
       args:
         MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL:?zet MEDUSA_BACKEND_URL (publieke https-URL van de backend)}
     restart: unless-stopped
@@ -59,8 +60,9 @@ services:
       STORE_CORS: ${STORE_URL}
       ADMIN_CORS: ${MEDUSA_BACKEND_URL}
       AUTH_CORS: ${MEDUSA_BACKEND_URL},${STORE_URL}
-      # Eerste start: demo-winkel + vaste publishable key + admin-account
+      # Eerste start: winkel + demo-producten, vaste publishable key, admin-account
       SEED_DEMO: ${SEED_DEMO:-true}
+      STORE_NAME: ${STORE_NAME:-Mijn Webshop}
       MEDUSA_PUBLISHABLE_KEY: ${MEDUSA_PUBLISHABLE_KEY:?zet MEDUSA_PUBLISHABLE_KEY (pk_...)}
       MEDUSA_ADMIN_EMAIL: ${MEDUSA_ADMIN_EMAIL:-}
       MEDUSA_ADMIN_PASSWORD: ${MEDUSA_ADMIN_PASSWORD:-}
@@ -87,21 +89,21 @@ services:
 
   storefront:
     build:
-      context: ./apps/storefront
+      context: .
+      dockerfile: apps/storefront/Dockerfile
       args:
         NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${MEDUSA_PUBLISHABLE_KEY}
+        NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL}
         NEXT_PUBLIC_BASE_URL: ${STORE_URL:?zet STORE_URL (publieke https-URL van de winkel)}
         NEXT_PUBLIC_DEFAULT_REGION: ${DEFAULT_REGION:-nl}
         NEXT_PUBLIC_POSTHOG_KEY: ${POSTHOG_KEY:-}
         POSTHOG_API_HOST: ${POSTHOG_INGEST_HOST:-https://eu.i.posthog.com}
         POSTHOG_ASSETS_HOST: ${POSTHOG_ASSETS_HOST:-https://eu-assets.i.posthog.com}
-        MEDUSA_PUBLIC_BACKEND_URL: ${MEDUSA_BACKEND_URL}
     restart: unless-stopped
     depends_on:
       backend:
         condition: service_healthy
     environment:
-      MEDUSA_BACKEND_URL: http://backend:9000
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-change-me}
     expose:
       - "8000"

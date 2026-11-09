@@ -1,15 +1,18 @@
 "use client"
 
-import { isManual, isMollie, isStripeLike } from "@lib/constants"
+import { isAdyen, isManual, isMollie, isStripeLike } from "@lib/constants"
 import { attachAnalyticsToCart } from "@lib/data/analytics"
 import { EVENTS } from "@lib/analytics/constants"
 import { track } from "@modules/analytics/track"
 import { placeOrder } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
-import { Button } from "@medusajs/ui"
+import { Button } from "@modules/common/components/ui"
 import { useElements, useStripe } from "@stripe/react-stripe-js"
+import { useParams } from "next/navigation"
 import React, { useState } from "react"
 import ErrorMessage from "../error-message"
+import { getPaymentErrorMessage } from "@lib/util/payment-error"
+import AdyenPaymentButton from "./adyen-payment-button"
 
 type PaymentButtonProps = {
   cart: HttpTypes.StoreCart
@@ -33,6 +36,14 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     case isStripeLike(paymentSession?.provider_id):
       return (
         <StripePaymentButton
+          notReady={notReady}
+          cart={cart}
+          data-testid={dataTestId}
+        />
+      )
+    case isAdyen(paymentSession?.provider_id):
+      return (
+        <AdyenPaymentButton
           notReady={notReady}
           cart={cart}
           data-testid={dataTestId}
@@ -79,43 +90,44 @@ const StripePaymentButton = ({
 
   const stripe = useStripe()
   const elements = useElements()
-  const card = elements?.getElement("card")
-
-  const session = cart.payment_collection?.payment_sessions?.find(
-    (s) => s.status === "pending"
-  )
+  const { countryCode } = useParams()
 
   const disabled = !stripe || !elements ? true : false
 
   const handlePayment = async () => {
-    setSubmitting(true)
-
-    if (!stripe || !elements || !card || !cart) {
-      setSubmitting(false)
+    if (!stripe || !elements || !cart) {
       return
     }
 
+    setSubmitting(true)
+
     await stripe
-      .confirmCardPayment(session?.data.client_secret as string, {
-        payment_method: {
-          card: card,
-          billing_details: {
-            name:
-              cart.billing_address?.first_name +
-              " " +
-              cart.billing_address?.last_name,
-            address: {
-              city: cart.billing_address?.city ?? undefined,
-              country: cart.billing_address?.country_code ?? undefined,
-              line1: cart.billing_address?.address_1 ?? undefined,
-              line2: cart.billing_address?.address_2 ?? undefined,
-              postal_code: cart.billing_address?.postal_code ?? undefined,
-              state: cart.billing_address?.province ?? undefined,
+      .confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/api/payment-return?cart_id=${cart.id}&country_code=${countryCode}`,
+          payment_method_data: {
+            billing_details: {
+              name:
+                cart.billing_address?.first_name +
+                " " +
+                cart.billing_address?.last_name,
+              address: {
+                city: cart.billing_address?.city ?? undefined,
+                country: cart.billing_address?.country_code ?? undefined,
+                line1: cart.billing_address?.address_1 ?? undefined,
+                line2: cart.billing_address?.address_2 ?? undefined,
+                postal_code: cart.billing_address?.postal_code ?? undefined,
+                state: cart.billing_address?.province ?? undefined,
+              },
+              email: cart.email,
+              phone: cart.billing_address?.phone ?? undefined,
             },
-            email: cart.email,
-            phone: cart.billing_address?.phone ?? undefined,
           },
         },
+        // Only leave the site when the selected method actually requires it, so
+        // card payments still complete inline.
+        redirect: "if_required",
       })
       .then(({ error, paymentIntent }) => {
         if (error) {
@@ -126,20 +138,27 @@ const StripePaymentButton = ({
             (pi && pi.status === "succeeded")
           ) {
             onPaymentCompleted()
+            return
           }
 
-          setErrorMessage(error.message || null)
+          setErrorMessage(getPaymentErrorMessage(error))
+          setSubmitting(false)
           return
         }
 
         if (
-          (paymentIntent && paymentIntent.status === "requires_capture") ||
+          paymentIntent.status === "requires_capture" ||
           paymentIntent.status === "succeeded"
         ) {
-          return onPaymentCompleted()
+          onPaymentCompleted()
+          return
         }
 
-        return
+        setSubmitting(false)
+      })
+      .catch((error) => {
+        setErrorMessage(getPaymentErrorMessage(error))
+        setSubmitting(false)
       })
   }
 

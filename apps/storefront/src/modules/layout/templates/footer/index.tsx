@@ -1,15 +1,18 @@
-import { listCategories } from "@lib/data/categories"
-import { listCollections } from "@lib/data/collections"
-import { Text, clx } from "@medusajs/ui"
+import { listCategories } from "@lib/data/categories";
+import { listCollections } from "@lib/data/collections";
+import { Text, clx } from "@modules/common/components/ui";
 
-import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import MedusaCTA from "@modules/layout/components/medusa-cta"
+import LocalizedClientLink from "@modules/common/components/localized-client-link";
+import MedusaCTA from "@modules/layout/components/medusa-cta";
 
 export default async function Footer() {
-  const { collections } = await listCollections({
-    fields: "*products",
-  })
-  const productCategories = await listCategories()
+  const [{ collections }, productCategories] = await Promise.all([
+    listCollections({ fields: "id,handle,title" }),
+    listCategories({
+      fields:
+        "id,name,handle,parent_category_id,category_children.id,category_children.name,category_children.handle",
+    }),
+  ]);
 
   return (
     <footer className="border-t border-ui-border-base w-full">
@@ -23,7 +26,7 @@ export default async function Footer() {
               Medusa Store
             </LocalizedClientLink>
           </div>
-          <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">
+          <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
             {productCategories && productCategories?.length > 0 && (
               <div className="flex flex-col gap-y-2">
                 <span className="txt-small-plus txt-ui-fg-base">
@@ -34,8 +37,8 @@ export default async function Footer() {
                   data-testid="footer-categories"
                 >
                   {productCategories?.slice(0, 6).map((c) => {
-                    if (c.parent_category) {
-                      return
+                    if (c.parent_category_id) {
+                      return;
                     }
 
                     const children =
@@ -43,7 +46,7 @@ export default async function Footer() {
                         name: child.name,
                         handle: child.handle,
                         id: child.id,
-                      })) || null
+                      })) || null;
 
                     return (
                       <li
@@ -77,7 +80,7 @@ export default async function Footer() {
                           </ul>
                         )}
                       </li>
-                    )
+                    );
                   })}
                 </ul>
               </div>
@@ -109,6 +112,61 @@ export default async function Footer() {
               </div>
             )}
             <div className="flex flex-col gap-y-2">
+              <span className="txt-small-plus txt-ui-fg-base">
+                Customer service
+              </span>
+              <ul className="grid grid-cols-1 gap-y-2 text-ui-fg-subtle txt-small">
+                <li>
+                  <LocalizedClientLink
+                    className="hover:text-ui-fg-base"
+                    href="/shipping"
+                  >
+                    Shipping information
+                  </LocalizedClientLink>
+                </li>
+                <li>
+                  <LocalizedClientLink
+                    className="hover:text-ui-fg-base"
+                    href="/returns"
+                  >
+                    Return policy
+                  </LocalizedClientLink>
+                </li>
+                <li>
+                  <LocalizedClientLink
+                    className="hover:text-ui-fg-base"
+                    href="/terms"
+                  >
+                    Terms of service
+                  </LocalizedClientLink>
+                </li>
+                <li>
+                  <LocalizedClientLink
+                    className="hover:text-ui-fg-base"
+                    href="/privacy"
+                  >
+                    Privacy policy
+                  </LocalizedClientLink>
+                </li>
+                <li>
+                  <LocalizedClientLink
+                    className="hover:text-ui-fg-base"
+                    href="/contact"
+                  >
+                    Contact
+                  </LocalizedClientLink>
+                </li>
+                <li>
+                  <LocalizedClientLink
+                    className="hover:text-ui-fg-base"
+                    href="/search"
+                  >
+                    Search
+                  </LocalizedClientLink>
+                </li>
+              </ul>
+            </div>
+            <div className="flex flex-col gap-y-2">
               <span className="txt-small-plus txt-ui-fg-base">Medusa</span>
               <ul className="grid grid-cols-1 gap-y-2 text-ui-fg-subtle txt-small">
                 <li>
@@ -133,7 +191,7 @@ export default async function Footer() {
                 </li>
                 <li>
                   <a
-                    href="https://github.com/medusajs/nextjs-starter-medusa"
+                    href="https://github.com/medusajs/dtc-starter"
                     target="_blank"
                     rel="noreferrer"
                     className="hover:text-ui-fg-base"
@@ -153,5 +211,5 @@ export default async function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }

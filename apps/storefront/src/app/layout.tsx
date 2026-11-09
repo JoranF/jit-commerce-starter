@@ -10,6 +10,9 @@ export const metadata: Metadata = {
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="nl" data-mode="light">
+      <head>
+        <link rel="ucp" href="/.well-known/ucp" />
+      </head>
       <body>
         <PostHogProvider>
           <main className="relative">{props.children}</main>

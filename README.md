@@ -1,11 +1,12 @@
 # JIT Commerce Starter
 
 Volledig open-source webshop-stack, klaar voor Nederland, met ingebouwde analytics en A/B-testen.
+Gebouwd op de officiële [Medusa DTC Starter](https://github.com/medusajs/dtc-starter) (pnpm + Turborepo monorepo).
 
 | Onderdeel | Techniek | Map |
 |---|---|---|
-| Winkel-backend + admin | [Medusa v2](https://medusajs.com) (Node/TypeScript, PostgreSQL) | `apps/backend` |
-| Storefront | Next.js 15 (officiële Medusa-starter, NL-vertaald waar het telt) | `apps/storefront` |
+| Winkel-backend + admin | [Medusa 2.22](https://medusajs.com) (Node/TypeScript, PostgreSQL) | `apps/backend` |
+| Storefront | Next.js 16 (Medusa DTC-storefront, NL-vertaald waar het telt) | `apps/storefront` |
 | Betalingen | Mollie: iDEAL, Bancontact, creditcard, PayPal, Apple Pay | plugin in backend |
 | Analytics + A/B-tests | PostHog (EU-cloud of zelf gehost) | storefront + backend |
 | Automatisering | Dashboards, weekrapport, A/B-evaluatie, AI-testideeën | `analytics/` |
@@ -14,11 +15,20 @@ Volledig open-source webshop-stack, klaar voor Nederland, met ingebouwde analyti
 
 ## Wat er al geregeld is
 
+**Uit de DTC-starter**
+- Zoeken (instantsearch), klantaccounts, orderhistorie, kortingscodes, order-overdracht
+- SEO: `sitemap.xml`, `robots.txt`, JSON-LD, `llms.txt`, productpagina's als Markdown voor AI-crawlers
+- **UCP** (Universal Commerce Protocol): AI-assistenten kunnen je catalogus doorzoeken en afrekenen (`/.well-known/ucp`, `/ucp/mcp`)
+- Winkelwagen-herstellinks en "koop nu"-links (`/buy/...`)
+- Winkelbeleid per regio in metadata (retourtermijn, levertijd) → verzend-/retourpagina's en structured data
+
 **Winkel (NL-klaar)**
 - Regio *Benelux & Duitsland* (NL/BE/DE), EUR, **prijzen incl. btw** (21% / 21% / 19%)
 - Verzending: Standaard €4,95 · Express €7,95 (aan te passen in de admin)
 - Mollie-checkout met redirect + webhook (bestelling wordt ook afgerond als de klant het tabblad sluit)
-- Bij een lege database: demo-producten, vaste publishable key en admin-account (`src/scripts/bootstrap.ts`)
+- Prijzen in NL-notatie (`€ 24,95`), winkelbeleid: 14 dagen herroepingsrecht, 1-2 dagen levertijd
+- Eerste `db:migrate` seedt de winkel + demo-producten (`src/migration-scripts/initial-data-seed.ts`, idempotent; `SEED_DEMO=false` = zonder demo-producten)
+- Container-start: vaste publishable key en admin-account (`src/scripts/bootstrap.ts`)
 
 **Meten**
 - Browser-events via eigen domein (`/ingest`) → minder last van adblockers
@@ -44,28 +54,25 @@ Rapporten gaan naar `analytics/reports/`, de GitHub job summary en optioneel Dis
 
 ## Lokaal draaien
 
-Vereist: Node 20+, Docker (voor Postgres/Redis).
+Vereist: Node 22.23+, pnpm 10 (`corepack enable`), Docker (voor Postgres/Redis).
 
 ```bash
 docker compose -f docker-compose.dev.yml up -d
+pnpm install
 
 # Backend → http://localhost:9000/app (admin)
+cp apps/backend/.env.template apps/backend/.env   # vul MEDUSA_PUBLISHABLE_KEY + admin in, of laat leeg
 cd apps/backend
-cp .env.template .env           # DATABASE_URL staat al goed voor de dev-compose
-yarn install
-npx medusa db:migrate
-yarn seed                       # demo-winkel NL; noteer de publishable key (of zie hieronder)
-npx medusa user -e jij@voorbeeld.nl -p geheim123
-yarn dev
+pnpm medusa db:migrate                 # maakt tabellen + NL-winkel + demo-producten
+pnpm medusa exec ./src/scripts/bootstrap.ts   # vaste key + admin (uit .env)
+cd ../..
 
 # Storefront → http://localhost:8000
-cd ../storefront
-cp .env.template .env.local     # zet NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
-yarn install
-yarn dev
+cp apps/storefront/.env.template apps/storefront/.env.local   # zet NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
+pnpm dev                               # start backend + storefront samen
 ```
 
-Publishable key opvragen: Admin → Settings → Publishable API Keys.
+Publishable key opvragen: Admin → Settings → Publishable API Keys (of de regel `[bootstrap] Publishable key: …` in de log).
 
 ## Live zetten op Dokploy
 
@@ -79,14 +86,14 @@ Publishable key opvragen: Admin → Settings → Publishable API Keys.
 5. **Deploy**. De eerste start draait migraties, seedt de demo-winkel en maakt je admin-account aan.
 6. Admin: `https://api.shop.jouwdomein.nl/app`
 
-> `NEXT_PUBLIC_*`-waarden (publishable key, PostHog key, winkel-URL) worden tijdens de build in de storefront gebakken. Wijzig je die, dan moet je opnieuw deployen.
+> `NEXT_PUBLIC_*`-waarden (publishable key, backend-URL, PostHog key, winkel-URL) worden tijdens de build in de storefront gebakken. Wijzig je die, dan moet je opnieuw deployen. De storefront praat via de **publieke** backend-URL met Medusa, dus `MEDUSA_BACKEND_URL` moet van buitenaf bereikbaar zijn.
 
 ## Mollie aanzetten
 
 1. Account op [mollie.com](https://www.mollie.com), activeer iDEAL e.d., kopieer de **test**-key (`test_...`)
 2. Dokploy → Environment → `MOLLIE_API_KEY=test_...` → Redeploy
 3. Koppel de methodes aan je regio: Admin → Settings → Regions → *Benelux & Duitsland* → Payment providers → vink `mollie-ideal`, `mollie-bancontact`, … aan
-   (bij een verse database met `MOLLIE_API_KEY` doet de seed dit automatisch)
+   (staat `MOLLIE_API_KEY` al bij de allereerste start, dan doet de seed dit automatisch)
 4. Test een bestelling, en zet daarna `live_...`
 
 De Mollie-plugin (`@variablevic/mollie-payments-medusa`) is een community-plugin (v0.0.x, vastgepind op `0.0.13`). Test hem grondig voordat je live gaat.
@@ -114,21 +121,27 @@ De Mollie-plugin (`@variablevic/mollie-payments-medusa`) is een community-plugin
 ## Projectstructuur
 
 ```
-apps/backend/
+apps/backend/                          (@dtc/backend)
   medusa-config.ts                     Mollie, PostHog, Redis, bestanden
-  src/subscribers/analytics-order-placed.ts   server-side order_completed
-  src/scripts/seed.ts                  NL-winkel (btw, verzending, Mollie)
-  src/scripts/bootstrap.ts             auto-seed + vaste key + admin (bij container-start)
-apps/storefront/
+  src/migration-scripts/initial-data-seed.ts   NL-winkel (btw, verzending, Mollie)
+  src/lib/region-store-policies.ts     retourtermijn, levertijd, verzendkosten
+  src/subscribers/analytics-order-placed.ts    server-side order_completed
+  src/scripts/bootstrap.ts             vaste key + admin (bij container-start)
+apps/storefront/                       (@dtc/storefront)
   src/lib/analytics/                   event-namen, experiment-keys, server-helpers
   src/modules/analytics/               PostHog provider + cookiebanner, track(), useExperiment()
   src/app/api/mollie/return/route.ts   terugkeer na Mollie-betaling
-  src/middleware.ts                    bezoekers-ID cookie
-analytics/
-  src/setup.ts | report.ts | experiments.ts | stats.ts
+  src/lib/ucp/, src/app/ucp/           AI-shopping (UCP) — uit de DTC-starter
+  src/middleware.ts                    regio + bezoekers-ID cookie
+analytics/                             PostHog-automatisering (npm, los van pnpm)
 .github/workflows/                     CI, weekrapport, dagelijkse A/B-check
 .claude/skills/                        e-commerce skills voor Claude Code
+AGENTS.md                              conventies van Medusa (gelezen door Claude Code)
 ```
+
+### Medusa updaten
+`pnpm up "@medusajs/*@<versie>" -r` en daarna lokaal testen. De Mollie-plugin heeft
+strikte peer-dependencies (2.5.1) maar werkt met 2.22; pnpm geeft daar een waarschuwing over.
 
 ## Checklist voor je live gaat (NL)
 
@@ -145,4 +158,4 @@ Dit is geen juridisch advies. Laat de voorwaarden checken door iemand die er ver
 
 ## Licenties
 
-Medusa en de Next.js-starter: MIT. Skills in `.claude/skills/`: MIT ([awesome-ecommerce-skills](https://github.com/finsilabs/awesome-ecommerce-skills)).
+Medusa en de DTC-starter: MIT. Skills in `.claude/skills/`: MIT ([awesome-ecommerce-skills](https://github.com/finsilabs/awesome-ecommerce-skills)).

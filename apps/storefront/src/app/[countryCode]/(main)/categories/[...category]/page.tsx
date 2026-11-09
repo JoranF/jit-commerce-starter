@@ -1,52 +1,20 @@
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 
-import { getCategoryByHandle, listCategories } from "@lib/data/categories"
-import { listRegions } from "@lib/data/regions"
-import { StoreRegion } from "@medusajs/types"
+import { getCategoryByHandle } from "@lib/data/categories"
 import CategoryTemplate from "@modules/categories/templates"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
+import { parseOptionValueIds } from "@lib/util/product-option-filters"
 
 type Props = {
   params: Promise<{ category: string[]; countryCode: string }>
-  searchParams: Promise<{
-    sortBy?: SortOptions
-    page?: string
-  }>
-}
-
-export async function generateStaticParams() {
-  // Backend niet bereikbaar tijdens de build (bv. in Docker/Dokploy)? Dan
-  // renderen we deze pagina's bij het eerste bezoek (ISR) i.p.v. te falen.
-  try {
-    const product_categories = await listCategories()
-  
-    if (!product_categories) {
-      return []
+  searchParams: Promise<
+    Record<string, string | string[] | undefined> & {
+      sortBy?: SortOptions
+      page?: string
+      optionValueIds?: string | string[]
     }
-  
-    const countryCodes = await listRegions().then((regions: StoreRegion[]) =>
-      regions?.map((r) => r.countries?.map((c) => c.iso_2)).flat()
-    )
-  
-    const categoryHandles = product_categories.map(
-      (category: any) => category.handle
-    )
-  
-    const staticParams = countryCodes
-      ?.map((countryCode: string | undefined) =>
-        categoryHandles.map((handle: any) => ({
-          countryCode,
-          category: [handle],
-        }))
-      )
-      .flat()
-  
-    return staticParams
-  } catch (e) {
-    console.warn("generateStaticParams: backend onbereikbaar, pagina's worden on-demand gerenderd")
-    return []
-  }
+  >
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
@@ -65,7 +33,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
         canonical: `${params.category.join("/")}`,
       },
     }
-  } catch (error) {
+  } catch {
     notFound()
   }
 }
@@ -74,6 +42,7 @@ export default async function CategoryPage(props: Props) {
   const searchParams = await props.searchParams
   const params = await props.params
   const { sortBy, page } = searchParams
+  const optionValueIds = parseOptionValueIds(searchParams)
 
   const productCategory = await getCategoryByHandle(params.category)
 
@@ -87,6 +56,7 @@ export default async function CategoryPage(props: Props) {
       sortBy={sortBy}
       page={page}
       countryCode={params.countryCode}
+      optionValueIds={optionValueIds}
     />
   )
 }
