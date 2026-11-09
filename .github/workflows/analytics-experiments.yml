@@ -1,0 +1,30 @@
+name: Analytics – A/B-tests check
+
+on:
+  schedule:
+    # Dagelijks 06:17 (UTC)
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  experiments:
+    runs-on: ubuntu-latest
+    if: ${{ vars.ANALYTICS_ENABLED == 'true' }}
+    defaults:
+      run:
+        working-directory: analytics
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: analytics/package-lock.json
+      - run: npm ci
+      - run: npm run experiments
+        env:
+          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          POSTHOG_PROJECT_ID: ${{ vars.POSTHOG_PROJECT_ID }}
+          POSTHOG_APP_HOST: ${{ vars.POSTHOG_APP_HOST || 'https://eu.posthog.com' }}
+          REPORT_WEBHOOK_URL: ${{ secrets.REPORT_WEBHOOK_URL }}
+          AUTO_SHIP_WINNERS: ${{ vars.AUTO_SHIP_WINNERS || 'false' }}

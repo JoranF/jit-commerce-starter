@@ -1,0 +1,119 @@
+# Productie-stack voor Dokploy (Compose-service) of elke Docker-host.
+#
+# In Dokploy:
+#   1. Create Service → Compose → Git: JoranF/jit-commerce-starter, branch main, path ./docker-compose.yml
+#   2. Environment: plak de inhoud van .env.production.example en vul in
+#   3. Domains: storefront → poort 8000 (bv. shop.joranit.com)
+#               backend    → poort 9000 (bv. api.shop.joranit.com)  — HTTPS aan
+#   4. Deploy
+#
+# Lokaal testen zonder Dokploy: docker network create dokploy-network && docker compose up --build
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: medusa
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?zet POSTGRES_PASSWORD}
+      POSTGRES_DB: medusa
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medusa -d medusa"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build:
+      context: ./apps/backend
+      args:
+        MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL:?zet MEDUSA_BACKEND_URL (publieke https-URL van de backend)}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://medusa:${POSTGRES_PASSWORD}@postgres:5432/medusa
+      REDIS_URL: redis://redis:6379
+      MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL}
+      MEDUSA_WORKER_MODE: shared
+      JWT_SECRET: ${JWT_SECRET:?zet JWT_SECRET}
+      COOKIE_SECRET: ${COOKIE_SECRET:?zet COOKIE_SECRET}
+      STORE_CORS: ${STORE_URL}
+      ADMIN_CORS: ${MEDUSA_BACKEND_URL}
+      AUTH_CORS: ${MEDUSA_BACKEND_URL},${STORE_URL}
+      # Eerste start: demo-winkel + vaste publishable key + admin-account
+      SEED_DEMO: ${SEED_DEMO:-true}
+      MEDUSA_PUBLISHABLE_KEY: ${MEDUSA_PUBLISHABLE_KEY:?zet MEDUSA_PUBLISHABLE_KEY (pk_...)}
+      MEDUSA_ADMIN_EMAIL: ${MEDUSA_ADMIN_EMAIL:-}
+      MEDUSA_ADMIN_PASSWORD: ${MEDUSA_ADMIN_PASSWORD:-}
+      # Betalen
+      MOLLIE_API_KEY: ${MOLLIE_API_KEY:-}
+      MOLLIE_REDIRECT_URL: ${STORE_URL}/api/mollie/return
+      MOLLIE_DESCRIPTION: ${MOLLIE_DESCRIPTION:-Bestelling}
+      # Server-side analytics
+      POSTHOG_EVENTS_KEY: ${POSTHOG_KEY:-}
+      POSTHOG_HOST: ${POSTHOG_INGEST_HOST:-https://eu.i.posthog.com}
+    volumes:
+      - uploads:/app/static
+    expose:
+      - "9000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:9000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    networks:
+      - default
+      - dokploy-network
+
+  storefront:
+    build:
+      context: ./apps/storefront
+      args:
+        NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${MEDUSA_PUBLISHABLE_KEY}
+        NEXT_PUBLIC_BASE_URL: ${STORE_URL:?zet STORE_URL (publieke https-URL van de winkel)}
+        NEXT_PUBLIC_DEFAULT_REGION: ${DEFAULT_REGION:-nl}
+        NEXT_PUBLIC_POSTHOG_KEY: ${POSTHOG_KEY:-}
+        POSTHOG_API_HOST: ${POSTHOG_INGEST_HOST:-https://eu.i.posthog.com}
+        POSTHOG_ASSETS_HOST: ${POSTHOG_ASSETS_HOST:-https://eu-assets.i.posthog.com}
+        MEDUSA_PUBLIC_BACKEND_URL: ${MEDUSA_BACKEND_URL}
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      MEDUSA_BACKEND_URL: http://backend:9000
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-change-me}
+    expose:
+      - "8000"
+    networks:
+      - default
+      - dokploy-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads:
+
+networks:
+  dokploy-network:
+    external: true

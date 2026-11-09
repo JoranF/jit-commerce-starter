@@ -1,0 +1,22 @@
+{
+  "name": "jit-commerce-analytics",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Analytics-automatisering: PostHog dashboards, wekelijkse rapporten en A/B-test evaluatie",
+  "scripts": {
+    "setup": "tsx src/setup.ts",
+    "report": "tsx src/report.ts",
+    "experiments": "tsx src/experiments.ts",
+    "test": "tsx --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

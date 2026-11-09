@@ -1,0 +1,38 @@
+name: Analytics – weekrapport
+
+on:
+  schedule:
+    # Maandag 07:43 (UTC) ≈ 08:43 NL-tijd
+    - cron: "43 7 * * 1"
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Aantal dagen"
+        default: "7"
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    if: ${{ vars.ANALYTICS_ENABLED == 'true' }}
+    defaults:
+      run:
+        working-directory: analytics
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: analytics/package-lock.json
+      - run: npm ci
+      - run: npm run report -- --days ${{ github.event.inputs.days || '7' }}
+        env:
+          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          POSTHOG_PROJECT_ID: ${{ vars.POSTHOG_PROJECT_ID }}
+          POSTHOG_APP_HOST: ${{ vars.POSTHOG_APP_HOST || 'https://eu.posthog.com' }}
+          REPORT_WEBHOOK_URL: ${{ secrets.REPORT_WEBHOOK_URL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: weekrapport
+          path: analytics/reports/
