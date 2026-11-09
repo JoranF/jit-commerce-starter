@@ -54,25 +54,26 @@ Rapporten gaan naar `analytics/reports/`, de GitHub job summary en optioneel Dis
 
 ## Lokaal draaien
 
-Vereist: Node 22.23+, pnpm 10 (`corepack enable`), Docker (voor Postgres/Redis).
+Vereist: **Node 22.23+**, **pnpm** (`corepack enable`) en **Docker Desktop** (voor Postgres/Redis).
+Werkt op Windows, macOS en Linux.
 
 ```bash
-docker compose -f docker-compose.dev.yml up -d
+git clone https://github.com/JoranF/jit-commerce-starter.git
+cd jit-commerce-starter
+corepack enable
 pnpm install
-
-# Backend → http://localhost:9000/app (admin)
-cp apps/backend/.env.template apps/backend/.env   # vul MEDUSA_PUBLISHABLE_KEY + admin in, of laat leeg
-cd apps/backend
-pnpm medusa db:migrate                 # maakt tabellen + NL-winkel + demo-producten
-pnpm medusa exec ./src/scripts/bootstrap.ts   # vaste key + admin (uit .env)
-cd ../..
-
-# Storefront → http://localhost:8000
-cp apps/storefront/.env.template apps/storefront/.env.local   # zet NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
-pnpm dev                               # start backend + storefront samen
+pnpm setup:local     # env-bestanden, Postgres+Redis (Docker), migraties + NL-winkel, admin-account
+pnpm dev             # backend + storefront samen
 ```
 
-Publishable key opvragen: Admin → Settings → Publishable API Keys (of de regel `[bootstrap] Publishable key: …` in de log).
+| | URL | Login |
+|---|---|---|
+| Winkel | http://localhost:8000 | – |
+| Admin | http://localhost:9000/app | `admin@webshop.local` / `supersecret` |
+
+Afrekenen lokaal: kies **Testbetaling (handmatig)**. Geen Docker? Zet je eigen `DATABASE_URL` in
+`apps/backend/.env` (wordt bij de eerste run aangemaakt) en gebruik `pnpm setup:local --no-docker`.
+`setup:local` is idempotent: opnieuw draaien kan altijd.
 
 ## Live zetten op Dokploy
 
