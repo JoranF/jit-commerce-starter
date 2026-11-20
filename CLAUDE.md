@@ -14,6 +14,8 @@ separate npm package.
 - Prijzen zijn inclusief btw (price preference op `currency_code=eur`, zie `setTaxInclusive`).
 - `initial-data-seed.ts` moet idempotent blijven (draait als migration script).
 - Teksten richting klant in het Nederlands; prijzen via `nl-NL`.
+- Dropshipping: module `src/modules/cj-dropshipping` (CJ API), alleen actief met `CJ_API_KEY`. Koppeling per variant via
+  metadata `cj_vid`; status staat in `order.metadata.cj_*`. Tests: `pnpm run test:unit -- src/modules/cj-dropshipping`.
 - Deploy: `docker-compose.yml` (Dokploy Compose), build-context = repo-root. `NEXT_PUBLIC_*` zijn build args.
 - Checks: `pnpm --filter @dtc/backend build`, `pnpm --filter @dtc/storefront build`,
   `cd apps/storefront && npx tsc --noEmit` (0 fouten verwacht), `cd analytics && npm test`.

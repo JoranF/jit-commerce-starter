@@ -110,6 +110,32 @@ const fileModule = {
   },
 }
 
+/**
+ * Dropshipping via CJ Dropshipping: betaalde bestellingen met CJ-producten
+ * (variant metadata `cj_vid`) worden automatisch doorgestuurd; track & trace komt
+ * terug via de job `cj-sync`. Zie src/modules/cj-dropshipping/README.md.
+ */
+const csv = (v?: string) => (v ?? "").split(",").map((s) => s.trim()).filter(Boolean)
+const cjModule = process.env.CJ_API_KEY
+  ? [
+      {
+        resolve: "./src/modules/cj-dropshipping",
+        options: {
+          apiKey: process.env.CJ_API_KEY,
+          autoPay: process.env.CJ_AUTO_PAY === "true",
+          sandbox: process.env.CJ_SANDBOX === "true",
+          defaultFromCountry: process.env.CJ_FROM_COUNTRY || "CN",
+          preferredLogistics: csv(process.env.CJ_LOGISTICS),
+          maxDeliveryDays: Number(process.env.CJ_MAX_DELIVERY_DAYS || 15),
+          orderNumberPrefix: process.env.CJ_ORDER_PREFIX || "jit",
+          storeName: process.env.CJ_STORE_NAME || undefined,
+          createFulfillment: process.env.CJ_CREATE_FULFILLMENT !== "false",
+          baseUrl: process.env.CJ_BASE_URL || undefined,
+        },
+      },
+    ]
+  : []
+
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
@@ -127,5 +153,5 @@ module.exports = defineConfig({
     disable: process.env.DISABLE_MEDUSA_ADMIN === "true",
     backendUrl: process.env.MEDUSA_BACKEND_URL,
   },
-  modules: [...redisModules, ...paymentModule, analyticsModule, fileModule],
+  modules: [...redisModules, ...paymentModule, analyticsModule, fileModule, ...cjModule],
 })

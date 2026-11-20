@@ -70,6 +70,16 @@ services:
       MOLLIE_API_KEY: ${MOLLIE_API_KEY:-}
       MOLLIE_REDIRECT_URL: ${STORE_URL}/api/mollie/return
       MOLLIE_DESCRIPTION: ${MOLLIE_DESCRIPTION:-Bestelling}
+      # Dropshipping (CJ) — leeg = uit
+      CJ_API_KEY: ${CJ_API_KEY:-}
+      CJ_AUTO_PAY: ${CJ_AUTO_PAY:-false}
+      CJ_SANDBOX: ${CJ_SANDBOX:-false}
+      CJ_FROM_COUNTRY: ${CJ_FROM_COUNTRY:-CN}
+      CJ_LOGISTICS: ${CJ_LOGISTICS:-}
+      CJ_MAX_DELIVERY_DAYS: ${CJ_MAX_DELIVERY_DAYS:-15}
+      CJ_ORDER_PREFIX: ${CJ_ORDER_PREFIX:-jit}
+      CJ_STORE_NAME: ${CJ_STORE_NAME:-}
+      CJ_CREATE_FULFILLMENT: ${CJ_CREATE_FULFILLMENT:-true}
       # Server-side analytics
       POSTHOG_EVENTS_KEY: ${POSTHOG_KEY:-}
       POSTHOG_HOST: ${POSTHOG_INGEST_HOST:-https://eu.i.posthog.com}
