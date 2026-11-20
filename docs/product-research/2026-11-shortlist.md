@@ -26,7 +26,7 @@ instead of checking competition at the end. Tool: `scripts/ads-library/`.
   (EU transparency data, 20 Nov 2026). Audience skews 55+ (e.g. BE men 65+ ≈ 25k on one ad).
 - **Not at Action:** Action sells a basic LED disc wall lamp (€7,95). Different product.
 - **Price ladder:** Creative.Lighting ~$150 (sale from $300), Duo $190; designer "ripple" sconces $269–645.
-- **Looks great on its own:** the moving light pattern IS the video ad. Perfect for Higgsfield and a one-product store.
+- **Looks great on its own:** the moving light pattern IS the video ad. Perfect for fal (image-to-video) and a one-product store.
 - **Factory price unknown ⚠️:** generic ripple projectors are $3–85 on Alibaba; the aluminium wall version needs a quote.
 
 Break-even (estimate ⚠️, product €35 + shipping €7 fragile parcel):
@@ -198,7 +198,7 @@ turns them profitable.
   calm bedroom photography, avoid the generic cream + terracotta look.
 - **Meta ad angles:** 1) before/after morning (phone alarm vs. light) 2) couple: one wakes, the
   other sleeps on 3) "07:00 en nog pikkedonker" relatable hook.
-- **Higgsfield shots:** product hero on bedside table; bedroom lifestyle at dawn; 15s video
+- **fal shots:** product hero on bedside table; bedroom lifestyle at dawn; 15s video
   showing the light slowly rising; close-up of the material/design.
 
 ## Sources

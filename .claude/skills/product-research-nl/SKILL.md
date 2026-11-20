@@ -14,7 +14,7 @@ The goal is not "a trending product". The goal is a product that can make a prof
 - Store: Medusa 2 + Next.js storefront in this repo; Dutch customer texts; one product = can get
   its own storefront/sales channel later.
 - Payments: Mollie (iDEAL about €0.32 per payment; cards are a % fee). Check mollie.com/pricing.
-- Traffic: Meta ads (Facebook/Instagram). Visuals and ad videos: Higgsfield.
+- Traffic: Meta ads (Facebook/Instagram). Visuals and ad videos: fal.ai (MCP connector; e.g. Bria Product Shot for product photos, image-to-video for ads). Site animations: Motion (`@modules/common/components/motion`).
 - Shipping in the store: €4,95 standard (configurable in the admin).
 
 ## Step 1 — Ask once (multiple choice, allow shorthand like "1b 2a 3c")
@@ -91,7 +91,7 @@ Note: €4,95 shipping that the customer pays counts as income too; free shippin
 
 ## Step 6 — Test plan
 
-- 3 products max per test round, each with 3–5 creatives (Higgsfield video + static).
+- 3 products max per test round, each with 3–5 creatives (fal video + static).
 - €20–30/day per product, 3–5 days. Kill when spend ≥ 1.5× break_even_CPA without a sale.
   Keep when CPA ≤ break_even_CPA. Scale winners slowly (+20–30% budget per 2–3 days).
 - Track with the funnel already in this repo (PostHog: `product_viewed` → `order_completed`,
@@ -105,7 +105,7 @@ Note: €4,95 shipping that the customer pays counts as income too; free shippin
 4. Validation checklist with what's still unverified (⚠️).
 5. **Store brief** for the #1 product: store name ideas (3), target customer, the one problem,
    hero promise in Dutch, colour/type direction (hand to the `frontend-design` skill), 3 ad
-   angles for Meta, Higgsfield shot list (hero photo, lifestyle photos, 15s demo video).
+   angles for Meta, fal shot list (hero photo, lifestyle photos, 15s demo video).
 6. Next steps.
 
 Save research to `docs/product-research/YYYY-MM-<topic>.md` so later sessions can build on it.

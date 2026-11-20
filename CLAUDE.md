@@ -16,6 +16,9 @@ separate npm package.
 - Teksten richting klant in het Nederlands; prijzen via `nl-NL`.
 - Dropshipping: module `src/modules/cj-dropshipping` (CJ API), alleen actief met `CJ_API_KEY`. Koppeling per variant via
   metadata `cj_vid`; status staat in `order.metadata.cj_*`. Tests: `pnpm run test:unit -- src/modules/cj-dropshipping`.
+- Animaties in de storefront: Motion (`motion`, voorheen Framer Motion) via `@modules/common/components/motion`
+  (`Reveal`, `Stagger`/`StaggerItem`, `m`). Spaarzaam, alleen transform/opacity; "minder beweging" wordt gerespecteerd.
+- Beelden en video (productfoto's, sfeer, advertenties): fal.ai via de MCP-connector. Genereer pas na akkoord op de kosten.
 - Deploy: `docker-compose.yml` (Dokploy Compose), build-context = repo-root. `NEXT_PUBLIC_*` zijn build args.
 - Checks: `pnpm --filter @dtc/backend build`, `pnpm --filter @dtc/storefront build`,
   `cd apps/storefront && npx tsc --noEmit` (0 fouten verwacht), `cd analytics && npm test`.

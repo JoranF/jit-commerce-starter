@@ -2,6 +2,7 @@ import { getBaseURL } from "@lib/util/env"
 import { Metadata } from "next"
 import "styles/globals.css"
 import { PostHogProvider } from "@modules/analytics/posthog-provider"
+import { MotionProvider } from "@modules/common/components/motion"
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
@@ -15,7 +16,9 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       </head>
       <body>
         <PostHogProvider>
-          <main className="relative">{props.children}</main>
+          <MotionProvider>
+            <main className="relative">{props.children}</main>
+          </MotionProvider>
         </PostHogProvider>
       </body>
     </html>
