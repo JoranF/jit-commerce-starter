@@ -9,71 +9,72 @@ type CartTotalsProps = {
     subtotal?: number | null
     tax_total?: number | null
     currency_code: string
+    item_total?: number | null
     item_subtotal?: number | null
+    shipping_total?: number | null
     shipping_subtotal?: number | null
+    discount_total?: number | null
     discount_subtotal?: number | null
+    shipping_methods?: unknown[] | null
   }
 }
 
+/**
+ * Totalen voor consumenten in NL/BE: bedragen inclusief btw, met daaronder
+ * "Inclusief € x btw". (Medusa's *_subtotal-velden zijn exclusief btw.)
+ */
 const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
-  const {
-    currency_code,
-    total,
-    tax_total,
-    item_subtotal,
-    shipping_subtotal,
-    discount_subtotal,
-  } = totals
+  const { currency_code, total, tax_total } = totals
+  const items = totals.item_total ?? totals.item_subtotal ?? 0
+  const shipping = totals.shipping_total ?? totals.shipping_subtotal ?? 0
+  // Winkelmand zonder gekozen verzendmethode: nog geen bedrag tonen (geen € 0,00).
+  const shippingUnknown = Array.isArray(totals.shipping_methods) && totals.shipping_methods.length === 0
+  const discount = totals.discount_total ?? totals.discount_subtotal ?? 0
+  const money = (amount: number | null | undefined) =>
+    convertToLocale({ amount: amount ?? 0, currency_code })
 
   return (
     <div>
       <div className="flex flex-col gap-y-2 txt-medium text-ui-fg-subtle ">
         <div className="flex items-center justify-between">
-          <span>Subtotal (excl. shipping and taxes)</span>
-          <span data-testid="cart-subtotal" data-value={item_subtotal || 0}>
-            {convertToLocale({ amount: item_subtotal ?? 0, currency_code })}
+          <span>Subtotaal</span>
+          <span data-testid="cart-subtotal" data-value={items}>
+            {money(items)}
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span>Shipping</span>
-          <span data-testid="cart-shipping" data-value={shipping_subtotal || 0}>
-            {convertToLocale({ amount: shipping_subtotal ?? 0, currency_code })}
+          <span>Verzending</span>
+          <span data-testid="cart-shipping" data-value={shipping}>
+            {shippingUnknown ? "Bij het afrekenen" : money(shipping)}
           </span>
         </div>
-        {!!discount_subtotal && (
+        {!!discount && (
           <div className="flex items-center justify-between">
-            <span>Discount</span>
+            <span>Korting</span>
             <span
               className="text-ui-fg-interactive"
               data-testid="cart-discount"
-              data-value={discount_subtotal || 0}
+              data-value={discount}
             >
-              -{" "}
-              {convertToLocale({
-                amount: discount_subtotal ?? 0,
-                currency_code,
-              })}
+              - {money(discount)}
             </span>
           </div>
         )}
-        <div className="flex justify-between">
-          <span className="flex gap-x-1 items-center ">Taxes</span>
-          <span data-testid="cart-taxes" data-value={tax_total || 0}>
-            {convertToLocale({ amount: tax_total ?? 0, currency_code })}
-          </span>
-        </div>
       </div>
       <div className="h-px w-full border-b border-gray-200 my-4" />
-      <div className="flex items-center justify-between text-ui-fg-base mb-2 txt-medium ">
-        <span>Total</span>
+      <div className="flex items-center justify-between text-ui-fg-base txt-medium ">
+        <span>Totaal</span>
         <span
           className="txt-xlarge-plus"
           data-testid="cart-total"
           data-value={total || 0}
         >
-          {convertToLocale({ amount: total ?? 0, currency_code })}
+          {money(total)}
         </span>
       </div>
+      <p className="mb-2 mt-1 text-right txt-small text-ui-fg-subtle" data-testid="cart-taxes" data-value={tax_total || 0}>
+        {tax_total ? `Inclusief ${money(tax_total)} btw` : "Inclusief btw"}
+      </p>
       <div className="h-px w-full border-b border-gray-200 mt-4" />
     </div>
   )

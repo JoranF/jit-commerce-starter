@@ -16,17 +16,23 @@ import MobileActions from "./mobile-actions"
 import { useRouter } from "next/navigation"
 import { EVENTS, EXPERIMENTS } from "@lib/analytics/constants"
 import { track, useExperiment } from "@modules/analytics/track"
+import { store } from "@stores"
+import { brandButton } from "./brand-button"
 
-/** Varianten voor het voorbeeld-experiment `pdp-cta-text`. */
-const CTA_TEXT: Record<string, string> = {
-  control: "In winkelwagen",
-  test: "Bestel nu – morgen in huis",
-}
+/**
+ * Knoptekst per variant van het experiment `pdp-cta-text`, uit de winkelconfig.
+ * Let op: geen beloftes die niet kloppen (bv. "morgen in huis" bij dropshipping).
+ */
+const CTA_TEXT: Record<string, string> = store.buy.ctaText
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
   disabled?: boolean
+  /** Toon dit (bv. de levertijd) i.p.v. "Op voorraad" als de variant leverbaar is. */
+  availabilityText?: string | null
+  /** false = geen beschikbaarheidsregel (bv. als de levertijd er al onder staat). */
+  showAvailability?: boolean
 }
 
 const optionsAsKeymap = (
@@ -44,6 +50,8 @@ const getDefaultVariant = (product: HttpTypes.StoreProduct) =>
 export default function ProductActions({
   product,
   disabled,
+  availabilityText,
+  showAvailability = true,
 }: ProductActionsProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -204,12 +212,12 @@ export default function ProductActions({
 
           <ProductPrice product={product} variant={selectedVariant} />
 
-          {selectedVariant && isValidVariant && (
+          {showAvailability && selectedVariant && isValidVariant && (
             <p
               className="text-small-regular text-ui-fg-subtle"
               data-testid="product-availability"
             >
-              {inStock ? "Op voorraad" : "Uitverkocht"}
+              {inStock ? availabilityText || "Op voorraad" : "Uitverkocht"}
             </p>
           )}
 
@@ -223,7 +231,7 @@ export default function ProductActions({
               !isValidVariant
             }
             variant="primary"
-            className="w-full h-10"
+            className={`w-full h-10 ${brandButton}`}
             isLoading={isAdding}
             data-testid="add-product-button"
           >

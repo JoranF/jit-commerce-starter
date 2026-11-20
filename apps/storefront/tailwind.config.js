@@ -20,6 +20,14 @@ module.exports = {
         padding: "padding-top padding-right padding-bottom padding-left",
       },
       colors: {
+        // Merkkleuren uit src/stores/<winkel>.ts (CSS-variabelen in de root layout)
+        brand: {
+          dark: "rgb(var(--brand-dark) / <alpha-value>)",
+          light: "rgb(var(--brand-light) / <alpha-value>)",
+          ink: "rgb(var(--brand-ink) / <alpha-value>)",
+          accent: "rgb(var(--brand-accent) / <alpha-value>)",
+          muted: "rgb(var(--brand-muted) / <alpha-value>)",
+        },
         grey: {
           0: "#FFFFFF",
           5: "#F9FAFB",
@@ -58,7 +66,9 @@ module.exports = {
         "3xl": "2rem",
       },
       fontFamily: {
+        display: ["var(--font-display)", "Georgia", "serif"],
         sans: [
+          "var(--font-body)",
           "Inter",
           "-apple-system",
           "BlinkMacSystemFont",

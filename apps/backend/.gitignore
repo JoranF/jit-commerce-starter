@@ -24,3 +24,5 @@ build
 !.yarn/versions
 
 .medusa
+# Lokale uploads (Medusa file-local), runtime data
+static/

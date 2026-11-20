@@ -70,6 +70,8 @@ services:
       MOLLIE_API_KEY: ${MOLLIE_API_KEY:-}
       MOLLIE_REDIRECT_URL: ${STORE_URL}/api/mollie/return
       MOLLIE_DESCRIPTION: ${MOLLIE_DESCRIPTION:-Bestelling}
+      # Winkel (product, levertijden; zie src/scripts/stores) — leeg = niets klaarzetten
+      STORE_ID: ${STORE_ID:-lichtval}
       # Dropshipping (CJ) — leeg = uit
       CJ_API_KEY: ${CJ_API_KEY:-}
       CJ_AUTO_PAY: ${CJ_AUTO_PAY:-false}
@@ -107,6 +109,7 @@ services:
         NEXT_PUBLIC_BASE_URL: ${STORE_URL:?zet STORE_URL (publieke https-URL van de winkel)}
         NEXT_PUBLIC_DEFAULT_REGION: ${DEFAULT_REGION:-nl}
         NEXT_PUBLIC_POSTHOG_KEY: ${POSTHOG_KEY:-}
+        NEXT_PUBLIC_STORE_ID: ${STORE_ID:-lichtval}
         POSTHOG_API_HOST: ${POSTHOG_INGEST_HOST:-https://eu.i.posthog.com}
         POSTHOG_ASSETS_HOST: ${POSTHOG_ASSETS_HOST:-https://eu-assets.i.posthog.com}
     restart: unless-stopped

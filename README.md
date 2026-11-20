@@ -30,6 +30,12 @@ Gebouwd op de officiële [Medusa DTC Starter](https://github.com/medusajs/dtc-st
 - Eerste `db:migrate` seedt de winkel + demo-producten (`src/migration-scripts/initial-data-seed.ts`, idempotent; `SEED_DEMO=false` = zonder demo-producten)
 - Container-start: vaste publishable key en admin-account (`src/scripts/bootstrap.ts`)
 
+**Winkels (store factory)**
+- Eén codebase, meerdere winkels: merk, kleuren, fonts, teksten en beelden per winkel in `apps/storefront/src/stores/<id>.ts`
+- Winkel met één product (`catalog: false`): homepage = landingspagina met "de lamp gaat aan"-moment, eigen productpagina, minimale navigatie
+- Backend-setup per winkel (`STORE_ID`): product met foto's, levertijden, verzendopties (idempotent, draait bij elke start)
+- Eerste winkel: **Lichtval** (wandlamp met waterlicht). Uitleg: [`apps/storefront/src/stores/README.md`](apps/storefront/src/stores/README.md)
+
 **Dropshipping (CJ Dropshipping)**
 - Verkopen zonder voorraad: betaalde bestellingen met CJ-producten (variant metadata `cj_vid`) gaan automatisch naar CJ
 - Track & trace komt terug (job elke 30 min) en de bestelling staat in Medusa op verzonden; blok met status + knoppen op de bestelpagina in de admin

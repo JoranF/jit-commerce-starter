@@ -11,8 +11,8 @@ export const dynamic = "force-static"
 export const revalidate = 60
 
 export const metadata: Metadata = {
-  title: "Shipping information",
-  description: "Shipping rates and delivery times.",
+  title: "Verzending",
+  description: "Verzendkosten en levertijden.",
 }
 
 export default async function ShippingPage(props: {
@@ -22,16 +22,21 @@ export default async function ShippingPage(props: {
   const { current, currencyCode } = await getStorePolicies(countryCode)
 
   return (
-    <PolicyPage title="Shipping information">
+    <PolicyPage title="Verzending">
       {current ? (
         <>
           <p>
-            Orders to {countryCode.toUpperCase()} ship with the following rates
-            and delivery times.
+            We versturen je bestelling rechtstreeks vanuit het magazijn van onze leverancier.
+            Zodra je pakket onderweg is, krijg je een e-mail met een track &amp; trace-code.
           </p>
           <ShippingSummary policies={current} currencyCode={currencyCode} />
-          <p className="text-ui-fg-subtle">
-            Available shipping methods and final costs are shown at checkout.
+          <p>
+            Werkdagen zijn maandag tot en met vrijdag, zonder feestdagen. De verzendmethode en
+            de definitieve kosten zie je bij het afrekenen.
+          </p>
+          <p>
+            Is je pakket na de genoemde termijn nog niet binnen? Neem contact met ons op, dan
+            zoeken we het voor je uit.
           </p>
         </>
       ) : (

@@ -131,6 +131,12 @@ importers:
       '@adyen/adyen-web':
         specifier: ^6.46.0
         version: 6.48.0
+      '@fontsource-variable/schibsted-grotesk':
+        specifier: 5.3.0
+        version: 5.3.0
+      '@fontsource/hedvig-letters-serif':
+        specifier: 5.3.1
+        version: 5.3.1
       '@headlessui/react':
         specifier: ^2.2.0
         version: 2.2.10(react-dom@19.0.5(react@19.0.5))(react@19.0.5)
@@ -961,6 +967,12 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
+
+  '@fontsource-variable/schibsted-grotesk@5.3.0':
+    resolution: {integrity: sha512-ndS6H/KICWANchlHF3q4UdZD+xrZ3Ji0rUobIuXlgvDUzDfqZDsVuXPXZb636nJZMHE9zZ9Fmwgqazm8hMB50Q==}
+
+  '@fontsource/hedvig-letters-serif@5.3.1':
+    resolution: {integrity: sha512-SD7HYMBNizRHcHdIaHnK3B5d+ecQgh8VAm8deFihPuwEMhhk70T75z4zToDhJRlU87BN+X4LD6a7DcsfHm6yaw==}
 
   '@graphql-codegen/core@6.2.2':
     resolution: {integrity: sha512-bClqhA2ZITWKiEYd5A87KaU93YBC8o1++B3Y0FpYIZPZfGEWEwbhyvUkrSKrXqUagwM7c0h77f7DB4oR6vBgpQ==}
@@ -9357,6 +9369,10 @@ snapshots:
       tabbable: 6.5.0
 
   '@floating-ui/utils@0.2.12': {}
+
+  '@fontsource-variable/schibsted-grotesk@5.3.0': {}
+
+  '@fontsource/hedvig-letters-serif@5.3.1': {}
 
   '@graphql-codegen/core@6.2.2(graphql@17.0.2)':
     dependencies:

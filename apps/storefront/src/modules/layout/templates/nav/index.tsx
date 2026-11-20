@@ -8,8 +8,54 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import CartButton from "@modules/layout/components/cart-button"
 import Search from "@modules/layout/components/search"
 import SideMenu from "@modules/layout/components/side-menu"
+import { store } from "@stores"
+
+/** Navigatie voor een winkel met één product: merk, twee ankers, winkelmand. */
+function BrandNav() {
+  const link =
+    "rounded-sm transition-colors hover:text-brand-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-ink"
+  return (
+    <div className="sticky inset-x-0 top-0 z-50">
+      <header className="h-16 border-b border-brand-ink/10 bg-brand-light/95 text-brand-ink backdrop-blur supports-[backdrop-filter]:bg-brand-light/80">
+        <nav
+          aria-label="Hoofdmenu"
+          className="content-container flex h-full items-center justify-between"
+        >
+          <LocalizedClientLink
+            href="/"
+            className={`font-display text-[1.65rem] leading-none tracking-[-0.01em] ${link}`}
+            data-testid="nav-store-link"
+          >
+            {store.name}
+          </LocalizedClientLink>
+          <div className="flex items-center gap-x-7 text-base text-brand-ink/75">
+            <LocalizedClientLink href="/#lamp" className={`hidden xsmall:inline ${link}`}>
+              De lamp
+            </LocalizedClientLink>
+            <LocalizedClientLink href="/#vragen" className={`hidden xsmall:inline ${link}`}>
+              Vragen
+            </LocalizedClientLink>
+            <Suspense
+              fallback={
+                <LocalizedClientLink className={link} href="/cart" data-testid="nav-cart-link">
+                  Winkelmand (0)
+                </LocalizedClientLink>
+              }
+            >
+              <CartButton />
+            </Suspense>
+          </div>
+        </nav>
+      </header>
+    </div>
+  )
+}
 
 export default async function Nav() {
+  if (!store.catalog) {
+    return <BrandNav />
+  }
+
   const [regions, locales, currentLocale] = await Promise.all([
     listRegions().then((regions: StoreRegion[]) => regions),
     listLocales(),
@@ -32,7 +78,7 @@ export default async function Nav() {
               className="txt-compact-xlarge-plus hover:text-ui-fg-base uppercase"
               data-testid="nav-store-link"
             >
-              Medusa Store
+              {store.name}
             </LocalizedClientLink>
           </div>
 
@@ -54,7 +100,7 @@ export default async function Nav() {
                   href="/cart"
                   data-testid="nav-cart-link"
                 >
-                  Cart (0)
+                  Winkelmand (0)
                 </LocalizedClientLink>
               }
             >

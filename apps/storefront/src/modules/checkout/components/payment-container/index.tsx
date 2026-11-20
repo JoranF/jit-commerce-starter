@@ -102,7 +102,7 @@ export const StripePaymentContainer = ({
                 setPaymentComplete(false)
                 setError(
                   getPaymentErrorMessage(e.error) ??
-                    "Could not load the payment methods."
+                    "De betaalmethodes konden niet worden geladen."
                 )
               }}
             />

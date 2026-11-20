@@ -7,7 +7,7 @@ type Props = {
   params: Promise<{ id: string }>
 }
 export const metadata: Metadata = {
-  title: "Order Confirmed",
+  title: "Bestelling geplaatst",
   description: "You purchase was successful",
 }
 
