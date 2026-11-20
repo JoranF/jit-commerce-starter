@@ -26,6 +26,11 @@ Only ask what the conversation hasn't answered yet:
 
 ## Step 2 — Generate 8–12 candidates
 
+**Start in the Meta Ads Library** (`scripts/ads-library/`, see its README): search sales phrases
+("op = op", "1+1 gratis", "bestel nu", "tijdelijk") and product keywords, keep small webshops with
+ads running 90+ days, then check EU reach (100k+ per ad = real spend). Low competition alone is
+NOT a good sign; it often means low demand.
+
 Sources, in this order (search the web; mark anything unverified with ⚠️):
 - **Season + local angle first.** NL-specific angles beat generic lists: dark winter mornings,
   cycling in rain/cold, small/old houses (draughts, energy costs), dog walking in the dark,

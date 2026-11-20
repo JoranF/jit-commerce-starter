@@ -3,6 +3,59 @@
 Made with the `product-research-nl` skill. Status: **ideas to validate, not proven winners.**
 ⚠️ = estimate or not yet verified. Supplier costs are estimates until a supplier quote/sample exists.
 
+## Round 3 (20 Nov 2026) — Ads Library first: **design "ripple" wall lamp**
+
+Method change: start from the Meta Ads Library (NL) and look for small shops with ads running for months,
+instead of checking competition at the end. Tool: `scripts/ads-library/`.
+
+### Long-running small NL advertisers found (searches: "op = op", "bestel nu", "1+1 gratis", "viral", …)
+
+| Advertiser | Product | Running |
+|---|---|---|
+| Lotgenootje | weighted cuddly toy | 671 days, 19 ads |
+| The Light Supplier | "Plugify" plug-in wall lamp | 464 days |
+| CharmPaws | pet steam brush | 458 days |
+| Mirlux | design make-up mirrors | 456 days |
+| Pure Laundry Club | laundry strips (repeat purchase) | 424–508 days |
+| Iedereenblij / Stroopwafel Studio | your photo on a Delft Blue tile | 402–419 days |
+| **Creative.Lighting** | **"Velwave" rotating ripple wall lamp** | **395 days, 9+ ads, 17 versions, whole EU** |
+
+### Winner: rotating "ripple" wall lamp (aluminium + steel, throws a wave of light on the wall)
+
+- **Demand is proven and big:** one Creative.Lighting ad reached **4.125.712** EU accounts, another **1.699.047**
+  (EU transparency data, 20 Nov 2026). Audience skews 55+ (e.g. BE men 65+ ≈ 25k on one ad).
+- **Not at Action:** Action sells a basic LED disc wall lamp (€7,95). Different product.
+- **Price ladder:** Creative.Lighting ~$150 (sale from $300), Duo $190; designer "ripple" sconces $269–645.
+- **Looks great on its own:** the moving light pattern IS the video ad. Perfect for Higgsfield and a one-product store.
+- **Factory price unknown ⚠️:** generic ripple projectors are $3–85 on Alibaba; the aluminium wall version needs a quote.
+
+Break-even (estimate ⚠️, product €35 + shipping €7 fragile parcel):
+
+| Selling price | €89,95 | €119 |
+|---|---|---|
+| Ex VAT | €74,34 | €98,35 |
+| − product + shipping | €42 | €42 |
+| − fees/returns (~4%) | €3,60 | €4,80 |
+| + customer shipping (ex VAT) | €4,09 | €4,09 |
+| **Break-even CPA** | **≈ €33** | **≈ €56** |
+
+→ Price at **€99–119** (still well under the €150 competitor) with a 2-pack ("Duo") as upsell.
+
+Risks / to do:
+- [ ] Supplier quotes (Alibaba/1688/CJ): exact aluminium rotating ripple wall lamp, plug-in vs hardwired vs rechargeable, unit price at 10/50 pcs, EU stock?
+- [ ] Electrical compliance: CE (LVD + EMC), RoHS, WEEE registration NL, **energy label for the LED light source** (EU ecodesign for lighting), GPSR info ⚠️
+- [ ] Fragile shipping: ask for drop-tested packaging; budget breakage in returns
+- [ ] Own brand, own name, own visuals. Do **not** copy Creative.Lighting's name, texts or photos.
+- [ ] Sample → film the light effect yourself (that footage is the ad)
+
+Dropped this round: weighted cuddly toy (Lotgenootje already at Albert Heijn/Bol €49–65, Kruidvat has one; legally a toy → toy-safety testing),
+photo tile (good, but needs print partner + upload flow; keep for later), bike bag (low demand: only 2 NL advertisers).
+
+Sources: Meta Ads Library NL (own scrape, 20 Nov 2026), [Creative.Lighting Velwave](https://creative.lighting/products/velwave-wall-sconce),
+[Lyfairs ripple sconce](https://www.lyfairs.com/products/ripple-rotating-ambient-wall-sconce), [Vidir ripple lamp](https://vidirlighting.com/products/ripple-rotating-wall-lamp),
+[Action oplaadbare wandlamp](https://www.action.com/nl-nl/p/3216786/oplaadbare-wandlamp/), [Lotgenootje at bol](https://www.bol.com/nl/nl/p/lotgenootje-verzwaringsknuffel-beer-45cm-2kg-verzwaarde-knuffel-weighted-stuffed-animal-sensorisch-speelgoed-zware-knuffel-anxiety-plushie/9300000170668418/),
+[Alibaba water-wave lamps](https://www.alibaba.com/showroom/water-wave-lamp.html)
+
 ## Round 2 (20 Nov 2026) — winner to validate: 2-in-1 bike bag + backpack
 
 | Product | Score | Reason |
