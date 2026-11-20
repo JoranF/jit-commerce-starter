@@ -18,5 +18,6 @@ separate npm package.
 - Checks: `pnpm --filter @dtc/backend build`, `pnpm --filter @dtc/storefront build`,
   `cd apps/storefront && npx tsc --noEmit` (0 fouten verwacht), `cd analytics && npm test`.
 
-E-commerce skills staan in `.claude/skills/` (o.a. medusa-development, ab-testing-ecommerce,
+E-commerce skills staan in `.claude/skills/` (o.a. product-research-nl, frontend-design, webapp-testing,
+medusa-development, ab-testing-ecommerce,
 conversion-rate-optimization, checkout-flow-optimization, ecommerce-seo, tax-calculation, gdpr-ecommerce).
