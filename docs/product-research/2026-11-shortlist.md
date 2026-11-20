@@ -48,6 +48,24 @@ Risks / to do:
 - [ ] Own brand, own name, own visuals. Do **not** copy Creative.Lighting's name, texts or photos.
 - [ ] Sample → film the light effect yourself (that footage is the ad)
 
+### Supplier check (20 Nov 2026, dropship / no stock)
+
+- **AliExpress**: "ShinyYing Water Ripple Wall Lamp", steel, 180° rotation: **~$63** (list $143,86), few sales ⚠️ unverified (page not reachable from the cloud session).
+- Generic rotating aluminium LED wall lamps *without* ripple effect: $11–19 (different product, don't confuse).
+- **CJ Dropshipping**: no listing found via search. Next step: CJ account → **Sourcing request** with the AliExpress / Creative.Lighting product link; CJ quotes a factory price (usually 1–3 days) and stocks it for dropshipping.
+
+Break-even with the AliExpress price (≈ €58 product incl. shipping, worst case):
+
+| Selling price | €119 | €129 |
+|---|---|---|
+| Ex VAT | €98,35 | €106,61 |
+| − product + shipping | €58 | €58 |
+| − fees/returns (~4%) | €4,80 | €5,20 |
+| + customer shipping (ex VAT) | €4,09 | €4,09 |
+| **Break-even CPA** | **≈ €40** | **≈ €47** |
+
+→ Still workable at €119–129 (competitor ~$150). A CJ quote of $30–40 would push break-even CPA to ≈ €60–70.
+
 Dropped this round: weighted cuddly toy (Lotgenootje already at Albert Heijn/Bol €49–65, Kruidvat has one; legally a toy → toy-safety testing),
 photo tile (good, but needs print partner + upload flow; keep for later), bike bag (low demand: only 2 NL advertisers).
 
