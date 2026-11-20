@@ -33,6 +33,7 @@ Sources, in this order (search the web; mark anything unverified with ⚠️):
 - Meta Ads Library (facebook.com/ads/library, country NL): products with ads that have run
   30+ days = someone is profitable. Many advertisers = proven but crowded.
 - Google Trends with region Netherlands: rising or stable for 12+ months, not a one-week spike.
+- **Check Action, Lidl, Decathlon, Bol FIRST** (kills most gadgets in 1 minute).
 - Supplier catalogues with EU stock (CJ EU warehouse, BigBuy, Spocket, others): confirm the
   warehouse country and the delivery time to NL yourself.
 - Generic "winning products" blog lists only as idea input; they are mostly US-centric and

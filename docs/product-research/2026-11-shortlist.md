@@ -3,7 +3,15 @@
 Made with the `product-research-nl` skill. Status: **ideas to validate, not proven winners.**
 ⚠️ = estimate or not yet verified. Supplier costs are estimates until a supplier quote/sample exists.
 
-## Summary
+## Update 20 Nov 2026 — validation round 1
+
+- **Wake-up light fails rule 5** ("not €9 at Action"): [Action Grundig wake-up light €9,95](https://www.action.com/nl-be/p/3223164/grundig-wake-up-light-met-wekker/).
+  China wholesale is $9–19 ([made-in-china](https://www.made-in-china.com/products-search/hot-china-products/Wholesale_Sunrise_Alarm_Clock.html), [clockwholesale](https://clockwholesale.com/)), but no EU-warehouse supplier was found; marketplace sellers ship from China (~€28 on [OnBuy](https://www.onbuy.com/ie/p/sunrise-simulation-alarms-clock-led-wake-up-light~p189167600/)).
+- **Meta Ads Library could not be checked** from the cloud session (facebook.com not on the network allowlist). Do it by hand.
+- Heated apparel does sell at good prices in NL/BE (e.g. a G-Heat heated hoodie at €83,93 at Decathlon BE) → heated gloves move up to #1 to validate.
+- Lesson for the skill: check Action/Lidl/Decathlon **first**; generic gadgets usually lose there.
+
+## Summary (original, superseded by the update above)
 
 First test candidate: a **design wake-up light** ("lichtwekker") for dark Dutch winter mornings,
 sold Dec–Feb at about €64,95. It has a strong local angle, a price that can pay for a Meta sale,
@@ -15,7 +23,7 @@ electrical product (CE, WEEE, GPSR), and bol.com has cheaper generic ones (€30
 
 | Product | Score | Reason |
 |---|---|---|
-| Design wake-up light (lichtwekker) | 15 ⚠️ | Dark mornings Dec–Feb; €55–70 gap between generics and Philips; demo video is easy; electrical compliance |
+| Design wake-up light (lichtwekker) | ~~15~~ **rejected as dropship** | Action sells a Grundig wake-up light for €9,95 (BE webshop, Nov 2026). Only viable as an own-design product with own stock |
 | Padel accessory bundle (bag + overgrips + balls) | 13 ⚠️ | Padel/pickleball growing in NL; brandable; no battery; €49 bag alone is too thin, bundle at €69+ needed |
 | Heated cycling gloves / insoles | 12 ⚠️ | Very NL (cycling in the cold); lithium batteries = shipping + compliance; sizing returns |
 | Posture corrector (January) | 11 ⚠️ | "New year, new me" demand; crowded on Meta; cheap at marketplaces |
