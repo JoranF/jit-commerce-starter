@@ -3,6 +3,62 @@
 Made with the `product-research-nl` skill. Status: **ideas to validate, not proven winners.**
 ⚠️ = estimate or not yet verified. Supplier costs are estimates until a supplier quote/sample exists.
 
+## Round 2 (20 Nov 2026) — winner to validate: 2-in-1 bike bag + backpack
+
+| Product | Score | Reason |
+|---|---|---|
+| **2-in-1 fietstas + rugzak (waterproof, ~25 L, laptop sleeve)** | **17/20 ⚠️** | Not at Action; Lidl DE only a basic €14,99 bike backpack; brands are €46–200; year-round NL need (rain, e-bike commuters); 3-second demo; no sizes, no battery |
+| Heated cycling gloves | 14 ⚠️ | Decathlon only has €150–250 brands (Sealskinz, G-Heat) → gap at ~€69; but sizes + lithium shipping |
+| Cat water fountain (+ filter refills) | 11 | Kruidvat €24,99, bol €24–99: low price anchor |
+| Dog drying robe | 10 | €20–55, dog sizes |
+| Electric heated throw / heat cushion | rejected | Action €29,95–29,99 |
+| Matcha set | rejected | Action €6,95 |
+
+### Competitor price ladder (NL/BE)
+
+- Lidl Crivit bike backpack (DE, Aug 2026): €14,99, basic
+- Basil Flex €46–62 · **Basil SoHo Nordlicht 2-in-1 €89,95** (closest competitor)
+- ANWB 2-in-1 €54,99 (members) / €64,99 · Decathlon marketplace 2-in-1 €59,99–89,99 · Valkental €67,99
+- Vaude Cycle 28 / Aqua Transformer €115–140 · Ortlieb Vario €155–200
+
+**Position:** €79,95, i.e. design + real waterproofing (IPX rating on the page) at a price under Basil SoHo
+and well under Vaude/Ortlieb. Name the store around Dutch rain/commuting, not around "gadget".
+
+### Break-even at €79,95
+
+| | |
+|---|---|
+| Ex VAT (÷1,21) | €66,08 |
+| Product ⚠️ (Alibaba ~$20–24 at 1–100 pcs) | €21 |
+| Inbound freight per unit ⚠️ | €4 |
+| Shipping to customer (PostNL parcel) ⚠️ | €5 |
+| Fees + returns allowance (~4%) | €3,20 |
+| Customer pays €4,95 shipping (ex VAT) | +€4,09 |
+| **Break-even CPA** | **≈ €37** (NL Meta e-com CPA ≈ €30–45) |
+| Break-even ROAS | ≈ 2,2 |
+
+Upsells: rain cover, reflective strap, laptop sleeve → raises order value without more ad cost.
+
+### Supplier reality
+
+No EU-warehouse dropship supplier found. Realistic routes:
+1. **Test with a small stock order**: 10–30 pcs from Alibaba (e.g. Rhinowalk-type, MOQ 1–49 at ~$24) → €300–800, ships to NL in ~2–3 weeks. Logo/custom packaging only from 500 pcs.
+2. Ship-from-China dropship for the first ad test (cheaper, but 7–15 days delivery hurts reviews).
+
+### Still to do
+
+- [ ] Meta Ads Library NL: "fietstas rugzak", "2 in 1 fietstas", "fietsrugzak" (blocked from cloud session; do by hand)
+- [ ] Ask 2–3 Alibaba suppliers: unit price at 20 pcs, real IPX rating/test, EU plug n/a, samples
+- [ ] Order 1–2 samples → water test (shower 5 min), clip system on a Dutch bike rack, photos
+- [ ] Textile labelling (fibre composition) + GPSR manufacturer/EU-responsible-person info on the product page
+
+Sources: [Decathlon 2-in-1](https://www.decathlon.nl/vc/fietstas-en-rugzak-in-een), [ANWB 2-in-1](https://www.anwb.nl/webwinkel/p/260550/anwb-2-in-1-fietstas),
+[Biketotaal fietsrugzakken](https://www.biketotaal.nl/fietsaccessoires/fietstassen/fietsrugzakken), [Mantel Ortlieb Vario](https://www.mantel.com/ortlieb-vario-fietsrugzak),
+[Lidl Crivit Fahrrad-Rucksack](https://www.discounto.de/Angebot/CRIVIT-Fahrrad-Rucksack-10149170/), [Alibaba Rhinowalk](https://www.alibaba.com/product-introduction/Rhinowalk-3-in-1-Multifunctional-cycling_62481364908.html),
+[Action heated blanket](https://id.nl/huis-en-entertainment/huishouden/wonen/met-deze-elektrische-knuffeldeken-zit-je-er-deze-winter-sowieso-warmpjes-bij), [Action matcha set](https://www.action.com/nl-be/p/3225613/excellent-houseware-matcha-set/),
+[Sealskinz heated gloves at Decathlon](https://www.decathlon.nl/p/mp/verwarmde-lange-handschoenen-sealskinz-upwell/abd62082-a66f-4093-9d93-1f182b22431f/c1), [Kruidvat cat fountain](https://www.kruidvat.nl/miro-drinkfontein-kat-waterfontein-katten-fontein-18-liter-fluisterstil-waterdispenser-drinkbak-hond-anti-knoei-extra-drinkfontijn-filters-navulling/p/mp-00084105),
+[RVO Nederland als Fietsland](https://www.rvo.nl/sites/default/files/2026-11/Nederland%20als%20Fietsland.pdf)
+
 ## Update 20 Nov 2026 — validation round 1
 
 - **Wake-up light fails rule 5** ("not €9 at Action"): [Action Grundig wake-up light €9,95](https://www.action.com/nl-be/p/3223164/grundig-wake-up-light-met-wekker/).
