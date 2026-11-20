@@ -34,6 +34,7 @@ const VariantImageGallery = ({
   const searchParams = useSearchParams()
   const [isMounted, setIsMounted] = useState(false)
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate: `?v_id=` may only change the images after hydration
   useEffect(() => setIsMounted(true), [])
 
   const variantId = isMounted ? searchParams.get("v_id") ?? undefined : undefined

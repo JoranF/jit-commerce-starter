@@ -69,6 +69,14 @@ const Shipping: React.FC<ShippingProps> = ({
 
   const isOpen = searchParams.get("step") === "delivery"
 
+  // Clear a stale error when the step opens or closes. Adjusted during render
+  // instead of in an effect: https://react.dev/learn/you-might-not-need-an-effect
+  const [wasOpen, setWasOpen] = useState(isOpen)
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen)
+    setError(null)
+  }
+
   const _shippingMethods = availableShippingMethods?.filter(
     (sm) => (sm as unknown as { service_zone?: { fulfillment_set?: { type?: string; location?: { address: HttpTypes.StoreCartAddress } } } }).service_zone?.fulfillment_set?.type !== "pickup"
   )
@@ -79,7 +87,11 @@ const Shipping: React.FC<ShippingProps> = ({
 
   const hasPickupOptions = !!_pickupMethods?.length
 
+  // Runs after hydration and whenever the server sends new shipping methods:
+  // reset the loading state, fetch calculated prices and show the pickup
+  // options when the selected method is a pickup method.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate, see above
     setIsLoadingPrices(true)
 
     if (_shippingMethods?.length) {
@@ -107,6 +119,7 @@ const Shipping: React.FC<ShippingProps> = ({
     if (_pickupMethods?.find((m) => m.id === shippingMethodId)) {
       setShowPickupOptions(PICKUP_OPTION_ON)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only for new shipping methods, not on every selection
   }, [availableShippingMethods])
 
   const handleEdit = () => {
@@ -146,10 +159,6 @@ const Shipping: React.FC<ShippingProps> = ({
         setIsLoading(false)
       })
   }
-
-  useEffect(() => {
-    setError(null)
-  }, [isOpen])
 
   return (
     <div className="bg-white">

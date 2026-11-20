@@ -35,6 +35,8 @@ const OptionsPicker = ({
 
         if (response?.product_options) {
           setOptions(response.product_options)
+          // Start with every option expanded.
+          setOpenItems(response.product_options.map((option) => option.id))
         }
       } catch (error) {
         console.error("Failed to fetch product options", error)
@@ -43,12 +45,6 @@ const OptionsPicker = ({
 
     fetchOptions()
   }, [])
-
-  useEffect(() => {
-    if (options.length) {
-      setOpenItems(options.map((option) => option.id))
-    }
-  }, [options])
 
   if (!options.length) {
     return null

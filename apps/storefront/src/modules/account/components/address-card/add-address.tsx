@@ -2,7 +2,7 @@
 
 import { Plus } from "@medusajs/icons"
 import { Button, Heading } from "@modules/common/components/ui"
-import { useActionState, useEffect, useState } from "react"
+import { useActionState, useState } from "react"
 
 import { addCustomerAddress } from "@lib/data/customer"
 import useToggleState from "@lib/hooks/use-toggle-state"
@@ -18,31 +18,22 @@ const AddAddress = ({
   region: HttpTypes.StoreRegion
   addresses: HttpTypes.StoreCustomerAddress[]
 }) => {
-  const [successState, setSuccessState] = useState(false)
-  const { state, open, close: closeModal } = useToggleState(false)
+  const { state, open, close } = useToggleState(false)
 
   const [formState, formAction] = useActionState(addCustomerAddress, {
     success: false,
     error: null,
   } as { success: boolean; error: string | null })
 
-  const close = () => {
-    setSuccessState(false)
-    closeModal()
-  }
-
-  useEffect(() => {
-    if (successState) {
+  // Close the modal when a submission succeeds. Adjusted during render instead
+  // of in an effect: https://react.dev/learn/you-might-not-need-an-effect
+  const [prevFormState, setPrevFormState] = useState(formState)
+  if (formState !== prevFormState) {
+    setPrevFormState(formState)
+    if (formState.success) {
       close()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [successState])
-
-  useEffect(() => {
-    if (formState.success) {
-      setSuccessState(true)
-    }
-  }, [formState])
+  }
 
   return (
     <>

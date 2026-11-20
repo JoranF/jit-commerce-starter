@@ -7,7 +7,7 @@ import {
   ListboxOptions,
   Transition,
 } from "@headlessui/react"
-import { Fragment, useEffect, useMemo, useState, useTransition } from "react"
+import { Fragment, useMemo, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import ReactCountryFlag from "react-country-flag"
 
@@ -73,7 +73,6 @@ const LanguageSelect = ({
   locales,
   currentLocale,
 }: LanguageSelectProps) => {
-  const [current, setCurrent] = useState<LanguageOption | undefined>(undefined)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
 
@@ -93,16 +92,11 @@ const LanguageSelect = ({
     return [DEFAULT_OPTION, ...localeOptions]
   }, [locales, currentLocale])
 
-  useEffect(() => {
-    if (currentLocale) {
-      const option = options.find(
+  const current = currentLocale
+    ? options.find(
         (o) => o.code.toLowerCase() === currentLocale.toLowerCase()
-      )
-      setCurrent(option ?? DEFAULT_OPTION)
-    } else {
-      setCurrent(DEFAULT_OPTION)
-    }
-  }, [options, currentLocale])
+      ) ?? DEFAULT_OPTION
+    : DEFAULT_OPTION
 
   const handleChange = (option: LanguageOption) => {
     startTransition(async () => {
@@ -117,13 +111,7 @@ const LanguageSelect = ({
       <Listbox
         as="span"
         onChange={handleChange}
-        defaultValue={
-          currentLocale
-            ? options.find(
-                (o) => o.code.toLowerCase() === currentLocale.toLowerCase()
-              ) ?? DEFAULT_OPTION
-            : DEFAULT_OPTION
-        }
+        defaultValue={current}
         disabled={isPending}
       >
         <ListboxButton className="py-1 w-full">
@@ -132,7 +120,6 @@ const LanguageSelect = ({
             {current && (
               <span className="txt-compact-small flex items-center gap-x-2">
                 {current.countryCode && (
-                  /* @ts-ignore */
                   <ReactCountryFlag
                     svg
                     style={{
@@ -166,7 +153,6 @@ const LanguageSelect = ({
                   className="py-2 hover:bg-gray-200 px-3 cursor-pointer flex items-center gap-x-2"
                 >
                   {o.countryCode ? (
-                    /* @ts-ignore */
                     <ReactCountryFlag
                       svg
                       style={{

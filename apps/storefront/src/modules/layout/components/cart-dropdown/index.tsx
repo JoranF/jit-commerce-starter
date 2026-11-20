@@ -93,13 +93,14 @@ const CartDropdown = ({
 
   const pathname = usePathname()
 
-  // open cart dropdown when modifying the cart items, but only if we're not on the cart page
+  // open cart dropdown when modifying the cart items, but only if we're not on the cart page.
+  // itemRef is only written on the initial load, together with the cart, so totalItems covers it.
   useEffect(() => {
     if (itemRef.current !== totalItems && !pathname.includes("/cart")) {
       timedOpen()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [totalItems, itemRef.current])
+  }, [totalItems])
 
   return (
     <div

@@ -87,6 +87,7 @@ export default function ProductActions({
     const variantId = new URLSearchParams(window.location.search).get("v_id")
     const variant = product.variants?.find((v) => v.id === variantId)
     if (variant) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate: `?v_id=` can only be read after hydration (see above)
       setOptions(optionsAsKeymap(variant.options) ?? {})
     }
     setIsUrlVariantApplied(true)
@@ -111,6 +112,9 @@ export default function ProductActions({
     }
 
     router.replace(pathname + "?" + params.toString())
+    // Sync the URL only when the selection changes: useRouter() can return a new
+    // object after a navigation, which would re-run this effect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- see above
   }, [selectedVariant, isValidVariant, isUrlVariantApplied])
 
   const inStock = useMemo(

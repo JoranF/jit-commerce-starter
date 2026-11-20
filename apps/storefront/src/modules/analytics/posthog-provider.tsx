@@ -4,6 +4,7 @@ import posthog from "posthog-js"
 import { PostHogProvider as PHProvider } from "posthog-js/react"
 import { useEffect, useState } from "react"
 import { VISITOR_COOKIE } from "@lib/analytics/constants"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 const KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY
 
@@ -77,9 +78,9 @@ function ConsentBanner() {
       <p className="text-small-regular text-ui-fg-subtle">
         We gebruiken analytische cookies om de winkel te verbeteren. Weiger je,
         dan meten we alleen anoniem.{" "}
-        <a href="/privacy" className="underline">
+        <LocalizedClientLink href="/privacy" className="underline">
           Privacyverklaring
-        </a>
+        </LocalizedClientLink>
       </p>
       <div className="mt-3 flex gap-2 justify-end">
         <button
