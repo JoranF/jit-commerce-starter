@@ -20,6 +20,12 @@
     "incremental": true,
     "baseUrl": "./src",
     "paths": {
+      "@stores": [
+        "stores/index.ts"
+      ],
+      "@stores/*": [
+        "stores/*"
+      ],
       "@lib/*": [
         "lib/*"
       ],

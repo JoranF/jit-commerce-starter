@@ -21,6 +21,8 @@ RUN corepack enable && corepack prepare pnpm@10.11.1 --activate && apk add --no-
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /repo/apps/backend/.medusa/server ./
+# Productfoto's voor src/scripts/stores/setup-store (niet-TS bestanden zitten niet in de build)
+COPY apps/backend/src/scripts/assets ./src/scripts/assets
 RUN pnpm install --prod --ignore-workspace && pnpm store prune
 COPY apps/backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

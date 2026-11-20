@@ -1,5 +1,7 @@
 "use client"
 
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
+
 import { Heading, Text, clx } from "@modules/common/components/ui"
 
 import PaymentButton from "../payment-button"
@@ -32,7 +34,7 @@ const Review = ({ cart }: { cart: HttpTypes.StoreCart }) => {
             }
           )}
         >
-          Review
+          Controleren
         </Heading>
       </div>
       {isOpen && previousStepsCompleted && (
@@ -40,10 +42,13 @@ const Review = ({ cart }: { cart: HttpTypes.StoreCart }) => {
           <div className="flex items-start gap-x-1 w-full mb-6">
             <div className="w-full">
               <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                By clicking the Place Order button, you confirm that you have
-                read, understand and accept our Terms of Use, Terms of Sale and
-                Returns Policy and acknowledge that you have read Medusa
-                Store&apos;s Privacy Policy.
+                Door op &lsquo;Bestellen en betalen&rsquo; te klikken, ga je akkoord met
+                onze{" "}
+                <LocalizedClientLink href="/terms" className="underline">algemene voorwaarden</LocalizedClientLink>
+                {" "}en ons{" "}
+                <LocalizedClientLink href="/returns" className="underline">retourbeleid</LocalizedClientLink>
+                . Hoe we met je gegevens omgaan, lees je in de{" "}
+                <LocalizedClientLink href="/privacy" className="underline">privacyverklaring</LocalizedClientLink>.
               </Text>
             </div>
           </div>

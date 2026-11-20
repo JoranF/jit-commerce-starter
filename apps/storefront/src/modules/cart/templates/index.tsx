@@ -2,6 +2,7 @@ import ItemsTemplate from "./items"
 import Summary from "./summary"
 import EmptyCartMessage from "../components/empty-cart-message"
 import SignInPrompt from "../components/sign-in-prompt"
+import { store } from "@stores"
 import Divider from "@modules/common/components/divider"
 import { HttpTypes } from "@medusajs/types"
 
@@ -20,7 +21,7 @@ const CartTemplate = ({
             <div className="flex flex-col bg-white py-6 gap-y-6">
               {!customer && (
                 <>
-                  <SignInPrompt />
+                  {store.catalog && <SignInPrompt />}
                   <Divider />
                 </>
               )}

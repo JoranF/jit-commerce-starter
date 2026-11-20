@@ -14,9 +14,18 @@ separate npm package.
 - Prijzen zijn inclusief btw (price preference op `currency_code=eur`, zie `setTaxInclusive`).
 - `initial-data-seed.ts` moet idempotent blijven (draait als migration script).
 - Teksten richting klant in het Nederlands; prijzen via `nl-NL`.
+- Dropshipping: module `src/modules/cj-dropshipping` (CJ API), alleen actief met `CJ_API_KEY`. Koppeling per variant via
+  metadata `cj_vid`; status staat in `order.metadata.cj_*`. Tests: `pnpm run test:unit -- src/modules/cj-dropshipping`.
+- Winkels (store factory): merk/teksten/beelden per winkel in `apps/storefront/src/stores/<id>.ts`,
+  product en levertijden in `apps/backend/src/scripts/stores/definitions.ts`; kiezen met `STORE_ID`.
+  Zie `apps/storefront/src/stores/README.md`. Termijnen in teksten via `{levertijd}` e.d., nooit hardcoded.
+- Animaties in de storefront: Motion (`motion`, voorheen Framer Motion) via `@modules/common/components/motion`
+  (`Reveal`, `Stagger`/`StaggerItem`, `m`). Spaarzaam, alleen transform/opacity; "minder beweging" wordt gerespecteerd.
+- Beelden en video (productfoto's, sfeer, advertenties): fal.ai via de MCP-connector. Genereer pas na akkoord op de kosten.
 - Deploy: `docker-compose.yml` (Dokploy Compose), build-context = repo-root. `NEXT_PUBLIC_*` zijn build args.
 - Checks: `pnpm --filter @dtc/backend build`, `pnpm --filter @dtc/storefront build`,
   `cd apps/storefront && npx tsc --noEmit` (0 fouten verwacht), `cd analytics && npm test`.
 
-E-commerce skills staan in `.claude/skills/` (o.a. medusa-development, ab-testing-ecommerce,
+E-commerce skills staan in `.claude/skills/` (o.a. product-research-nl, frontend-design, webapp-testing,
+medusa-development, ab-testing-ecommerce,
 conversion-rate-optimization, checkout-flow-optimization, ecommerce-seo, tax-calculation, gdpr-ecommerce).

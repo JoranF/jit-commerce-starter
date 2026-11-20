@@ -8,6 +8,8 @@ import X from "@modules/common/icons/x"
 
 import { getProductPrice } from "@lib/util/get-product-price"
 import OptionSelect from "./option-select"
+import { store } from "@stores"
+import { brandButton } from "./brand-button"
 import { HttpTypes } from "@medusajs/types"
 import { isSimpleProduct } from "@lib/util/product"
 
@@ -112,7 +114,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                   <span>
                     {variant
                       ? Object.values(options).join(" / ")
-                      : "Select Options"}
+                      : "Kies een uitvoering"}
                   </span>
                   <ChevronDown />
                 </div>
@@ -121,15 +123,15 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                 type="button"
                 onClick={handleAddToCart}
                 disabled={!inStock || !variant}
-                className="w-full"
+                className={`w-full ${brandButton}`}
                 isLoading={isAdding}
                 data-testid="mobile-cart-button"
               >
                 {!variant
-                  ? "Select variant"
+                  ? "Kies een uitvoering"
                   : !inStock
-                  ? "Out of stock"
-                  : "Add to cart"}
+                  ? "Uitverkocht"
+                  : store.buy.ctaText.control}
               </Button>
             </div>
           </div>

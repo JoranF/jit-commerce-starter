@@ -3,9 +3,95 @@ import { listCollections } from "@lib/data/collections";
 import { Text, clx } from "@modules/common/components/ui";
 
 import LocalizedClientLink from "@modules/common/components/localized-client-link";
-import MedusaCTA from "@modules/layout/components/medusa-cta";
+import { store } from "@stores";
+
+/** Footer voor een winkel met één product. Bedrijfsgegevens uit de winkelconfig. */
+function BrandFooter() {
+  const { company } = store;
+  const details = [
+    company.legalName,
+    company.address,
+    company.kvk && `KvK ${company.kvk}`,
+    company.vat && `Btw ${company.vat}`,
+  ].filter(Boolean) as string[];
+  const link =
+    "rounded-sm transition-colors hover:text-brand-light focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent";
+  const columns: { title: string; links: { href: string; label: string }[] }[] = [
+    {
+      title: "Winkel",
+      links: [
+        { href: "/#lamp", label: "De lamp" },
+        { href: "/#vragen", label: "Vragen" },
+      ],
+    },
+    {
+      title: "Service",
+      links: [
+        { href: "/shipping", label: "Verzending" },
+        { href: "/returns", label: "Retourneren" },
+        { href: "/contact", label: "Contact" },
+      ],
+    },
+    {
+      title: "Voorwaarden",
+      links: [
+        { href: "/terms", label: "Algemene voorwaarden" },
+        { href: "/privacy", label: "Privacy" },
+      ],
+    },
+  ];
+
+  return (
+    <footer className="relative isolate overflow-hidden bg-brand-dark text-brand-light/70">
+      {store.theme.texture && (
+        // Merkmotief, heel zacht.
+        <div
+          aria-hidden
+          className="absolute inset-0 -z-10 opacity-[0.07] [background-size:420px]"
+          style={{ backgroundImage: `url(${store.theme.texture})` }}
+        />
+      )}
+      <div className="content-container grid gap-12 py-20 small:grid-cols-12">
+        <div className="small:col-span-5">
+          <LocalizedClientLink
+            href="/"
+            className={`font-display text-4xl leading-none text-brand-light ${link}`}
+          >
+            {store.name}
+          </LocalizedClientLink>
+          <p className="mt-4 max-w-[32ch] text-base">{store.tagline}</p>
+        </div>
+        <nav aria-label="Footer" className="grid grid-cols-2 gap-10 xsmall:grid-cols-3 small:col-span-7">
+          {columns.map((col) => (
+            <div key={col.title}>
+              <h2 className="text-sm font-medium text-brand-light">{col.title}</h2>
+              <ul className="mt-4 flex flex-col gap-3 text-base">
+                {col.links.map((l) => (
+                  <li key={l.href}>
+                    <LocalizedClientLink href={l.href} className={link}>
+                      {l.label}
+                    </LocalizedClientLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
+      </div>
+      <div className="content-container flex flex-col gap-2 border-t border-brand-light/10 py-8 text-sm xsmall:flex-row xsmall:justify-between">
+        <p>
+          © {new Date().getFullYear()} {company.legalName || store.name}
+        </p>
+        {details.length > 0 && <p>{details.join(", ")}</p>}
+      </div>
+    </footer>
+  );
+}
 
 export default async function Footer() {
+  if (!store.catalog) {
+    return <BrandFooter />;
+  }
   const [{ collections }, productCategories] = await Promise.all([
     listCollections({ fields: "id,handle,title" }),
     listCategories({
@@ -23,7 +109,7 @@ export default async function Footer() {
               href="/"
               className="txt-compact-xlarge-plus text-ui-fg-subtle hover:text-ui-fg-base uppercase"
             >
-              Medusa Store
+              {store.name}
             </LocalizedClientLink>
           </div>
           <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
@@ -205,9 +291,8 @@ export default async function Footer() {
         </div>
         <div className="flex w-full mb-16 justify-between text-ui-fg-muted">
           <Text className="txt-compact-small">
-            © {new Date().getFullYear()} Medusa Store. All rights reserved.
+            © {new Date().getFullYear()} {store.name}
           </Text>
-          <MedusaCTA />
         </div>
       </div>
     </footer>

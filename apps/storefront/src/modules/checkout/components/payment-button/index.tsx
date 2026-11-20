@@ -171,7 +171,7 @@ const StripePaymentButton = ({
         isLoading={submitting}
         data-testid={dataTestId}
       >
-        Bestelling plaatsen
+        Bestellen en betalen
       </Button>
       <ErrorMessage
         error={errorMessage}
@@ -234,7 +234,7 @@ const MolliePaymentButton = ({
         size="large"
         data-testid={dataTestId}
       >
-        Afrekenen en betalen
+        Bestellen en betalen
       </Button>
       <ErrorMessage
         error={errorMessage}
@@ -273,7 +273,7 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
         size="large"
         data-testid="submit-order-button"
       >
-        Bestelling plaatsen
+        Bestellen en betalen
       </Button>
       <ErrorMessage
         error={errorMessage}

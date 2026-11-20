@@ -105,7 +105,7 @@ const AdyenPaymentButton = ({
         onError: (error) => {
           // Closing a wallet's payment sheet isn't an error worth showing.
           if (error.name !== "CANCEL") {
-            setErrorMessage("Could not process the payment. Please try again.")
+            setErrorMessage("De betaling is niet gelukt. Probeer het opnieuw.")
           }
         },
       })
@@ -130,7 +130,7 @@ const AdyenPaymentButton = ({
     }
 
     mount().catch(() => {
-      setErrorMessage("Could not load the payment methods.")
+      setErrorMessage("De betaalmethodes konden niet worden geladen.")
     })
 
     return () => {
@@ -144,7 +144,7 @@ const AdyenPaymentButton = ({
   if (notReady) {
     return (
       <Button disabled size="large" data-testid={dataTestId}>
-        Place order
+        Bestellen en betalen
       </Button>
     )
   }

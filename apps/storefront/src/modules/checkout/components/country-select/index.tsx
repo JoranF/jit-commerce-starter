@@ -5,12 +5,15 @@ import NativeSelect, {
 } from "@modules/common/components/native-select"
 import { HttpTypes } from "@medusajs/types"
 
+/** Landnamen in het Nederlands (Medusa levert ze in het Engels). */
+const regionNames = new Intl.DisplayNames(["nl"], { type: "region" })
+
 const CountrySelect = forwardRef<
   HTMLSelectElement,
   NativeSelectProps & {
     region?: HttpTypes.StoreRegion
   }
->(({ placeholder = "Country", region, defaultValue, ...props }, ref) => {
+>(({ placeholder = "Land", region, defaultValue, ...props }, ref) => {
   const innerRef = useRef<HTMLSelectElement>(null)
 
   useImperativeHandle<HTMLSelectElement | null, HTMLSelectElement | null>(
@@ -25,7 +28,8 @@ const CountrySelect = forwardRef<
 
     return region.countries?.map((country) => ({
       value: country.iso_2,
-      label: country.display_name,
+      label:
+        (country.iso_2 && regionNames.of(country.iso_2.toUpperCase())) || country.display_name,
     }))
   }, [region])
 

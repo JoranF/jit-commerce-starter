@@ -110,3 +110,76 @@
     @apply text-[32px] leading-[44px] font-semibold;
   }
 }
+
+/* ── Merk: "de lamp gaat aan" (hero) ─────────────────────────────────────────
+ * Eén moment bij het laden: de kamer is donker en het licht spreidt zich vanuit
+ * de lamp over de muur. Pure CSS, dus het start bij de eerste paint, ook zonder
+ * JavaScript. De donkere laag bedekt altijd de hele hero; alleen de straal van
+ * de lichtcirkel (--lamp-r, een geregistreerde eigenschap) groeit.
+ * --lx/--ly = positie van de lamp. Zonder @property-ondersteuning springt de
+ * straal in één keer; het uitfaden werkt dan nog steeds. */
+@property --lamp-r {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+.lamp-on {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.lamp-on::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at var(--lx, 50%) var(--ly, 40%),
+    rgb(var(--brand-dark) / 0) 0,
+    rgb(var(--brand-dark) / 0) calc(var(--lamp-r) * 0.3),
+    rgb(var(--brand-dark) / 0.9) var(--lamp-r)
+  );
+  opacity: 0;
+  animation: lamp-on 3.2s cubic-bezier(0.45, 0, 0.25, 1) 0.15s both;
+}
+.lamp-on::after {
+  content: "";
+  position: absolute;
+  left: var(--lx, 50%);
+  top: var(--ly, 40%);
+  width: 60vmax;
+  height: 60vmax;
+  translate: -50% -50%;
+  background: radial-gradient(circle closest-side, rgb(var(--brand-accent) / 0.35), rgb(var(--brand-accent) / 0) 70%);
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: lamp-glow 3.2s ease-out 0.15s both;
+}
+@keyframes lamp-on {
+  0% { --lamp-r: 5vmax; opacity: 1; }
+  30% { --lamp-r: 18vmax; opacity: 1; }
+  75% { opacity: 0.45; }
+  100% { --lamp-r: 150vmax; opacity: 0; }
+}
+@keyframes lamp-glow {
+  0% { opacity: 0; transform: scale(0.4); }
+  35% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.1); }
+}
+
+/* Tekst komt rustig binnen, net na het licht. */
+.rise {
+  animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--d, 0s) both;
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+}
+
+html { scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .lamp-on::before,
+  .lamp-on::after,
+  .rise { animation: none; }
+}
