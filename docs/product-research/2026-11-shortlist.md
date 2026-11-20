@@ -47,7 +47,7 @@ No EU-warehouse dropship supplier found. Realistic routes:
 
 ### Still to do
 
-- [ ] Meta Ads Library NL: "fietstas rugzak", "2 in 1 fietstas", "fietsrugzak" (blocked from cloud session; do by hand)
+- [x] Meta Ads Library NL (checked by hand, 20 Nov 2026): **2 advertisers**, ads started **27 Feb 2026** (~9 months running) and **19 Oct 2026** (~1 month). Low competition, and the long-running ad suggests someone sells this profitably. Still to note: advertiser names, price and creative type.
 - [ ] Ask 2–3 Alibaba suppliers: unit price at 20 pcs, real IPX rating/test, EU plug n/a, samples
 - [ ] Order 1–2 samples → water test (shower 5 min), clip system on a Dutch bike rack, photos
 - [ ] Textile labelling (fibre composition) + GPSR manufacturer/EU-responsible-person info on the product page
