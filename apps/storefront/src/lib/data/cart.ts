@@ -364,7 +364,8 @@ async function autoSelectOnlyShippingOption(): Promise<boolean> {
     if (options?.length !== 1) return false
     const [only] = options
     const isPickup =
-      (only as any).service_zone?.fulfillment_set?.type === "pickup"
+      (only as { service_zone?: { fulfillment_set?: { type?: string } } })
+        .service_zone?.fulfillment_set?.type === "pickup"
     if (isPickup || only.price_type === "calculated") return false
     await setShippingMethod({ cartId, shippingMethodId: only.id })
     return true

@@ -159,7 +159,7 @@ export default function ProductActions({
         quantity: 1,
         countryCode,
       })
-    } catch (e) {
+    } catch {
       setAddError("Dat lukte niet. Probeer het nog een keer.")
       setIsAdding(false)
       return null
