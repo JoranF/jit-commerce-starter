@@ -17,7 +17,7 @@ import {
 } from "@modules/common/components/ui"
 import { HttpTypes } from "@medusajs/types"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useState } from "react"
 
 const Payment = ({
   cart,
@@ -47,6 +47,14 @@ const Payment = ({
   const pathname = usePathname()
 
   const isOpen = searchParams.get("step") === "payment"
+
+  // Clear a stale error when the step opens or closes. Adjusted during render
+  // instead of in an effect: https://react.dev/learn/you-might-not-need-an-effect
+  const [wasOpen, setWasOpen] = useState(isOpen)
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen)
+    setError(null)
+  }
 
   const setPaymentMethod = async (method: string) => {
     setError(null)
@@ -110,10 +118,6 @@ const Payment = ({
       setIsLoading(false)
     }
   }
-
-  useEffect(() => {
-    setError(null)
-  }, [isOpen])
 
   return (
     <div className="bg-white">

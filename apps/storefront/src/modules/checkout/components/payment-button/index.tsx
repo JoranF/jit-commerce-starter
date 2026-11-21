@@ -184,6 +184,12 @@ const StripePaymentButton = ({
   )
 }
 
+/** De velden uit de Mollie payment session data waar de checkout-URL in staat. */
+type MollieSessionData = {
+  _links?: { checkout?: { href?: string } }
+  checkoutUrl?: string
+}
+
 /**
  * Mollie: de payment session bevat de Mollie checkout-URL. We sturen de klant
  * daarheen; na betalen komt hij terug op /api/mollie/return (MOLLIE_REDIRECT_URL),
@@ -205,7 +211,7 @@ const MolliePaymentButton = ({
   const session = cart.payment_collection?.payment_sessions?.find((s) =>
     isMollie(s.provider_id)
   )
-  const data = (session?.data ?? {}) as any
+  const data = (session?.data ?? {}) as MollieSessionData
   const checkoutUrl: string | undefined =
     data?._links?.checkout?.href ?? data?.checkoutUrl
 

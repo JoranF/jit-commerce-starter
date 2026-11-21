@@ -80,16 +80,19 @@ const ShippingAddress = ({
     }
   }
 
+  // Deliberately runs after hydration and whenever the server sends a fresh
+  // cart: fill the form from the cart, or the customer's email if it has none.
   useEffect(() => {
     // Ensure cart is not null and has a shipping_address before setting form data
     if (cart && cart.shipping_address) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate, see above
       setFormAddress(cart?.shipping_address, cart?.email)
     }
 
     if (cart && !cart.email && customer?.email) {
       setFormAddress(undefined, customer.email)
     }
-  }, [cart]) // Add cart as a dependency
+  }, [cart, customer?.email]) // Add cart as a dependency
 
   const handleChange = (
     e: React.ChangeEvent<

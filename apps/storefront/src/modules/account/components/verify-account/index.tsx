@@ -11,7 +11,10 @@ type VerificationState = "verifying" | "success" | "error"
 const VerifyAccount = () => {
   const searchParams = useSearchParams()
   const token = searchParams.get("token")
-  const [state, setState] = useState<VerificationState>("verifying")
+  // Without a token there is nothing to verify, so that link is invalid from the start.
+  const [state, setState] = useState<VerificationState>(() =>
+    token ? "verifying" : "error"
+  )
   // Guard against the effect running twice in React Strict Mode, which would
   // consume the single-use token before the customer sees the result.
   const confirmed = useRef(false)
@@ -23,7 +26,6 @@ const VerifyAccount = () => {
     confirmed.current = true
 
     if (!token) {
-      setState("error")
       return
     }
 

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useActionState } from "react";
+import React, { useActionState } from "react";
 
 import Input from "@modules/common/components/input"
 
@@ -37,9 +37,13 @@ const ProfileEmail: React.FC<MyInformationProps> = ({ customer }) => {
     setSuccessState(false)
   }
 
-  useEffect(() => {
+  // Reflect each new form result. Adjusted during render instead of in an
+  // effect: https://react.dev/learn/you-might-not-need-an-effect
+  const [prevState, setPrevState] = React.useState(state)
+  if (state !== prevState) {
+    setPrevState(state)
     setSuccessState(state.success)
-  }, [state])
+  }
 
   return (
     <form action={formAction} className="w-full">

@@ -1,6 +1,6 @@
 "use client"
 
-import Link from "next/link"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import posthog from "posthog-js"
 import { useEffect, useState } from "react"
 import { getConsent, onConsent, setConsent } from "./consent"
@@ -51,9 +51,9 @@ export function ConsentBanner() {
           We gebruiken cookies om de winkel te verbeteren
           {META_PIXEL_ID ? " en onze advertenties te meten" : ""}. Weiger je,
           dan meten we alleen anoniem.{" "}
-          <Link href="/privacy" className="underline">
+          <LocalizedClientLink href="/privacy" className="underline">
             Privacy
-          </Link>
+          </LocalizedClientLink>
         </p>
         <div className="flex shrink-0 gap-2">
           <button
