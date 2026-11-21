@@ -66,6 +66,24 @@ Break-even with the AliExpress price (≈ €58 product incl. shipping, worst ca
 
 → Still workable at €119–129 (competitor ~$150). A CJ quote of $30–40 would push break-even CPA to ≈ €60–70.
 
+### Update 21 Nov 2026 — exact AliExpress listing found
+
+Listing: https://www.aliexpress.com/item/1005013037736889.html (Solo and Duo). Price seen by the user: **≈ €40** ⚠️
+(not yet clear if shipping is included; AliExpress prices for NL usually already include 21% VAT).
+
+| Selling price | €99 | €119 | €129 |
+|---|---|---|---|
+| Ex VAT | €81,82 | €98,35 | €106,61 |
+| − product + shipping (€40) | €40 | €40 | €40 |
+| − fees/returns (~4%) | €4,00 | €4,80 | €5,20 |
+| + customer shipping (ex VAT) | €4,09 | €4,09 | €4,09 |
+| **Break-even CPA** | **≈ €42** | **≈ €58** | **≈ €65** |
+
+If shipping comes on top (≈ €45 total), subtract about €5 from each break-even CPA.
+
+Risk: customers can find the same lamp for €40 (e.g. with Google Lens). The €119 has to be earned with fast delivery,
+Dutch service, an easy return and own photos/brand — not with the product alone.
+
 Dropped this round: weighted cuddly toy (Lotgenootje already at Albert Heijn/Bol €49–65, Kruidvat has one; legally a toy → toy-safety testing),
 photo tile (good, but needs print partner + upload flow; keep for later), bike bag (low demand: only 2 NL advertisers).
 
