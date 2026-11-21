@@ -26,7 +26,7 @@ instead of checking competition at the end. Tool: `scripts/ads-library/`.
   (EU transparency data, 20 Nov 2026). Audience skews 55+ (e.g. BE men 65+ ≈ 25k on one ad).
 - **Not at Action:** Action sells a basic LED disc wall lamp (€7,95). Different product.
 - **Price ladder:** Creative.Lighting ~$150 (sale from $300), Duo $190; designer "ripple" sconces $269–645.
-- **Looks great on its own:** the moving light pattern IS the video ad. Perfect for fal (image-to-video) and a one-product store.
+- **Looks great on its own:** the light pattern IS the video ad. (21 Nov: the pattern is **still**; it only moves when you turn the head by hand. Ads must not show it moving by itself.) Perfect for fal (image-to-video) and a one-product store.
 - **Factory price unknown ⚠️:** generic ripple projectors are $3–85 on Alibaba; the aluminium wall version needs a quote.
 
 Break-even (estimate ⚠️, product €35 + shipping €7 fragile parcel):
