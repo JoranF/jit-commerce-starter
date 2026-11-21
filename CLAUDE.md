@@ -22,7 +22,7 @@ separate npm package.
 - Animaties in de storefront: Motion (`motion`, voorheen Framer Motion) via `@modules/common/components/motion`
   (`Reveal`, `Stagger`/`StaggerItem`, `m`). Spaarzaam, alleen transform/opacity; "minder beweging" wordt gerespecteerd.
 - Beelden en video (productfoto's, sfeer, advertenties): fal.ai via de MCP-connector. Genereer pas na akkoord op de kosten.
-- Deploy: `docker-compose.yml` (Dokploy Compose), build-context = repo-root. `NEXT_PUBLIC_*` zijn build args.
+- Deploy: Dokploy met losse services per winkel (`<id>-db`, `<id>-redis`, `<id>-backend`, `<id>-storefront`), start-first updates + healthchecks; zie README. `docker-compose.yml` = lokaal/één host. Build-context = repo-root, `NEXT_PUBLIC_*` zijn build args.
 - Checks: `pnpm --filter @dtc/backend build`, `pnpm --filter @dtc/storefront build`,
   `cd apps/storefront && npx tsc --noEmit` (0 fouten verwacht), `cd analytics && npm test`.
 

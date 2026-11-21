@@ -1,15 +1,7 @@
-# Productie-stack voor Dokploy (Compose-service) of elke Docker-host.
-#
-# In Dokploy:
-#   1. Create Service → Compose → Git: JoranF/jit-commerce-starter, branch main, path ./docker-compose.yml
-#   2. Environment: plak de inhoud van .env.production.example en vul in
-#   3. Domains: storefront → poort 8000 (bv. shop.joranit.com)
-#               backend    → poort 9000 (bv. api.shop.joranit.com)  — HTTPS aan
-#   4. Deploy
-#
-# Dokploy: zet "Isolated Deployment" aan (Advanced). Dan krijgt deze stack een eigen netwerk;
-# op het gedeelde dokploy-network botsen namen als `postgres` met andere stacks.
-# Lokaal testen zonder Dokploy: docker compose up --build
+# Hele stack in één keer: lokaal testen of een losse Docker-host.
+#   docker compose up --build
+# Op Dokploy draaien db, redis, backend en storefront als losse services (zie README →
+# "Live zetten op Dokploy"), zodat de winkel online blijft als de backend update.
 
 services:
   postgres:

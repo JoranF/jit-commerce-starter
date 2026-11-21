@@ -10,7 +10,7 @@ Gebouwd op de officiële [Medusa DTC Starter](https://github.com/medusajs/dtc-st
 | Betalingen | Mollie: iDEAL, Bancontact, creditcard, PayPal, Apple Pay | plugin in backend |
 | Analytics + A/B-tests | PostHog (EU-cloud of zelf gehost) | storefront + backend |
 | Automatisering | Dashboards, weekrapport, A/B-evaluatie, AI-testideeën | `analytics/` |
-| Deploy | Docker Compose → Dokploy | `docker-compose.yml` |
+| Deploy | Dokploy: losse services (db, redis, backend, storefront) | README → Live zetten |
 | Claude Code skills | 24 e-commerce skills (CRO, A/B, SEO, btw, Medusa…) | `.claude/skills/` |
 
 ## Wat er al geregeld is
@@ -86,24 +86,41 @@ Afrekenen lokaal: kies **Testbetaling (handmatig)**. Geen Docker? Zet je eigen `
 `apps/backend/.env` (wordt bij de eerste run aangemaakt) en gebruik `pnpm setup:local --no-docker`.
 `setup:local` is idempotent: opnieuw draaien kan altijd.
 
-## Live zetten op Dokploy
+## Live zetten op Dokploy (losse services)
 
-1. **DNS**: A-records voor bv. `shop.jouwdomein.nl` en `api.shop.jouwdomein.nl` → je server.
-2. **Dokploy** → Project → *Create Service* → **Compose**
-   - Provider: GitHub → `JoranF/jit-commerce-starter`, branch `main`, compose path `./docker-compose.yml`
-3. **Environment**: plak `.env.production.example`, vul in. Secrets: `openssl rand -hex 32`, key: `echo pk_$(openssl rand -hex 32)`.
-4. **Domains**:
-   - service `storefront`, poort **8000**, host `shop.jouwdomein.nl`, HTTPS (Let's Encrypt)
-   - service `backend`, poort **9000**, host `api.shop.jouwdomein.nl`, HTTPS
-5. **Deploy**. De eerste start draait migraties, seedt de demo-winkel en maakt je admin-account aan.
-6. Admin: `https://api.shop.jouwdomein.nl/app`
+Op Dokploy draait elke winkel als **vier losse services** in één project. Zo kan de backend
+updaten terwijl de winkel online blijft, en bouwt een push alleen wat veranderd is.
 
-> `NEXT_PUBLIC_*`-waarden (publishable key, backend-URL, PostHog key, winkel-URL) worden tijdens de build in de storefront gebakken. Wijzig je die, dan moet je opnieuw deployen. De storefront praat via de **publieke** backend-URL met Medusa, dus `MEDUSA_BACKEND_URL` moet van buitenaf bereikbaar zijn.
+| Service | Type | Bron | Domein |
+|---|---|---|---|
+| `<id>-db` | Postgres 16 (Dokploy database) | — | geen (intern) |
+| `<id>-redis` | Redis 7 (Dokploy database) | — | geen (intern) |
+| `<id>-backend` | Application, Dockerfile `apps/backend/Dockerfile`, context `.` | watch: `apps/backend/**` | `api…` → poort **9000** |
+| `<id>-storefront` | Application, Dockerfile `apps/storefront/Dockerfile`, context `.` | watch: `apps/storefront/**` | winkel → poort **8000** |
+
+Per application (Advanced → Swarm):
+- **Health check**: backend `wget -qO- http://127.0.0.1:9000/health`, storefront `…:8000/api/health`
+- **Update config**: `Order: start-first`, `FailureAction: rollback` → de nieuwe versie start naast de
+  oude en neemt pas over als hij gezond is; faalt hij, dan blijft de oude draaien.
+- Backend: volume `/app/static` (geüploade productfoto's).
+
+Environment backend: zie `docker-compose.yml` (sectie `backend.environment`), met
+`DATABASE_URL=postgres://medusa:<pw>@<db-appName>:5432/medusa?sslmode=disable` (Medusa zet anders SSL aan)
+en `REDIS_URL=redis://default:<pw>@<redis-appName>:6379`. Build arg: `MEDUSA_BACKEND_URL`.
+Storefront: alleen build args (`NEXT_PUBLIC_*`, zie `docker-compose.yml`) en `REVALIDATE_SECRET`.
+
+Eerste start: migraties, demo-seed, admin-account, en met `STORE_ID` het product van de winkel.
+Admin: `https://<api-domein>/app`.
+
+> `NEXT_PUBLIC_*`-waarden worden tijdens de build in de storefront gebakken; na wijzigen opnieuw deployen.
+> De storefront praat via de **publieke** backend-URL met Medusa.
+
+`docker-compose.yml` is voor lokaal testen of één Docker-host (`docker compose up --build`).
 
 ## Mollie aanzetten
 
 1. Account op [mollie.com](https://www.mollie.com), activeer iDEAL e.d., kopieer de **test**-key (`test_...`)
-2. Dokploy → Environment → `MOLLIE_API_KEY=test_...` → Redeploy
+2. Dokploy → `<id>-backend` → Environment → `MOLLIE_API_KEY=test_...` → Redeploy
 3. Koppel de methodes aan je regio: Admin → Settings → Regions → *Benelux & Duitsland* → Payment providers → vink `mollie-ideal`, `mollie-bancontact`, … aan
    (staat `MOLLIE_API_KEY` al bij de allereerste start, dan doet de seed dit automatisch)
 4. Test een bestelling, en zet daarna `live_...`
@@ -114,7 +131,7 @@ De Mollie-plugin (`@variablevic/mollie-payments-medusa`) is een community-plugin
 
 1. Account op [eu.posthog.com](https://eu.posthog.com) (gratis tier), project aanmaken
 2. Project settings → zet **cookieless server hash mode** aan (voor bezoekers die cookies weigeren)
-3. Dokploy → `POSTHOG_KEY=phc_...` → Redeploy
+3. Dokploy → `POSTHOG_EVENTS_KEY=phc_...` op de backend en build arg `NEXT_PUBLIC_POSTHOG_KEY=phc_...` op de storefront → Redeploy
 4. Maak een **Personal API key** (scopes: query:read, insight:write, dashboard:write, experiment:write, feature_flag:write)
 5. Eenmalig: `cd analytics && cp .env.example .env && npm ci && npx --yes dotenv-cli -- npm run setup`
    (of zet de variabelen in je shell)
@@ -164,7 +181,7 @@ strikte peer-dependencies (2.5.1) maar werkt met 2.22; pnpm geeft daar een waars
 - [ ] Eigen producten, foto's en teksten; demo-producten verwijderen; `SEED_DEMO=false`
 - [ ] Verzendtarieven en -landen kloppen; verlaagde btw (9%) voor producten waar dat geldt
 - [ ] Mollie `live_` key; test-bestelling met echte iDEAL-betaling + terugbetaling
-- [ ] Back-ups van het Postgres-volume (Dokploy → Volume backups)
+- [ ] Back-ups van `<id>-db` (Dokploy → database → Backups, met S3-bestemming)
 
 Dit is geen juridisch advies. Laat de voorwaarden checken door iemand die er verstand van heeft.
 
