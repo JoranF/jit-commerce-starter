@@ -21,8 +21,7 @@ Rotating water ripple wall lamp – aluminium head, hammered stainless steel ref
 - https://creative.lighting/products/velwave-wall-sconce
 - https://www.lyfairs.com/products/ripple-rotating-ambient-wall-sconce
 - https://vidirlighting.com/products/ripple-rotating-wall-lamp
-- AliExpress (same lamp, Solo and Duo versions): https://nl.aliexpress.com/w/wholesale-ShinyYing-Water-Ripple-Wall-Lamp.html
-  Better: open the listing and paste its own link (it looks like `aliexpress.com/item/<number>.html`); CJ matches a product link faster than a search page.
+- AliExpress (exact lamp, Solo and Duo versions): https://www.aliexpress.com/item/1005013037736889.html
 
 **Target price:** $30–40 per piece including shipping to the Netherlands
 
