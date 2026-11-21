@@ -320,6 +320,7 @@ Vanuit de cloud-sessie niet bereikbaar, dus graag zelf (noteer prijs, aantal rev
 5. **Meta Ads Library** (facebook.com/ads/library), land **België** en **Duitsland**, actieve advertenties:
    `vogelhuisje camera`, `Vogelfutterhaus Kamera`, `bird feeder camera`, `Birdfy`, `Bird Buddy`, `Netvue`.
    Noteer adverteerder + startdatum. 90+ dagen = sterk signaal.
+   En land **Nederland**, de zoekwoorden die vanuit de cloud mislukten: `verwarmde zolen`, `huisdier portret`, `op = op`, `gratis verzending`, `kat`, `slapen`, `koken`.
 6. **AliExpress**: `smart bird feeder camera AI solar` → sorteer op "orders". Noteer prijs incl. verzending naar NL
    en of er "ships from ES/DE/PL" bij staat.
 7. **CJ** (na inloggen): `bird feeder camera` en `smart bird feeder` → prijs + warehouse.
@@ -331,18 +332,38 @@ Eigen scrape met `scripts/ads-library/` (headless, alleen actieve advertenties, 
 | Zoekwoord | Resultaten | Adverteerders (langst lopende advertentie) |
 |---|---|---|
 | vogelhuisje camera | ~5 | Cameraexpert.be 7d, (onbekend) 3d |
-| vogelcamera | 0 | — |
+| vogelcamera | 0 (Meta: "geen advertenties") | — |
 | vogelvoederhuis | ~5 | Tuinhaard.com 5d |
 | messenslijper | ~19 | VanPlek 281d, Chancenu 181d, Coolddy store 104d, Koken en Wonen 48d, Sharpify Slijpshop 39d, (onbekend) 17d |
 | radiatorventilator | ~15 | (onbekend) 9d, SpeedComfortinternational 9d, Heatfan 4d |
 | ijsbad | ~120 | (onbekend) 110d, Ticra Outdoor 60d, COMMIT 24d, Watery.nl 21d, Zonnecosmetica.com 13d, The Plunge 8d |
 | padel | ~2.700 | PadelShop.com 593d, M3 Padel Academy 396d, Casa de Padel 363d, Jersix 285d, Garrincha Belgium 282d, Skull Padel 198d |
+| wandlamp | ~370 | Creative.Lighting 397d, DMQ 296d, CaveTown 286d, Luminaire signature 274d, (onbekend) 272d, lampenlicht.nl 270d |
+| hondenmand | ~300 | (onbekend) 192d, BuddyBeds 170d, Doodle-essentials.nl 123d, Ugc met BuddyBeds 116d, Pet Perfect 88d, vidaXL 75d |
+| verwarmde zolen | ? | niet gelukt: Facebook blokkeerde tijdelijk (rate limit) ⚠️ |
+| huisdier portret | ? | niet gelukt: Facebook blokkeerde tijdelijk (rate limit) ⚠️ |
+| tegeltje | ~190 | Iedereenblij.nl 421d, Stroopwafel Studio 404d, Namensmij 337d, Studio Meuk 293d, (onbekend) 288d, Lieve Kadootjes 253d |
+| op = op | ? | niet gelukt: Facebook blokkeerde tijdelijk (rate limit) ⚠️ |
+| 1+1 gratis | ~50.000 | Prijatelj Zdravlja AB 1540d, Youcanprint 1329d, AutoScout24 482d, The Light Supplier 466d, HappySupps 370d, Goudtour 326d |
+| bestel nu | ~42.000 | Decodeal 1164d, By La Nature 885d, Namly Design 785d, Pinauto Shop 706d, Lotgenootje 673d, Goedgemerkt 647d |
+| gratis verzending | ? | niet gelukt: Facebook blokkeerde tijdelijk (rate limit) ⚠️ |
+| cadeau voor hem | ~3.400 | AmeliaSieraden 569d, KHAIZEN 310d, DRKS 276d, Metaalversiering.nl 275d, Lindner & Co 208d, Bosch bedding 185d |
+| kat | ? | niet gelukt: Facebook blokkeerde tijdelijk (rate limit) ⚠️ |
+| slapen | ? | niet gelukt: Facebook blokkeerde tijdelijk (rate limit) ⚠️ |
+| nekmassage | ~35 | CadanCe Huidinstituut 187d, Keyeclick 131d, IVY Hair Care 27d, Balungo.nl 27d, Keyeclick shop 4d, Leuzroog 4d |
+| schoonmaken | ~5.500 | (onbekend) 424d, Netherlshop shop 418d, YOKUU 272d, Techweise 261d, Baby Brezza Benelux 245d, Chirurgisch Expertise Centrum 237d |
+| tuin | ~11.000 | Sun Invest 1420d, KDV & BSO De Groene Tuin 1353d, Jasper de Ruiter - Natuurillustrator 1038d, (onbekend) 864d, BlokhuttenOutlet.nl 783d, devakhandel 719d |
+| koken | ? | niet gelukt: Facebook blokkeerde tijdelijk (rate limit) ⚠️ |
 
 **Hoe ik dit lees:**
 - **Vogelcamera:** vrijwel leeg. Geen kleine webshop die er maanden op adverteert. Dat is géén bewijs van vraag; het is een open vraag.
 - **Messenslijper:** volwassen markt met langlopers (VanPlek 281 dagen, elektrisch; Chancenu 181 dagen) en een rolslijper-dropshipper (Sharpify) die nu tientallen kerstadvertenties draait. Bewezen, maar druk.
 - **Radiatorventilator:** SpeedComfort zelf en een nieuwe DTC-winkel (Heatfan, "nieuwe site") adverteren pas sinds dagen: seizoensgebonden, geen langlopers.
 - **IJsbad / padel:** veel adverteerders, maar vooral sportscholen, wellness en gevestigde padelwinkels (PadelShop.com 593 dagen). Bevestigt de kill-redenen.
+- **Wandlamp:** Creative.Lighting draait nog steeds (397 dagen) en er zijn meer langlopers (DMQ 296, CaveTown 286 dagen). Dit bevestigt de vraag naar design-wandlampen → steun voor Lichtval.
+- **Hondenmand:** BuddyBeds (170 dagen) en Doodle-essentials (123 dagen) laten zien dat honden-comfort wél op Meta verkoopt. Ik heb de mand toch geschrapt (bol €68–80, groot pakket); als iemand dit wil heronderzoeken is BuddyBeds het startpunt.
+- **Tegeltje:** Iedereenblij (421 dagen) en Stroopwafel Studio (404 dagen) lopen nog steeds: bewezen, maar lage prijs (zie kill-lijst).
+- Zoekwoorden met `?` wil ik niet als "nul" lezen: "op = op" gaf eerder vandaag ~50.000 resultaten. Herhaal die met de hand.
 
 
 ## Bronnen (overige)
