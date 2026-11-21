@@ -5,6 +5,8 @@ import "../stores/fonts"
 import { store, themeCss } from "@stores"
 import { PostHogProvider } from "@modules/analytics/posthog-provider"
 import { MotionProvider } from "@modules/common/components/motion"
+import { ConsentBanner } from "@modules/analytics/consent-banner"
+import { MetaPixel } from "@modules/analytics/meta-pixel"
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
@@ -30,6 +32,8 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           <MotionProvider>
             <main className="relative">{props.children}</main>
           </MotionProvider>
+          <ConsentBanner />
+          <MetaPixel />
         </PostHogProvider>
       </body>
     </html>

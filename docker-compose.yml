@@ -79,6 +79,10 @@ services:
       # Server-side analytics
       POSTHOG_EVENTS_KEY: ${POSTHOG_KEY:-}
       POSTHOG_HOST: ${POSTHOG_INGEST_HOST:-https://eu.i.posthog.com}
+      # Meta Conversions API — leeg = uit
+      META_PIXEL_ID: ${META_PIXEL_ID:-}
+      META_CAPI_TOKEN: ${META_CAPI_TOKEN:-}
+      META_TEST_EVENT_CODE: ${META_TEST_EVENT_CODE:-}
     volumes:
       - uploads:/app/static
     expose:
@@ -100,6 +104,7 @@ services:
         NEXT_PUBLIC_BASE_URL: ${STORE_URL:?zet STORE_URL (publieke https-URL van de winkel)}
         NEXT_PUBLIC_DEFAULT_REGION: ${DEFAULT_REGION:-nl}
         NEXT_PUBLIC_POSTHOG_KEY: ${POSTHOG_KEY:-}
+        NEXT_PUBLIC_META_PIXEL_ID: ${META_PIXEL_ID:-}
         NEXT_PUBLIC_STORE_ID: ${STORE_ID:-lichtval}
         POSTHOG_API_HOST: ${POSTHOG_INGEST_HOST:-https://eu.i.posthog.com}
         POSTHOG_ASSETS_HOST: ${POSTHOG_ASSETS_HOST:-https://eu-assets.i.posthog.com}

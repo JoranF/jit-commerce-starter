@@ -127,6 +127,22 @@ Admin: `https://<api-domein>/app`.
 
 De Mollie-plugin (`@variablevic/mollie-payments-medusa`) is een community-plugin (v0.0.x, vastgepind op `0.0.13`). Test hem grondig voordat je live gaat.
 
+## Meta Pixel + Conversions API aanzetten
+
+Voor Meta-advertenties: de pixel meet in de browser, de Conversions API stuurt elke aankoop
+ook server-side (mist geen adblockers/iOS). Beide gebruiken event-ID `order_<id>`, dus Meta telt
+een aankoop één keer.
+
+1. Events Manager → *Connect data* → Web → pixel aanmaken, kopieer het **Pixel ID**
+2. Pixel → Settings → Conversions API → *Generate access token*
+3. Dokploy → `<id>-storefront` → build arg `NEXT_PUBLIC_META_PIXEL_ID=<pixel id>` (of `metaPixelId` in de winkelconfig)
+4. Dokploy → `<id>-backend` → `META_PIXEL_ID=<pixel id>` en `META_CAPI_TOKEN=<token>`
+5. Testen: zet `META_TEST_EVENT_CODE` (Events Manager → Test events), doe een testbestelling, haal hem daarna weg
+
+Privacy: de pixel laadt pas na "Accepteren" in de cookiebanner, en de backend stuurt alleen
+aankopen van klanten die accepteerden (`cart.metadata.meta_consent`). Events: PageView,
+ViewContent, AddToCart, InitiateCheckout, AddPaymentInfo, Purchase.
+
 ## PostHog + automatisering aanzetten
 
 1. Account op [eu.posthog.com](https://eu.posthog.com) (gratis tier), project aanmaken

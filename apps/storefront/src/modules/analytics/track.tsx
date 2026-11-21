@@ -3,12 +3,48 @@
 import posthog from "posthog-js"
 import { useFeatureFlagVariantKey } from "posthog-js/react"
 import { useEffect, useRef, useState } from "react"
-import type { AnalyticsEvent, ExperimentKey } from "@lib/analytics/constants"
+import { EVENTS, type AnalyticsEvent, type ExperimentKey } from "@lib/analytics/constants"
+import { pixelTrack } from "./meta-pixel"
 
-/** Stuur een event vanuit client code. No-op als PostHog niet geladen is. */
-export function track(event: AnalyticsEvent, properties?: Record<string, unknown>) {
-  if (typeof window === "undefined" || !posthog.__loaded) return
-  posthog.capture(event, properties)
+type Props = Record<string, unknown>
+const upper = (v: unknown) => (typeof v === "string" ? v.toUpperCase() : undefined)
+
+/** Onze funnel-events → Meta standaard-events (alleen als de pixel aan staat). */
+const TO_META: Partial<Record<AnalyticsEvent, (p: Props) => [string, Props]>> = {
+  [EVENTS.productViewed]: (p) => [
+    "ViewContent",
+    { content_ids: [p.product_id], content_name: p.product_name, content_type: "product" },
+  ],
+  [EVENTS.productAddedToCart]: (p) => [
+    "AddToCart",
+    {
+      content_ids: [p.product_id],
+      content_name: p.product_name,
+      content_type: "product",
+      contents: [{ id: p.product_id, quantity: p.quantity ?? 1 }],
+      value: p.price,
+      currency: upper(p.currency),
+    },
+  ],
+  [EVENTS.checkoutStarted]: (p) => [
+    "InitiateCheckout",
+    { value: p.value, currency: upper(p.currency), num_items: p.item_count },
+  ],
+  [EVENTS.paymentRedirected]: (p) => [
+    "AddPaymentInfo",
+    { value: p.value, currency: upper(p.currency) },
+  ],
+}
+
+/**
+ * Stuur een event vanuit client code: naar PostHog (als geladen) en, als er een
+ * Meta-tegenhanger is, naar de Meta Pixel (alleen na toestemming).
+ */
+export function track(event: AnalyticsEvent, properties?: Props) {
+  if (typeof window === "undefined") return
+  if (posthog.__loaded) posthog.capture(event, properties)
+  const meta = TO_META[event]
+  if (meta) pixelTrack(...meta(properties ?? {}))
 }
 
 /**

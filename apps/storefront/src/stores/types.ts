@@ -85,6 +85,11 @@ export type StoreConfig = {
 
   /** Toon bij gegenereerde beelden tot er echte productfoto's zijn. */
   imageNote?: string
+  /**
+   * Meta Pixel ID (Events Manager). Laadt pas na toestemming via de cookiebanner.
+   * NEXT_PUBLIC_META_PIXEL_ID (build arg) gaat voor. Leeg = geen pixel.
+   */
+  metaPixelId?: string
 
   /**
    * Bedrijfsgegevens. Wettelijk verplicht op een webshop (KvK, adres, e-mail).

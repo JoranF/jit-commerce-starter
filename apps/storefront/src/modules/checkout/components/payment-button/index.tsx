@@ -79,6 +79,7 @@ const StripePaymentButton = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const onPaymentCompleted = async () => {
+    await attachAnalyticsToCart()
     await placeOrder()
       .catch((err) => {
         setErrorMessage(err.message)
@@ -249,6 +250,7 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const onPaymentCompleted = async () => {
+    await attachAnalyticsToCart()
     await placeOrder()
       .catch((err) => {
         setErrorMessage(err.message)
