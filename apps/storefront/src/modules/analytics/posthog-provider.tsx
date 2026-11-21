@@ -2,7 +2,9 @@
 
 import posthog from "posthog-js"
 import { PostHogProvider as PHProvider } from "posthog-js/react"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
+import { getConsent } from "./consent"
+import { store } from "@stores"
 import { VISITOR_COOKIE } from "@lib/analytics/constants"
 import { flushTrackQueue } from "./track"
 
@@ -21,7 +23,7 @@ function readCookie(name: string) {
  * - Events gaan via /ingest (rewrite in next.config.js) → minder geblokkeerd door adblockers.
  * - distinct_id = de `jit_vid` cookie uit middleware, zodat server en browser
  *   dezelfde bezoeker zien (nodig voor A/B-testen zonder flikkering).
- * - Cookiebanner: tot er toestemming is draait PostHog cookieless
+ * - Cookiebanner (consent-banner.tsx): tot er toestemming is draait PostHog cookieless
  *   (`cookieless_mode: "on_reject"` + `opt_out_capturing_by_default`): ook wie
  *   niet op de banner klikt telt mee in de funnel, anoniem. Zet cookieless mode
  *   ook aan in je PostHog project settings. A/B-resultaten tellen alleen
@@ -51,6 +53,12 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       session_recording: { maskAllInputs: true },
       loaded: () => flushTrackQueue(),
     })
+    // Elk event krijgt de winkel mee, zodat meerdere winkels in één project passen.
+    posthog.register({ store: store.id })
+    // Keuze uit de cookiebanner (consent-banner.tsx) toepassen.
+    const consent = getConsent()
+    if (consent === "granted") posthog.opt_in_capturing()
+    if (consent === "denied") posthog.opt_out_capturing()
   }, [])
 
   if (!KEY) return <>{children}</>
@@ -58,59 +66,6 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   return (
     <PHProvider client={posthog}>
       {children}
-      <ConsentBanner />
     </PHProvider>
-  )
-}
-
-function ConsentBanner() {
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setVisible(posthog.get_explicit_consent_status?.() === "pending")
-    }, 300)
-    return () => clearTimeout(t)
-  }, [])
-
-  if (!visible) return null
-
-  const answer = (accept: boolean) => {
-    if (accept) posthog.opt_in_capturing()
-    else posthog.opt_out_capturing()
-    setVisible(false)
-  }
-
-  // Compacte balk onderaan: mag de koopknop en het adresformulier niet afdekken.
-  return (
-    <div
-      role="dialog"
-      aria-label="Cookievoorkeuren"
-      className="fixed inset-x-0 bottom-0 z-[60] border-t border-ui-border-base bg-white px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] small:inset-x-auto small:bottom-4 small:right-4 small:max-w-md small:rounded-lg small:border"
-    >
-      <div className="flex items-center gap-3">
-        <p className="flex-1 text-xsmall-regular text-ui-fg-subtle">
-          Analytische cookies helpen ons de winkel te verbeteren. Weiger je, dan
-          meten we alleen anoniem.{" "}
-          <a href="/privacy" className="underline">
-            Privacy
-          </a>
-        </p>
-        <div className="flex shrink-0 gap-2">
-          <button
-            onClick={() => answer(false)}
-            className="rounded border border-ui-border-base px-3 py-1.5 text-small-regular"
-          >
-            Weigeren
-          </button>
-          <button
-            onClick={() => answer(true)}
-            className="rounded bg-ui-button-inverted px-3 py-1.5 text-small-regular text-ui-fg-on-inverted"
-          >
-            Accepteren
-          </button>
-        </div>
-      </div>
-    </div>
   )
 }

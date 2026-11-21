@@ -7,6 +7,8 @@
 export const VISITOR_COOKIE = "jit_vid"
 /** Request-header waarmee middleware de ID bij het allereerste bezoek doorgeeft. */
 export const VISITOR_HEADER = "x-jit-vid"
+/** Cookie met de keuze uit de cookiebanner: "granted" of "denied". */
+export const CONSENT_COOKIE = "jit_consent"
 
 /** E-commerce funnel events. Houd deze namen gelijk aan analytics/src/config.ts. */
 export const EVENTS = {

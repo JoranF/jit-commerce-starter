@@ -1,4 +1,5 @@
 import { Metadata } from "next"
+import { META_PIXEL_ID } from "@modules/analytics/meta-pixel"
 import { STORE_NAME } from "@lib/util/site"
 import { CompanyDetails, PlaceholderNotice, PolicyPage } from "@modules/policies/templates"
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
   description: `Hoe ${STORE_NAME} met je gegevens omgaat.`,
 }
 
-/** Beschrijft de verwerkingen van deze winkel (Medusa, Mollie, PostHog, leverancier). */
+/** Beschrijft de verwerkingen van deze winkel (Medusa, Mollie, PostHog, Meta, leverancier). */
 export default function PrivacyPage() {
   return (
     <PolicyPage title="Privacy">
@@ -37,6 +38,19 @@ export default function PrivacyPage() {
         gebeurt dat anoniem en zonder cookies. Geef je toestemming in de cookiemelding, dan
         gebruiken we een cookie om bezoeken aan elkaar te koppelen.
       </p>
+      {META_PIXEL_ID && (
+        <>
+          <h2>Advertenties (Meta)</h2>
+          <p>
+            We adverteren op Facebook en Instagram. Alleen als je in de cookiemelding op
+            &quot;Accepteren&quot; klikt, laden we de Meta Pixel en sturen we bij een bestelling
+            versleutelde (gehashte) contactgegevens en het bestelbedrag naar Meta Platforms Ireland.
+            Zo kan Meta meten welke advertenties tot een aankoop leiden. Meta kan deze gegevens ook
+            buiten de EU verwerken. Weiger je, dan gebeurt dit niet. Je keuze wijzigen: verwijder de
+            cookies van deze site, dan vragen we het opnieuw.
+          </p>
+        </>
+      )}
       <h2>Hoe lang</h2>
       <p>
         Bestelgegevens bewaren we 7 jaar, omdat de belastingwet dat vraagt. Overige gegevens
