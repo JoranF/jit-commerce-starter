@@ -3,6 +3,7 @@
  *
  *  - KPI's: bezoekers, bestellingen, omzet, AOV, conversie (met week-op-week verschil)
  *  - Funnel met drop-off per stap → waar lekt de winkel?
+ *  - Checkout per stap (adres, verzending, betaalmethode, controleren) + foutmeldingen
  *  - Top-producten: bekeken vs. gekocht (hoog bekeken + laag gekocht = kans!)
  *  - Status van alle A/B-tests
  *  - Optioneel: 3 test-ideeën van Claude (ANTHROPIC_API_KEY)
@@ -14,7 +15,15 @@ import { evaluateAll } from "./evaluate"
 import { renderExperiment } from "./render"
 import { delta, eur, int, publish, table } from "./notify"
 import { PostHogApi, envFromProcess } from "./posthog"
-import { getKpis, getTopProducts, type Kpis } from "./queries"
+import {
+  getCheckoutErrors,
+  getCheckoutSteps,
+  getKpis,
+  getTopProducts,
+  type CheckoutErrorRow,
+  type CheckoutStepRow,
+  type Kpis,
+} from "./queries"
 import { pct } from "./stats"
 
 function arg(name: string, fallback: number) {
@@ -68,15 +77,49 @@ export function renderFunnel(k: Kpis) {
   ].join("\n")
 }
 
+/**
+ * Per checkout-stap: gezien → afgerond. De stap met het laagste percentage is
+ * waar klanten vastlopen; samen met de foutmeldingen zie je meestal ook waarom.
+ */
+export function renderCheckoutSteps(steps: CheckoutStepRow[], errors: CheckoutErrorRow[]) {
+  if (!steps.some((s) => s.viewed > 0)) return "_Nog geen checkout-data._"
+  let worst: CheckoutStepRow | null = null
+  for (const s of steps) {
+    if (s.viewed < 5) continue // te weinig om iets over te zeggen
+    if (!worst || s.completed / s.viewed < worst.completed / worst.viewed) worst = s
+  }
+  const lines = [
+    table(
+      ["Stap", "Gezien", "Afgerond", "Door"],
+      steps.map((s) => [s.label, int(s.viewed), int(s.completed), s.viewed ? pct(s.completed / s.viewed) : "–"])
+    ),
+  ]
+  if (worst) {
+    lines.push(
+      `\n**Hier lopen klanten vast:** ${worst.label} (${pct(worst.completed / worst.viewed)} rondt af). ` +
+        `Bekijk sessie-opnames in PostHog (Replay → filter op checkout_step_viewed, step = ${worst.step}).`
+    )
+  }
+  if (errors.length) {
+    lines.push(
+      "\n**Meest getoonde foutmeldingen**",
+      table(["Stap", "Melding", "Bezoekers"], errors.map((e) => [e.step, e.error, int(e.visitors)]))
+    )
+  }
+  return lines.join("\n")
+}
+
 async function main() {
   const days = arg("days", 7)
   const ph = new PostHogApi(envFromProcess())
 
-  const [curr, prev, products, experiments] = await Promise.all([
+  const [curr, prev, products, experiments, steps, errors] = await Promise.all([
     getKpis(ph, days, 0),
     getKpis(ph, days * 2, days),
     getTopProducts(ph, days),
     evaluateAll(ph),
+    getCheckoutSteps(ph, days),
+    getCheckoutErrors(ph, days),
   ])
 
   const productTable = products.length
@@ -92,6 +135,9 @@ async function main() {
     "",
     "### Funnel",
     renderFunnel(curr),
+    "",
+    "### Checkout per stap",
+    renderCheckoutSteps(steps, errors),
     "",
     "### Top-producten",
     productTable,

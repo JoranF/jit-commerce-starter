@@ -28,3 +28,4 @@ jobs:
           POSTHOG_APP_HOST: ${{ vars.POSTHOG_APP_HOST || 'https://eu.posthog.com' }}
           REPORT_WEBHOOK_URL: ${{ secrets.REPORT_WEBHOOK_URL }}
           AUTO_SHIP_WINNERS: ${{ vars.AUTO_SHIP_WINNERS || 'false' }}
+          AUTO_LAUNCH_EXPERIMENTS: ${{ vars.AUTO_LAUNCH_EXPERIMENTS || 'false' }}

@@ -17,7 +17,7 @@ import {
 } from "@modules/common/components/ui"
 import { HttpTypes } from "@medusajs/types"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useState } from "react"
 
 const Payment = ({
   cart,
@@ -33,8 +33,13 @@ const Payment = ({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [paymentComplete, setPaymentComplete] = useState(false)
+  // Vooraf kiezen scheelt een klik: de actieve sessie, anders iDEAL (in NL
+  // veruit de meest gebruikte), anders de enige beschikbare methode.
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(
-    activeSession?.provider_id ?? ""
+    () =>
+      activeSession?.provider_id ??
+      availablePaymentMethods.find((m) => /ideal/i.test(m.id))?.id ??
+      (availablePaymentMethods.length === 1 ? availablePaymentMethods[0].id : "")
   )
 
   const searchParams = useSearchParams()
@@ -42,6 +47,14 @@ const Payment = ({
   const pathname = usePathname()
 
   const isOpen = searchParams.get("step") === "payment"
+
+  // Clear a stale error when the step opens or closes. Adjusted during render
+  // instead of in an effect: https://react.dev/learn/you-might-not-need-an-effect
+  const [wasOpen, setWasOpen] = useState(isOpen)
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen)
+    setError(null)
+  }
 
   const setPaymentMethod = async (method: string) => {
     setError(null)
@@ -105,10 +118,6 @@ const Payment = ({
       setIsLoading(false)
     }
   }
-
-  useEffect(() => {
-    setError(null)
-  }, [isOpen])
 
   return (
     <div className="bg-white">

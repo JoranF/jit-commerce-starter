@@ -29,9 +29,13 @@ const StoreSearchBox = () => {
 
   // Follow the query when it changes elsewhere — cleared with the filters, or
   // arriving from the URL on load, which `routing` restores after mount.
-  useEffect(() => {
+  // Adjusted during render instead of in an effect:
+  // https://react.dev/learn/you-might-not-need-an-effect
+  const [syncedQuery, setSyncedQuery] = useState(query)
+  if (query !== syncedQuery) {
+    setSyncedQuery(query)
     setInputValue(query)
-  }, [query])
+  }
 
   const clear = () => {
     window.clearTimeout(timer.current)

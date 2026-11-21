@@ -4,6 +4,7 @@ import Checkbox from "@modules/common/components/checkbox"
 import Input from "@modules/common/components/input"
 import { mapKeys } from "lodash"
 import React, { useEffect, useMemo, useState } from "react"
+import { useParams } from "next/navigation"
 import AddressSelect from "../address-select"
 import CountrySelect from "../country-select"
 
@@ -18,6 +19,7 @@ const ShippingAddress = ({
   checked: boolean
   onChange: () => void
 }) => {
+  const countryCode = (useParams().countryCode as string | undefined)?.toLowerCase()
   const [formData, setFormData] = useState<Record<string, string>>({
     "shipping_address.first_name": cart?.shipping_address?.first_name || "",
     "shipping_address.last_name": cart?.shipping_address?.last_name || "",
@@ -25,7 +27,13 @@ const ShippingAddress = ({
     "shipping_address.company": cart?.shipping_address?.company || "",
     "shipping_address.postal_code": cart?.shipping_address?.postal_code || "",
     "shipping_address.city": cart?.shipping_address?.city || "",
-    "shipping_address.country_code": cart?.shipping_address?.country_code || "",
+    // Land vooraf invullen met het land van de winkel (/nl → NL): één veld minder.
+    "shipping_address.country_code":
+      cart?.shipping_address?.country_code ||
+      (countryCode &&
+      cart?.region?.countries?.some((c) => c.iso_2 === countryCode)
+        ? countryCode
+        : ""),
     "shipping_address.province": cart?.shipping_address?.province || "",
     "shipping_address.phone": cart?.shipping_address?.phone || "",
     email: cart?.email || "",
@@ -72,16 +80,19 @@ const ShippingAddress = ({
     }
   }
 
+  // Deliberately runs after hydration and whenever the server sends a fresh
+  // cart: fill the form from the cart, or the customer's email if it has none.
   useEffect(() => {
     // Ensure cart is not null and has a shipping_address before setting form data
     if (cart && cart.shipping_address) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate, see above
       setFormAddress(cart?.shipping_address, cart?.email)
     }
 
     if (cart && !cart.email && customer?.email) {
       setFormAddress(undefined, customer.email)
     }
-  }, [cart]) // Add cart as a dependency
+  }, [cart, customer?.email]) // Add cart as a dependency
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -99,7 +110,7 @@ const ShippingAddress = ({
       {customer && (addressesInRegion?.length || 0) > 0 && (
         <Container className="mb-6 flex flex-col gap-y-4 p-5">
           <p className="text-small-regular">
-            {`Hi ${customer.first_name}, do you want to use one of your saved addresses?`}
+            {`Hoi ${customer.first_name}, wil je een opgeslagen adres gebruiken?`}
           </p>
           <AddressSelect
             addresses={customer.addresses}
@@ -166,6 +177,7 @@ const ShippingAddress = ({
           required
           data-testid="shipping-city-input"
         />
+        <div className="col-span-2">
         <CountrySelect
           name="shipping_address.country_code"
           autoComplete="country"
@@ -175,13 +187,12 @@ const ShippingAddress = ({
           required
           data-testid="shipping-country-select"
         />
-        <Input
-          label="Provincie"
+        </div>
+        {/* Provincie is niet nodig in NL/BE/DE; verborgen veld houdt een bestaande waarde vast. */}
+        <input
+          type="hidden"
           name="shipping_address.province"
-          autoComplete="address-level1"
           value={formData["shipping_address.province"]}
-          onChange={handleChange}
-          data-testid="shipping-province-input"
         />
       </div>
       <div className="my-8">

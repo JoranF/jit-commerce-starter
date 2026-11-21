@@ -36,7 +36,7 @@ async function safeAll<T extends readonly unknown[]>(
   const o = await origin
   try {
     return [o, ...(await Promise.all(rest))] as unknown as T
-  } catch (e) {
+  } catch {
     console.warn("sitemap: backend onbereikbaar, alleen vaste pagina's")
     return [o, ...rest.map(() => [])] as unknown as T
   }

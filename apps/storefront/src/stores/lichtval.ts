@@ -16,8 +16,9 @@ import type { StoreConfig } from "./types"
  * TODO vóór livegang (na ontvangst sample):
  * - Beelden zijn AI-sfeerbeelden (fal). Vervang door eigen foto's van de echte lamp
  *   en haal dan `imageNote` weg.
- * - Controleer de feiten in `buy.facts` en de FAQ ("Beweegt het licht?") met de
- *   echte lamp; vul aansluiting (stekker of vaste aansluiting) en lichtkleur aan.
+ * - Patroon staat stil en is met de hand te verstellen (bevestigd via de AliExpress-
+ *   listing, 21 nov 2026); FAQ "Beweegt het licht?" klopt. Nog controleren met de
+ *   sample: overige `buy.facts`, aansluiting (stekker of vaste aansluiting) en lichtkleur.
  * - Vul `company` in (KvK, adres, e-mail): wettelijk verplicht.
  */
 export const lichtval: StoreConfig = {
@@ -127,6 +128,7 @@ export const lichtval: StoreConfig = {
     ],
     promises: [
       "In huis binnen {levertijd} werkdagen, met track & trace",
+      "Verzendkosten {verzendkosten}, betalen met iDEAL",
       "{bedenktijd} dagen bedenktijd",
       "2 jaar garantie",
     ],

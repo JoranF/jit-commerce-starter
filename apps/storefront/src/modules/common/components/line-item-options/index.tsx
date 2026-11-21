@@ -12,13 +12,19 @@ const LineItemOptions = ({
   "data-testid": dataTestid,
   "data-value": dataValue,
 }: LineItemOptionsProps) => {
+  // Product met één uitvoering: "Uitvoering: Standaard" zegt niets, dus weglaten.
+  const title = variant?.title?.trim()
+  if (!title || /^(standaard|default( variant| title)?)$/i.test(title)) {
+    return null
+  }
+
   return (
     <Text
       data-testid={dataTestid}
       data-value={dataValue}
       className="inline-block txt-medium text-ui-fg-subtle w-full overflow-hidden text-ellipsis"
     >
-      Uitvoering: {variant?.title}
+      Uitvoering: {title}
     </Text>
   )
 }

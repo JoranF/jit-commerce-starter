@@ -2,7 +2,7 @@
  * Eén winkel = één StoreConfig. De code is gedeeld; merk, kleuren, teksten en
  * beelden komen uit de config. Kies de winkel met NEXT_PUBLIC_STORE_ID.
  *
- * Teksten mogen {levertijd}, {verwerking}, {bezorging} en {bedenktijd} bevatten;
+ * Teksten mogen {levertijd}, {verwerking}, {bezorging}, {bedenktijd} en {verzendkosten} bevatten;
  * die worden ingevuld vanuit het winkelbeleid van de regio (Medusa admin →
  * Settings → Regions → Metadata), zodat de site nooit iets anders belooft dan
  * de verzend- en retourpagina's.
@@ -85,6 +85,11 @@ export type StoreConfig = {
 
   /** Toon bij gegenereerde beelden tot er echte productfoto's zijn. */
   imageNote?: string
+  /**
+   * Meta Pixel ID (Events Manager). Laadt pas na toestemming via de cookiebanner.
+   * NEXT_PUBLIC_META_PIXEL_ID (build arg) gaat voor. Leeg = geen pixel.
+   */
+  metaPixelId?: string
 
   /**
    * Bedrijfsgegevens. Wettelijk verplicht op een webshop (KvK, adres, e-mail).

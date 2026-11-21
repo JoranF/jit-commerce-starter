@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useActionState, useEffect, useMemo } from "react"
+import React, { useActionState, useMemo } from "react"
 
 import Input from "@modules/common/components/input"
 import NativeSelect from "@modules/common/components/native-select"
@@ -57,9 +57,13 @@ const ProfileBillingAddress: React.FC<MyInformationProps> = ({
     setSuccessState(false)
   }
 
-  useEffect(() => {
+  // Reflect each new form result. Adjusted during render instead of in an
+  // effect: https://react.dev/learn/you-might-not-need-an-effect
+  const [prevState, setPrevState] = React.useState(state)
+  if (state !== prevState) {
+    setPrevState(state)
     setSuccessState(!!state.success)
-  }, [state])
+  }
 
   const currentInfo = useMemo(() => {
     if (!billingAddress) {

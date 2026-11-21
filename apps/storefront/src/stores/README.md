@@ -30,7 +30,7 @@ zet levertijden en verzendopties goed.
 
 ## Regels voor teksten
 
-- Teksten met `{levertijd}`, `{verwerking}`, `{bezorging}`, `{bedenktijd}` komen uit het
+- Teksten met `{levertijd}`, `{verwerking}`, `{bezorging}`, `{bedenktijd}`, `{verzendkosten}` komen uit het
   winkelbeleid van de regio. Ontbreekt een waarde, dan wordt de zin niet getoond.
 - Alleen feiten die kloppen met het echte product. Bij AI-beelden: `imageNote` tonen tot
   er eigen foto's zijn.

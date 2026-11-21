@@ -2,8 +2,11 @@
 
 import posthog from "posthog-js"
 import { PostHogProvider as PHProvider } from "posthog-js/react"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
+import { getConsent } from "./consent"
+import { store } from "@stores"
 import { VISITOR_COOKIE } from "@lib/analytics/constants"
+import { flushTrackQueue } from "./track"
 
 const KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY
 
@@ -20,9 +23,11 @@ function readCookie(name: string) {
  * - Events gaan via /ingest (rewrite in next.config.js) → minder geblokkeerd door adblockers.
  * - distinct_id = de `jit_vid` cookie uit middleware, zodat server en browser
  *   dezelfde bezoeker zien (nodig voor A/B-testen zonder flikkering).
- * - Cookiebanner: tot er toestemming is draait PostHog cookieless
- *   (`cookieless_mode: "on_reject"`). Zet cookieless mode ook aan in je
- *   PostHog project settings.
+ * - Cookiebanner (consent-banner.tsx): tot er toestemming is draait PostHog cookieless
+ *   (`cookieless_mode: "on_reject"` + `opt_out_capturing_by_default`): ook wie
+ *   niet op de banner klikt telt mee in de funnel, anoniem. Zet cookieless mode
+ *   ook aan in je PostHog project settings. A/B-resultaten tellen alleen
+ *   bezoekers met toestemming (zie analytics/src/queries.ts).
  */
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -36,8 +41,24 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       capture_pageleave: true,
       person_profiles: "identified_only",
       cookieless_mode: "on_reject",
+      // Zonder deze regel meet PostHog NIETS zolang de bezoeker nog niet op de
+      // banner heeft geklikt (de meeste mensen klikken nooit). Zo telt "nog geen
+      // keuze" als weigeren: anoniem en cookieless meten, tot iemand accepteert.
+      opt_out_capturing_by_default: true,
       bootstrap: visitorId ? { distinctID: visitorId } : undefined,
+      // Sessie-opnames + heatmaps: zo zie je wáár mensen vastlopen (zet ze ook
+      // aan in PostHog → Settings → Session replay / Heatmaps). Alle invoervelden
+      // worden gemaskeerd; opnames lopen alleen na cookietoestemming.
+      enable_heatmaps: true,
+      session_recording: { maskAllInputs: true },
+      loaded: () => flushTrackQueue(),
     })
+    // Elk event krijgt de winkel mee, zodat meerdere winkels in één project passen.
+    posthog.register({ store: store.id })
+    // Keuze uit de cookiebanner (consent-banner.tsx) toepassen.
+    const consent = getConsent()
+    if (consent === "granted") posthog.opt_in_capturing()
+    if (consent === "denied") posthog.opt_out_capturing()
   }, [])
 
   if (!KEY) return <>{children}</>
@@ -45,56 +66,6 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   return (
     <PHProvider client={posthog}>
       {children}
-      <ConsentBanner />
     </PHProvider>
-  )
-}
-
-function ConsentBanner() {
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setVisible(posthog.get_explicit_consent_status?.() === "pending")
-    }, 300)
-    return () => clearTimeout(t)
-  }, [])
-
-  if (!visible) return null
-
-  const answer = (accept: boolean) => {
-    if (accept) posthog.opt_in_capturing()
-    else posthog.opt_out_capturing()
-    setVisible(false)
-  }
-
-  return (
-    <div
-      role="dialog"
-      aria-label="Cookievoorkeuren"
-      className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-xl rounded-lg border border-ui-border-base bg-white p-4 shadow-lg small:left-auto"
-    >
-      <p className="text-small-regular text-ui-fg-subtle">
-        We gebruiken analytische cookies om de winkel te verbeteren. Weiger je,
-        dan meten we alleen anoniem.{" "}
-        <a href="/privacy" className="underline">
-          Privacyverklaring
-        </a>
-      </p>
-      <div className="mt-3 flex gap-2 justify-end">
-        <button
-          onClick={() => answer(false)}
-          className="px-3 py-1.5 text-small-regular rounded border border-ui-border-base"
-        >
-          Weigeren
-        </button>
-        <button
-          onClick={() => answer(true)}
-          className="px-3 py-1.5 text-small-regular rounded bg-ui-button-inverted text-ui-fg-on-inverted"
-        >
-          Accepteren
-        </button>
-      </div>
-    </div>
   )
 }

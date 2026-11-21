@@ -105,3 +105,17 @@ export async function shipWinner(ph: PostHogApi, evaluation: ExperimentEvaluatio
   })
   return true
 }
+
+/**
+ * Start een draft-experiment: start_date = nu en de feature flag aan.
+ * Gebruikt door experiments.ts met AUTO_LAUNCH_EXPERIMENTS=true.
+ */
+export async function launchExperiment(ph: PostHogApi, posthogId: number) {
+  const exp = await ph.request<PhExperiment>("GET", `/experiments/${posthogId}/`)
+  if (exp.start_date) return false
+  if (exp.feature_flag?.id) {
+    await ph.request("PATCH", `/feature_flags/${exp.feature_flag.id}/`, { active: true })
+  }
+  await ph.request("PATCH", `/experiments/${posthogId}/`, { start_date: new Date().toISOString() })
+  return true
+}

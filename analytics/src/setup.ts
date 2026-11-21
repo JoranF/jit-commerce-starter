@@ -3,10 +3,10 @@
  *   1. Dashboard "Webshop – Overzicht" met funnel, omzet, AOV, conversie en drop-off
  *   2. Een experiment (+ feature flag) per item in config.EXPERIMENTS, als draft
  *
- * Een draft-experiment doet nog niets. Start hem in PostHog (Experiments > Launch)
- * zodra je er klaar voor bent.
+ * Een draft-experiment doet nog niets. Start hem in PostHog (Experiments > Launch),
+ * of laat de dagelijkse check dat doen met AUTO_LAUNCH_EXPERIMENTS=true.
  */
-import { DASHBOARD_NAME, EVENTS, EXPERIMENTS, FUNNEL, MANAGED_TAG } from "./config"
+import { CHECKOUT_STEPS, DASHBOARD_NAME, EVENTS, EXPERIMENTS, FUNNEL, MANAGED_TAG } from "./config"
 import { PostHogApi, envFromProcess } from "./posthog"
 
 const ph = new PostHogApi(envFromProcess())
@@ -16,6 +16,10 @@ const series = (event: string, extra: Record<string, unknown> = {}) => ({
   event,
   name: event,
   ...extra,
+})
+
+const stepFilter = (step: string) => ({
+  properties: [{ key: "step", value: [step], operator: "exact", type: "event" }],
 })
 
 type InsightDef = { name: string; description: string; source: Record<string, unknown> }
@@ -29,6 +33,48 @@ const INSIGHTS: InsightDef[] = [
       series: FUNNEL.map((e) => series(e)),
       funnelsFilter: { funnelWindowInterval: 7, funnelWindowIntervalUnit: "day" },
       dateRange: { date_from: "-30d" },
+    },
+  },
+  {
+    name: "Checkout per stap: waar lopen klanten vast?",
+    description:
+      "checkout_started → elke stap afgerond → betaald. De grootste daling is de stap om te verbeteren; bekijk daar de sessie-opnames.",
+    source: {
+      kind: "FunnelsQuery",
+      series: [
+        series(EVENTS.checkoutStarted),
+        ...CHECKOUT_STEPS.filter((s) => s.key !== "review").map((s) =>
+          series(EVENTS.checkoutStepCompleted, { name: `Stap afgerond: ${s.label}`, ...stepFilter(s.key) })
+        ),
+        series(EVENTS.orderCompleted),
+      ],
+      funnelsFilter: { funnelWindowInterval: 1, funnelWindowIntervalUnit: "day" },
+      dateRange: { date_from: "-30d" },
+    },
+  },
+  {
+    name: "Landingspagina: bezoek → koopblok → winkelmand",
+    description: "Hoeveel bezoekers scrollen tot het koopblok, en hoeveel klikken daar op de knop?",
+    source: {
+      kind: "FunnelsQuery",
+      series: [
+        series(EVENTS.productViewed),
+        series(EVENTS.buySectionViewed),
+        series(EVENTS.productAddedToCart),
+      ],
+      funnelsFilter: { funnelWindowInterval: 1, funnelWindowIntervalUnit: "day" },
+      dateRange: { date_from: "-30d" },
+    },
+  },
+  {
+    name: "Foutmeldingen in de checkout",
+    description: "checkout_error per melding: welke fouten houden klanten tegen?",
+    source: {
+      kind: "TrendsQuery",
+      series: [series(EVENTS.checkoutError, { math: "dau" })],
+      breakdownFilter: { breakdown: "error", breakdown_type: "event" },
+      dateRange: { date_from: "-30d" },
+      trendsFilter: { display: "ActionsBarValue" },
     },
   },
   {

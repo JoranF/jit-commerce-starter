@@ -5,7 +5,7 @@ import { Heading, IconButton, Input, Text } from "@modules/common/components/ui"
 import { useActionState } from "react"
 // TODO: Re-add Toaster component when needed
 import { SubmitButton } from "@modules/checkout/components/submit-button"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 export default function TransferRequestForm() {
   const [showSuccess, setShowSuccess] = useState(false)
@@ -16,11 +16,15 @@ export default function TransferRequestForm() {
     order: null,
   })
 
-  useEffect(() => {
+  // Show the confirmation for each new successful request. Adjusted during
+  // render instead of in an effect: https://react.dev/learn/you-might-not-need-an-effect
+  const [prevState, setPrevState] = useState(state)
+  if (state !== prevState) {
+    setPrevState(state)
     if (state.success && state.order) {
       setShowSuccess(true)
     }
-  }, [state.success, state.order])
+  }
 
   return (
     <div className="flex flex-col gap-y-4 w-full">
