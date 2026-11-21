@@ -21,9 +21,12 @@ Rotating water ripple wall lamp – aluminium head, hammered stainless steel ref
 - https://creative.lighting/products/velwave-wall-sconce
 - https://www.lyfairs.com/products/ripple-rotating-ambient-wall-sconce
 - https://vidirlighting.com/products/ripple-rotating-wall-lamp
-- AliExpress: search "ShinyYing Water Ripple Wall Lamp" (steel, 180° rotation, ~$63). Paste the link to the listing.
+- AliExpress (same lamp, Solo and Duo versions): https://nl.aliexpress.com/w/wholesale-ShinyYing-Water-Ripple-Wall-Lamp.html
+  Better: open the listing and paste its own link (it looks like `aliexpress.com/item/<number>.html`); CJ matches a product link faster than a search page.
 
 **Target price:** $30–40 per piece including shipping to the Netherlands
+
+**Variants:** Solo (1 lamp) and Duo (2 lamps)
 
 **Quantity:** start with 1–5 samples, then 20–50 pieces per month if the test works
 
@@ -43,7 +46,7 @@ wall lamp through CJ. Please source the closest match to the reference links:
 
 Questions:
 
-1. Unit price for 1, 10 and 50 pieces, and shipping cost to the Netherlands.
+1. Unit price for 1, 10 and 50 pieces, and shipping cost to the Netherlands, for both the **Solo** and the **Duo** version (2 lamps shipped in one parcel).
 2. Do you have it (or can you stock it) in an **EU warehouse**? Delivery time to NL from the EU
    warehouse and from China.
 3. Which power versions exist: plug-in with cable and switch (EU plug), hardwired, or
@@ -65,7 +68,8 @@ Thank you!
 
 | | CJ | AliExpress (reference) |
 |---|---|---|
-| Price per piece incl. shipping to NL | | ~$63 ⚠️ |
+| Price Solo incl. shipping to NL | | ~$63 ⚠️ |
+| Price Duo incl. shipping to NL | | |
 | EU warehouse? Delivery time | | China, 7–12 days |
 | Power version / EU plug | | ? |
 | Light colour (K) | | ? |
