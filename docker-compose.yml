@@ -7,7 +7,9 @@
 #               backend    → poort 9000 (bv. api.shop.joranit.com)  — HTTPS aan
 #   4. Deploy
 #
-# Lokaal testen zonder Dokploy: docker network create dokploy-network && docker compose up --build
+# Dokploy: zet "Isolated Deployment" aan (Advanced). Dan krijgt deze stack een eigen netwerk;
+# op het gedeelde dokploy-network botsen namen als `postgres` met andere stacks.
+# Lokaal testen zonder Dokploy: docker compose up --build
 
 services:
   postgres:
@@ -95,9 +97,6 @@ services:
       timeout: 5s
       retries: 30
       start_period: 60s
-    networks:
-      - default
-      - dokploy-network
 
   storefront:
     build:
@@ -120,15 +119,8 @@ services:
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-change-me}
     expose:
       - "8000"
-    networks:
-      - default
-      - dokploy-network
 
 volumes:
   postgres_data:
   redis_data:
   uploads:
-
-networks:
-  dokploy-network:
-    external: true
