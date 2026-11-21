@@ -2,6 +2,7 @@
 
 import { sdk } from "@lib/config"
 import { attachAnalyticsToCart } from "./analytics"
+import { listCartShippingMethods } from "./fulfillment"
 import medusaError from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
 import { revalidateTag } from "next/cache"
@@ -382,9 +383,31 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
     return e.message
   }
 
+  // Precies één verzendoptie (en geen afhalen)? Dan kiezen we hem meteen en
+  // slaan we de stap "Verzending" over: één klik minder in de checkout. De
+  // gekozen optie en prijs staan daarna gewoon in het overzicht.
+  const nextStep = (await autoSelectOnlyShippingOption()) ? "payment" : "delivery"
+
   redirect(
-    `/${formData.get("shipping_address.country_code")}/checkout?step=delivery`
+    `/${formData.get("shipping_address.country_code")}/checkout?step=${nextStep}`
   )
+}
+
+async function autoSelectOnlyShippingOption(): Promise<boolean> {
+  try {
+    const cartId = await getCartId()
+    if (!cartId) return false
+    const options = await listCartShippingMethods(cartId)
+    if (options?.length !== 1) return false
+    const [only] = options
+    const isPickup =
+      (only as any).service_zone?.fulfillment_set?.type === "pickup"
+    if (isPickup || only.price_type === "calculated") return false
+    await setShippingMethod({ cartId, shippingMethodId: only.id })
+    return true
+  } catch {
+    return false
+  }
 }
 
 /**

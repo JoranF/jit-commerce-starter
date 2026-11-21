@@ -4,6 +4,7 @@ import posthog from "posthog-js"
 import { PostHogProvider as PHProvider } from "posthog-js/react"
 import { useEffect, useState } from "react"
 import { VISITOR_COOKIE } from "@lib/analytics/constants"
+import { flushTrackQueue } from "./track"
 
 const KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY
 
@@ -21,8 +22,10 @@ function readCookie(name: string) {
  * - distinct_id = de `jit_vid` cookie uit middleware, zodat server en browser
  *   dezelfde bezoeker zien (nodig voor A/B-testen zonder flikkering).
  * - Cookiebanner: tot er toestemming is draait PostHog cookieless
- *   (`cookieless_mode: "on_reject"`). Zet cookieless mode ook aan in je
- *   PostHog project settings.
+ *   (`cookieless_mode: "on_reject"` + `opt_out_capturing_by_default`): ook wie
+ *   niet op de banner klikt telt mee in de funnel, anoniem. Zet cookieless mode
+ *   ook aan in je PostHog project settings. A/B-resultaten tellen alleen
+ *   bezoekers met toestemming (zie analytics/src/queries.ts).
  */
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -36,7 +39,17 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       capture_pageleave: true,
       person_profiles: "identified_only",
       cookieless_mode: "on_reject",
+      // Zonder deze regel meet PostHog NIETS zolang de bezoeker nog niet op de
+      // banner heeft geklikt (de meeste mensen klikken nooit). Zo telt "nog geen
+      // keuze" als weigeren: anoniem en cookieless meten, tot iemand accepteert.
+      opt_out_capturing_by_default: true,
       bootstrap: visitorId ? { distinctID: visitorId } : undefined,
+      // Sessie-opnames + heatmaps: zo zie je wáár mensen vastlopen (zet ze ook
+      // aan in PostHog → Settings → Session replay / Heatmaps). Alle invoervelden
+      // worden gemaskeerd; opnames lopen alleen na cookietoestemming.
+      enable_heatmaps: true,
+      session_recording: { maskAllInputs: true },
+      loaded: () => flushTrackQueue(),
     })
   }, [])
 
@@ -68,32 +81,35 @@ function ConsentBanner() {
     setVisible(false)
   }
 
+  // Compacte balk onderaan: mag de koopknop en het adresformulier niet afdekken.
   return (
     <div
       role="dialog"
       aria-label="Cookievoorkeuren"
-      className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-xl rounded-lg border border-ui-border-base bg-white p-4 shadow-lg small:left-auto"
+      className="fixed inset-x-0 bottom-0 z-[60] border-t border-ui-border-base bg-white px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] small:inset-x-auto small:bottom-4 small:right-4 small:max-w-md small:rounded-lg small:border"
     >
-      <p className="text-small-regular text-ui-fg-subtle">
-        We gebruiken analytische cookies om de winkel te verbeteren. Weiger je,
-        dan meten we alleen anoniem.{" "}
-        <a href="/privacy" className="underline">
-          Privacyverklaring
-        </a>
-      </p>
-      <div className="mt-3 flex gap-2 justify-end">
-        <button
-          onClick={() => answer(false)}
-          className="px-3 py-1.5 text-small-regular rounded border border-ui-border-base"
-        >
-          Weigeren
-        </button>
-        <button
-          onClick={() => answer(true)}
-          className="px-3 py-1.5 text-small-regular rounded bg-ui-button-inverted text-ui-fg-on-inverted"
-        >
-          Accepteren
-        </button>
+      <div className="flex items-center gap-3">
+        <p className="flex-1 text-xsmall-regular text-ui-fg-subtle">
+          Analytische cookies helpen ons de winkel te verbeteren. Weiger je, dan
+          meten we alleen anoniem.{" "}
+          <a href="/privacy" className="underline">
+            Privacy
+          </a>
+        </p>
+        <div className="flex shrink-0 gap-2">
+          <button
+            onClick={() => answer(false)}
+            className="rounded border border-ui-border-base px-3 py-1.5 text-small-regular"
+          >
+            Weigeren
+          </button>
+          <button
+            onClick={() => answer(true)}
+            className="rounded bg-ui-button-inverted px-3 py-1.5 text-small-regular text-ui-fg-on-inverted"
+          >
+            Accepteren
+          </button>
+        </div>
       </div>
     </div>
   )

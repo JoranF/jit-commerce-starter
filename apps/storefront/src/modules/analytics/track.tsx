@@ -5,10 +5,30 @@ import { useFeatureFlagVariantKey } from "posthog-js/react"
 import { useEffect, useRef, useState } from "react"
 import type { AnalyticsEvent, ExperimentKey } from "@lib/analytics/constants"
 
-/** Stuur een event vanuit client code. No-op als PostHog niet geladen is. */
+type Queued = [AnalyticsEvent, Record<string, unknown> | undefined]
+const queue: Queued[] = []
+const QUEUE_LIMIT = 50
+
+/**
+ * Stuur een event vanuit client code. Is PostHog nog niet geladen (init loopt in
+ * de provider), dan wacht het event in een wachtrij en gaat het mee zodra
+ * PostHog klaar is. Zonder PostHog-key gebeurt er niets.
+ */
 export function track(event: AnalyticsEvent, properties?: Record<string, unknown>) {
-  if (typeof window === "undefined" || !posthog.__loaded) return
+  if (typeof window === "undefined" || !process.env.NEXT_PUBLIC_POSTHOG_KEY) return
+  if (!posthog.__loaded) {
+    if (queue.length < QUEUE_LIMIT) queue.push([event, properties])
+    return
+  }
   posthog.capture(event, properties)
+}
+
+/** Aangeroepen door de provider zodra posthog.init klaar is. */
+export function flushTrackQueue() {
+  while (queue.length) {
+    const [event, properties] = queue.shift()!
+    posthog.capture(event, properties)
+  }
 }
 
 /**
@@ -25,12 +45,8 @@ export function TrackEvent({
   const sent = useRef(false)
   useEffect(() => {
     if (sent.current) return
-    // Wacht kort tot posthog.init klaar is (provider init in useEffect).
-    const t = setTimeout(() => {
-      track(event, properties)
-      sent.current = true
-    }, 50)
-    return () => clearTimeout(t)
+    sent.current = true
+    track(event, properties)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event])
   return null

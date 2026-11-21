@@ -33,8 +33,13 @@ const Payment = ({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [paymentComplete, setPaymentComplete] = useState(false)
+  // Vooraf kiezen scheelt een klik: de actieve sessie, anders iDEAL (in NL
+  // veruit de meest gebruikte), anders de enige beschikbare methode.
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(
-    activeSession?.provider_id ?? ""
+    () =>
+      activeSession?.provider_id ??
+      availablePaymentMethods.find((m) => /ideal/i.test(m.id))?.id ??
+      (availablePaymentMethods.length === 1 ? availablePaymentMethods[0].id : "")
   )
 
   const searchParams = useSearchParams()

@@ -18,6 +18,7 @@ import { EVENTS, EXPERIMENTS } from "@lib/analytics/constants"
 import { track, useExperiment } from "@modules/analytics/track"
 import { store } from "@stores"
 import { brandButton } from "./brand-button"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 /**
  * Knoptekst per variant van het experiment `pdp-cta-text`, uit de winkelconfig.
@@ -62,6 +63,8 @@ export default function ProductActions({
   )
   const [isUrlVariantApplied, setIsUrlVariantApplied] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
+  const [added, setAdded] = useState(false)
+  const [addError, setAddError] = useState<string | null>(null)
   const countryCode = useParams().countryCode as string
 
   const selectedVariant = useMemo(() => {
@@ -136,16 +139,27 @@ export default function ProductActions({
   )
   const ctaText = CTA_TEXT[ctaVariant] ?? CTA_TEXT.control
 
+  // Experiment atc-flow: wat gebeurt er na "In winkelmand"?
+  // control = bevestiging met een duidelijke knop "Afrekenen", test = meteen naar de checkout.
+  const { variant: atcVariant } = useExperiment(EXPERIMENTS.atcFlow)
+
   const handleAddToCart = async () => {
     if (!selectedVariant?.id) return null
 
     setIsAdding(true)
+    setAddError(null)
 
-    await addToCart({
-      variantId: selectedVariant.id,
-      quantity: 1,
-      countryCode,
-    })
+    try {
+      await addToCart({
+        variantId: selectedVariant.id,
+        quantity: 1,
+        countryCode,
+      })
+    } catch (e) {
+      setAddError("Dat lukte niet. Probeer het nog een keer.")
+      setIsAdding(false)
+      return null
+    }
     notifyCartUpdated()
 
     track(EVENTS.productAddedToCart, {
@@ -156,8 +170,16 @@ export default function ProductActions({
       price: selectedVariant.calculated_price?.calculated_amount,
       currency: selectedVariant.calculated_price?.currency_code,
       quantity: 1,
+      atc_flow: atcVariant,
     })
 
+    if (atcVariant === "test") {
+      // Laat de knop laden tot de checkout er is.
+      router.push(`/${countryCode}/checkout`)
+      return null
+    }
+
+    setAdded(true)
     setIsAdding(false)
   }
 
@@ -243,7 +265,46 @@ export default function ProductActions({
               ? ctaText
               : CTA_TEXT.control}
           </Button>
+          {addError && (
+            <p role="alert" className="text-small-regular text-rose-600">
+              {addError}
+            </p>
+          )}
         </form>
+        {added && (
+          <div
+            role="status"
+            className="mt-2 flex flex-col gap-y-3 rounded-[2px] border border-current/15 p-4"
+            data-testid="added-to-cart"
+          >
+            <p className="flex items-center gap-2 text-base">
+              <svg
+                aria-hidden
+                viewBox="0 0 20 20"
+                className="h-4 w-4 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              >
+                <path d="M4 10.5l3.5 3.5L16 6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Toegevoegd aan je winkelmand
+            </p>
+            <LocalizedClientLink
+              href="/checkout"
+              className={`inline-flex h-10 w-full items-center justify-center rounded-md bg-ui-button-inverted text-ui-fg-on-inverted txt-compact-small-plus ${brandButton}`}
+              data-testid="added-to-cart-checkout"
+            >
+              Afrekenen
+            </LocalizedClientLink>
+            <LocalizedClientLink
+              href="/cart"
+              className="text-center text-small-regular underline underline-offset-4"
+            >
+              Bekijk winkelmand
+            </LocalizedClientLink>
+          </div>
+        )}
         <MobileActions
           product={product}
           variant={selectedVariant}
@@ -252,6 +313,8 @@ export default function ProductActions({
           inStock={inStock}
           handleAddToCart={handleAddToCart}
           isAdding={isAdding}
+          added={added}
+          ctaLabel={ctaReady ? ctaText : CTA_TEXT.control}
           show={!inView}
           optionsDisabled={!!disabled || isAdding}
         />

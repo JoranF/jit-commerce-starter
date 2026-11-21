@@ -1,4 +1,4 @@
-import { EVENTS } from "./config"
+import { CHECKOUT_STEPS, EVENTS } from "./config"
 import { PostHogApi, sqlString } from "./posthog"
 import type { VariantResult } from "./stats"
 
@@ -92,6 +92,8 @@ export async function getTopProducts(ph: PostHogApi, days: number, limit = 10): 
  * Blootstelling = eerste `$feature_flag_called` voor de flag (de variant die de
  * bezoeker zag). Conversie = `order_completed` van dezelfde distinct_id ná
  * blootstelling. Werkt omdat storefront en backend dezelfde distinct_id gebruiken.
+ * Cookieless bezoekers (nog geen toestemming) hebben in de browser een andere ID
+ * dan hun bestelling; die tellen niet mee, anders lijkt hun conversie 0%.
  */
 export async function getExperimentResults(
   ph: PostHogApi,
@@ -107,6 +109,7 @@ export async function getExperimentResults(
          FROM events
          WHERE event = '$feature_flag_called'
            AND properties.$feature_flag = ${sqlString(flag)}
+           AND coalesce(toString(properties.$cookieless_mode), '') != 'true'
            AND timestamp >= toDateTime(${sqlString(sinceIso)})
          GROUP BY distinct_id
        ),
@@ -148,4 +151,48 @@ export async function getExperimentResults(
     })),
     firstExposure,
   }
+}
+
+export type CheckoutStepRow = { step: string; label: string; viewed: number; completed: number }
+
+/**
+ * Per checkout-stap: hoeveel unieke bezoekers zagen hem en hoeveel rondden hem af.
+ * "Controleren" telt als afgerond bij payment_redirected (Mollie) of een bestelling.
+ */
+export async function getCheckoutSteps(ph: PostHogApi, days: number): Promise<CheckoutStepRow[]> {
+  const [row] = await ph.hogql(
+    `SELECT
+       ${CHECKOUT_STEPS.map(
+         (s) =>
+           `uniqIf(distinct_id, event = ${sqlString(EVENTS.checkoutStepViewed)} AND properties.step = ${sqlString(s.key)}) AS viewed_${s.key},
+       uniqIf(distinct_id, event = ${sqlString(EVENTS.checkoutStepCompleted)} AND properties.step = ${sqlString(s.key)}) AS completed_${s.key}`
+       ).join(",\n       ")},
+       uniqIf(distinct_id, event IN (${sqlString(EVENTS.paymentRedirected)}, ${sqlString(EVENTS.orderCompleted)})) AS submitted
+     FROM events
+     WHERE timestamp >= now() - INTERVAL ${days} DAY`,
+    "jit: checkout steps"
+  )
+  return CHECKOUT_STEPS.map((s) => ({
+    step: s.key,
+    label: s.label,
+    viewed: n(row?.[`viewed_${s.key}`]),
+    completed: s.key === "review" ? n(row?.submitted) : n(row?.[`completed_${s.key}`]),
+  }))
+}
+
+export type CheckoutErrorRow = { step: string; error: string; visitors: number }
+
+/** Meest getoonde foutmeldingen in de checkout. */
+export async function getCheckoutErrors(ph: PostHogApi, days: number, limit = 5): Promise<CheckoutErrorRow[]> {
+  const rows = await ph.hogql(
+    `SELECT toString(properties.step) AS step, toString(properties.error) AS error, uniq(distinct_id) AS visitors
+     FROM events
+     WHERE event = ${sqlString(EVENTS.checkoutError)}
+       AND timestamp >= now() - INTERVAL ${days} DAY
+     GROUP BY step, error
+     ORDER BY visitors DESC
+     LIMIT ${limit}`,
+    "jit: checkout errors"
+  )
+  return rows.map((r) => ({ step: String(r.step || "?"), error: String(r.error || ""), visitors: n(r.visitors) }))
 }

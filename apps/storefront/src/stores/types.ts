@@ -2,7 +2,7 @@
  * Eén winkel = één StoreConfig. De code is gedeeld; merk, kleuren, teksten en
  * beelden komen uit de config. Kies de winkel met NEXT_PUBLIC_STORE_ID.
  *
- * Teksten mogen {levertijd}, {verwerking}, {bezorging} en {bedenktijd} bevatten;
+ * Teksten mogen {levertijd}, {verwerking}, {bezorging}, {bedenktijd} en {verzendkosten} bevatten;
  * die worden ingevuld vanuit het winkelbeleid van de regio (Medusa admin →
  * Settings → Regions → Metadata), zodat de site nooit iets anders belooft dan
  * de verzend- en retourpagina's.

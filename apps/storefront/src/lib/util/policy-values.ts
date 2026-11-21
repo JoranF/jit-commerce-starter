@@ -17,5 +17,11 @@ export const policyValues = (p: StorePolicies | null | undefined): PolicyValues 
           p.handlingDays.max + p.transitDays.max
         ),
         bedenktijd: `${p.returnWindowDays}`,
+        verzendkosten:
+          p.shippingRate === 0
+            ? "gratis"
+            : new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR" }).format(
+                p.shippingRate
+              ),
       }
     : {}

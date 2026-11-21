@@ -41,10 +41,12 @@ export type PolicyValues = {
   bezorging?: string
   levertijd?: string
   bedenktijd?: string
+  /** "€ 4,95" of "gratis". */
+  verzendkosten?: string
 }
 
 /**
- * Vult {levertijd}, {verwerking}, {bezorging} en {bedenktijd} in. Zonder
+ * Vult {levertijd}, {verwerking}, {bezorging}, {bedenktijd} en {verzendkosten} in. Zonder
  * winkelbeleid valt de zin met een ontbrekende waarde weg (null), zodat de site
  * nooit een lege of verzonnen termijn toont.
  */

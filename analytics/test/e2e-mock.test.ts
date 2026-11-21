@@ -81,9 +81,18 @@ test("report + experiments draaien volledig tegen nep-PostHog", async () => {
     const saved = await readFile(path.join(cwd, "reports", files[0]), "utf8")
     assert.match(saved, /Omzet \(incl\. btw\)/)
 
-    // Auto-ship uit in config (autoShip: false) → geen PATCH op de flag
-    await run(tsx, [path.join(root, "src/experiments.ts")], { cwd, env: { ...env, AUTO_SHIP_WINNERS: "true" } })
+    assert.match(report.stdout, /Checkout per stap/)
+
+    // Zonder AUTO_SHIP_WINNERS → niets uitrollen
+    await run(tsx, [path.join(root, "src/experiments.ts")], { cwd, env })
     assert.ok(!calls.some((c) => c.method === "PATCH" && c.url.includes("/feature_flags/")))
+
+    // Met AUTO_SHIP_WINNERS=true (en autoShip: true in config) → winnaar naar 100%
+    await run(tsx, [path.join(root, "src/experiments.ts")], { cwd, env: { ...env, AUTO_SHIP_WINNERS: "true" } })
+    const flagPatch = calls.find((c) => c.method === "PATCH" && c.url.includes("/feature_flags/70/"))
+    assert.ok(flagPatch, "flag van de winnaar wordt bijgewerkt")
+    const variants = flagPatch.body.filters.multivariate.variants
+    assert.deepEqual(variants.map((v: any) => [v.key, v.rollout_percentage]), [["control", 0], ["test", 100]])
   } finally {
     server.close()
   }

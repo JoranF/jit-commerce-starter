@@ -1,6 +1,8 @@
 "use client"
 
 import { convertToLocale } from "@lib/util/money"
+import { getRegionPolicies } from "@lib/util/store-policies"
+import { HttpTypes } from "@medusajs/types"
 import React from "react"
 
 type CartTotalsProps = {
@@ -16,6 +18,7 @@ type CartTotalsProps = {
     discount_total?: number | null
     discount_subtotal?: number | null
     shipping_methods?: unknown[] | null
+    region?: Pick<HttpTypes.StoreRegion, "metadata"> | null
   }
 }
 
@@ -29,6 +32,11 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
   const shipping = totals.shipping_total ?? totals.shipping_subtotal ?? 0
   // Winkelmand zonder gekozen verzendmethode: nog geen bedrag tonen (geen € 0,00).
   const shippingUnknown = Array.isArray(totals.shipping_methods) && totals.shipping_methods.length === 0
+  // Nog geen verzendmethode gekozen: toon het vaste tarief uit het winkelbeleid
+  // (geen verrassing bij de laatste stap, de #1 reden om af te haken).
+  const shippingEstimate = shippingUnknown
+    ? getRegionPolicies(totals.region)?.shippingRate ?? null
+    : null
   const discount = totals.discount_total ?? totals.discount_subtotal ?? 0
   const money = (amount: number | null | undefined) =>
     convertToLocale({ amount: amount ?? 0, currency_code })
@@ -45,7 +53,13 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
         <div className="flex items-center justify-between">
           <span>Verzending</span>
           <span data-testid="cart-shipping" data-value={shipping}>
-            {shippingUnknown ? "Bij het afrekenen" : money(shipping)}
+            {!shippingUnknown
+              ? money(shipping)
+              : shippingEstimate === null
+              ? "Bij het afrekenen"
+              : shippingEstimate === 0
+              ? "Gratis"
+              : money(shippingEstimate)}
           </span>
         </div>
         {!!discount && (
@@ -67,9 +81,9 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
         <span
           className="txt-xlarge-plus"
           data-testid="cart-total"
-          data-value={total || 0}
+          data-value={(total || 0) + (shippingEstimate ?? 0)}
         >
-          {money(total)}
+          {money((total || 0) + (shippingEstimate ?? 0))}
         </span>
       </div>
       <p className="mb-2 mt-1 text-right txt-small text-ui-fg-subtle" data-testid="cart-taxes" data-value={tax_total || 0}>

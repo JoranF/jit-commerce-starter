@@ -10,6 +10,7 @@ import { getProductPrice } from "@lib/util/get-product-price"
 import OptionSelect from "./option-select"
 import { store } from "@stores"
 import { brandButton } from "./brand-button"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { HttpTypes } from "@medusajs/types"
 import { isSimpleProduct } from "@lib/util/product"
 
@@ -21,6 +22,10 @@ type MobileActionsProps = {
   inStock?: boolean
   handleAddToCart: () => void
   isAdding?: boolean
+  /** Na toevoegen: de knop wordt "Afrekenen". */
+  added?: boolean
+  /** Knoptekst (volgt het experiment pdp-cta-text, net als de grote knop). */
+  ctaLabel?: string
   show: boolean
   optionsDisabled: boolean
 }
@@ -33,6 +38,8 @@ const MobileActions: React.FC<MobileActionsProps> = ({
   inStock,
   handleAddToCart,
   isAdding,
+  added,
+  ctaLabel,
   show,
   optionsDisabled,
 }) => {
@@ -119,6 +126,15 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                   <ChevronDown />
                 </div>
               </Button>}
+              {added ? (
+                <LocalizedClientLink
+                  href="/checkout"
+                  className={`inline-flex h-10 w-full items-center justify-center rounded-md bg-ui-button-inverted text-ui-fg-on-inverted txt-compact-small-plus ${brandButton}`}
+                  data-testid="mobile-checkout-button"
+                >
+                  Afrekenen
+                </LocalizedClientLink>
+              ) : (
               <Button
                 type="button"
                 onClick={handleAddToCart}
@@ -131,8 +147,9 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                   ? "Kies een uitvoering"
                   : !inStock
                   ? "Uitverkocht"
-                  : store.buy.ctaText.control}
+                  : ctaLabel ?? store.buy.ctaText.control}
               </Button>
+              )}
             </div>
           </div>
         </Transition>
@@ -171,7 +188,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                       onClick={close}
                       className="bg-white w-12 h-12 rounded-full text-ui-fg-base flex justify-center items-center"
                       data-testid="close-modal-button"
-                      aria-label="Close"
+                      aria-label="Sluiten"
                     >
                       <X />
                     </button>

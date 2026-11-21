@@ -7,6 +7,9 @@ import Faq from "../components/faq"
 import Hero from "../components/hero"
 import Intro from "../components/intro"
 import Rooms from "../components/rooms"
+import { EVENTS } from "@lib/analytics/constants"
+import { TrackEvent } from "@modules/analytics/track"
+import TrackInView from "@modules/analytics/track-in-view"
 
 /**
  * Homepage van een winkel met één product (store.catalog === false):
@@ -44,11 +47,28 @@ export default function LandingTemplate({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: toJsonLd(faqJsonLd) }}
       />
+      {product && (
+        <TrackEvent
+          event={EVENTS.productViewed}
+          properties={{
+            product_id: product.id,
+            product_name: product.title,
+            handle: product.handle,
+            page: "landing",
+            price,
+          }}
+        />
+      )}
       <Hero price={price} />
       <Intro />
       <Rooms />
       {product ? (
-        <Buy product={product} region={region} values={values} />
+        <TrackInView
+          event={EVENTS.buySectionViewed}
+          properties={{ product_id: product.id, product_name: product.title }}
+        >
+          <Buy product={product} region={region} values={values} />
+        </TrackInView>
       ) : (
         // Product ontbreekt in Medusa (handle store.productHandle): maak het aan met
         // `medusa exec ./src/scripts/stores/setup-store.ts` in de backend.

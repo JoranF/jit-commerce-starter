@@ -127,6 +127,7 @@ export const lichtval: StoreConfig = {
     ],
     promises: [
       "In huis binnen {levertijd} werkdagen, met track & trace",
+      "Verzendkosten {verzendkosten}, betalen met iDEAL",
       "{bedenktijd} dagen bedenktijd",
       "2 jaar garantie",
     ],

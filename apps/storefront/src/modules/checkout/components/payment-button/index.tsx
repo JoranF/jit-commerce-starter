@@ -81,6 +81,8 @@ const StripePaymentButton = ({
   const onPaymentCompleted = async () => {
     await placeOrder()
       .catch((err) => {
+        // placeOrder stuurt door naar de bedankpagina via een redirect-"fout"; geen echte fout.
+        if (String(err?.digest ?? err?.message ?? "").startsWith("NEXT_REDIRECT")) return
         setErrorMessage(err.message)
       })
       .finally(() => {
@@ -251,6 +253,8 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
   const onPaymentCompleted = async () => {
     await placeOrder()
       .catch((err) => {
+        // placeOrder stuurt door naar de bedankpagina via een redirect-"fout"; geen echte fout.
+        if (String(err?.digest ?? err?.message ?? "").startsWith("NEXT_REDIRECT")) return
         setErrorMessage(err.message)
       })
       .finally(() => {
