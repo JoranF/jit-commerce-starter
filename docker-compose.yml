@@ -53,7 +53,7 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgres://medusa:${POSTGRES_PASSWORD}@postgres:5432/medusa
+      DATABASE_URL: postgres://medusa:${POSTGRES_PASSWORD}@postgres:5432/medusa?sslmode=disable
       REDIS_URL: redis://redis:6379
       MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL}
       MEDUSA_WORKER_MODE: shared
