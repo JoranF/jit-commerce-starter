@@ -97,8 +97,14 @@ Kosten: 12 beelden ≈ $1,80. De kop "Waterlicht op je muur." blijft voorlopig s
 
 Geen sample gekocht. Video = echte opname van de lamp (aangeleverd door de eigenaar), geknipt:
 `aan.mp4` (3,7 s, uit → aan, loop op de site), `marketing/lichtval/video-aan-draaien.mp4`
-(12 s, aan + schijf draaien, voor advertenties). Zonder geluid. Er zijn ook 2 AI-video's via fal
-gestart (≈ $0,90 incl. 2 "lamp uit"-beelden); de echte opname heeft de voorkeur.
+(12 s, aan + schijf draaien, voor advertenties). Zonder geluid.
+
+AI-video's (fal: Nano Banana Pro "lamp uit"-beeld + MiniMax H3 Max van uit naar de bestaande
+sfeerfoto, 8 s, 1080p; ≈ $0,90 totaal): `marketing/lichtval/video-ai-aan-story-9x16.mp4` en
+`video-ai-aan-feed-4x5.mp4`. Gecontroleerd: lamp gaat aan op ±1,5 s, daarna staat het licht stil,
+product scherp en gelijk aan de foto's. Let op: het AI-lichtpatroon is zachter/ronder dan het
+echte (dat is meer een waaier van stralen). Gebruik in advertenties bij voorkeur de echte opname;
+de AI-versies alleen als sfeer, en test of ze niet meer retouren geven ("ziet er anders uit").
 
 ## Klantcontact en dropshipping (2026-11-22)
 
