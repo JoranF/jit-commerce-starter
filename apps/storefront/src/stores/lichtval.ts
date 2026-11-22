@@ -52,17 +52,17 @@ export const lichtval: StoreConfig = {
     cta: "Bekijk de lamp",
     wide: {
       src: "/stores/lichtval/hero-breed.jpg",
-      alt: "Een wandlamp van aluminium en staal op een lichte muur in de schemering, met een golvend lichtpatroon eromheen.",
+      alt: "De Lichtval wandlamp aan op een blauwgrijze muur in de schemering, met een sluier van warm licht eromheen.",
       width: 2400,
       height: 1340,
     },
     tall: {
       src: "/stores/lichtval/hero-mobiel.jpg",
-      alt: "Een wandlamp van aluminium en staal op een lichte muur in de schemering, met een golvend lichtpatroon eromheen.",
+      alt: "De Lichtval wandlamp aan op een blauwgrijze muur in de schemering, met een sluier van warm licht eromheen.",
       width: 1290,
       height: 2311,
     },
-    lightOrigin: { wide: { x: 77, y: 46 }, tall: { x: 56, y: 33 } },
+    lightOrigin: { wide: { x: 77, y: 33 }, tall: { x: 57, y: 33 } },
   },
 
   intro: {

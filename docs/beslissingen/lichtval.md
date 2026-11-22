@@ -85,10 +85,11 @@ de CJ-lamp. Vervangen door nieuwe AI-beelden op basis van de CJ-productfoto's:
 | Ruimte "Boven de bank" (`woonkamer.jpg`) | woonkamer-b, 4:5 uitgesneden |
 | Ruimte "Naast het bed" (`slaapkamer.jpg`): set van twee | duo-a |
 | Ruimte "In de hal" (`hal.jpg`) | story-a, 4:5 uitgesneden |
+| Hero breed + mobiel (`hero-breed.jpg`, `hero-mobiel.jpg`) | oude hero bewerkt: lamp vervangen, compositie gelijk (lichtpunt 77/33 en 57/33) |
 | Advertenties (`marketing/lichtval/`) | feed-b (4:5), story-a (9:16) |
 
 Afgekeurd: feed-a (dubbele band bovenin), duo-b (zichtbaar snoer, aansluiting nog onbekend).
-Kosten: 10 beelden ≈ $1,50. Echte maten van de "Small": 33 cm hoog, schijf 10,5 cm, 8 cm diep,
+Kosten: 12 beelden ≈ $1,80. De kop "Waterlicht op je muur." blijft voorlopig staan. Echte maten van de "Small": 33 cm hoog, schijf 10,5 cm, 8 cm diep,
 220 V (maattekening CJ). Na de sample vervangen door eigen foto's.
 
 ## Volgende stappen
