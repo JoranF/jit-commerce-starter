@@ -36,8 +36,9 @@ Details en vragen aan de leverancier: [`../product-research/2026-11-cj-sourcing-
 | 2 lampen | `LICHTVAL-WANDLAMP-DUO` | **€219** |
 
 Code: `apps/backend/src/scripts/stores/definitions.ts` (optie "Aantal"). Bij een bestaande
-database voegt de setup de Duo toe, maar laat de prijs van "1 lamp" staan: zet die in de
-admin op €129.
+database voegt de setup de Duo toe. Prijzen en foto's van een bestaand product worden alleen
+bijgewerkt als `revision` in de definitie omhoog gaat (nu 2: foto's van de CJ-lamp en €129);
+daarna beheer je ze weer in de admin.
 
 Waarom €129: bij €119 blijft er ≈ €45 per verkoop over voor advertenties, krap tegen de
 gangbare €30–45 per verkoop op Meta in NL. Bij €129 is dat ≈ €53.

@@ -132,6 +132,56 @@ async function syncVariants(
 }
 
 /**
+ * Eenmalige update van een bestaand product als `product.revision` hoger is dan de
+ * revisie in de metadata: foto's vervangen en variantprijzen op de definitie zetten.
+ */
+async function applyRevision(
+  container: ExecArgs["container"],
+  product: ExistingProduct & { metadata?: Record<string, unknown> | null },
+  setup: StoreSetup,
+  log: (msg: string) => void
+) {
+  const p = setup.product
+  const wanted = p.revision ?? 0
+  const current = Number(product.metadata?.store_setup_revision ?? 0)
+  if (wanted <= current) return
+
+  const images = await uploadImages(container, setup)
+  await updateProductsWorkflow(container).run({
+    input: {
+      selector: { id: product.id },
+      update: {
+        images,
+        thumbnail: images[0]?.url,
+        metadata: { ...(product.metadata ?? {}), store_setup_revision: wanted },
+      },
+    },
+  })
+
+  const query = container.resolve(ContainerRegistrationKeys.QUERY)
+  const { data: variants } = await query.graph({
+    entity: "product_variant",
+    fields: ["id", "sku"],
+    filters: { product_id: product.id },
+  })
+  for (const v of variants) {
+    const def = p.variants.find((d) => d.sku === v.sku)
+    if (!def) continue
+    await updateProductVariantsWorkflow(container).run({
+      input: {
+        selector: { id: v.id },
+        update: { prices: [{ currency_code: "eur", amount: def.priceEur }] },
+      },
+    })
+  }
+  log(
+    `revisie ${current} → ${wanted}: ${images.length} foto's vervangen, prijzen gezet (` +
+      p.variants.map((v) => `${v.title} €${v.priceEur}`).join(", ") +
+      ")"
+  )
+}
+
+/**
  * Zet een winkel klaar in Medusa: winkelbeleid per regio, omschrijving van de
  * standaard verzending, het product (met foto's) en optioneel de demo-producten
  * op concept. Idempotent: opnieuw draaien maakt niets dubbel.
@@ -198,6 +248,7 @@ export default async function setupStore({ container, args }: ExecArgs) {
     fields: [
       "id",
       "status",
+      "metadata",
       "images.id",
       "variants.id",
       "variants.sku",
@@ -223,6 +274,7 @@ export default async function setupStore({ container, args }: ExecArgs) {
             handle: p.handle,
             description: p.description,
             status: ProductStatus.PUBLISHED,
+            metadata: { store_setup_revision: p.revision ?? 0 },
             thumbnail: images[0]?.url,
             images,
             shipping_profile_id: profile?.id,
@@ -260,6 +312,7 @@ export default async function setupStore({ container, args }: ExecArgs) {
     })
     log(`product "${p.title}" bestond al: teksten bijgewerkt (prijs en voorraad beheer je in de admin)`)
     await syncVariants(container, current as ExistingProduct, setup, log)
+    await applyRevision(container, current as ExistingProduct & { metadata?: Record<string, unknown> | null }, setup, log)
   }
 
   // 4. Demo-producten van de starter op concept (niet verwijderen).
