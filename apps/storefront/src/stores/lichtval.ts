@@ -163,5 +163,7 @@ export const lichtval: StoreConfig = {
 
   imageNote: "Sfeerbeelden. De lamp die je ontvangt kan in afwerking licht afwijken.",
 
-  company: {},
+  company: {
+    kvk: "96539402",
+  },
 }
