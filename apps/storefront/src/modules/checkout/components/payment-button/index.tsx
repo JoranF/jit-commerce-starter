@@ -171,6 +171,7 @@ const StripePaymentButton = ({
         disabled={disabled || notReady}
         onClick={handlePayment}
         size="large"
+        className="w-full small:w-auto"
         isLoading={submitting}
         data-testid={dataTestId}
       >
@@ -241,6 +242,7 @@ const MolliePaymentButton = ({
         isLoading={submitting}
         onClick={handlePayment}
         size="large"
+        className="w-full small:w-auto"
         data-testid={dataTestId}
       >
         Bestellen en betalen
@@ -283,6 +285,7 @@ const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
         isLoading={submitting}
         onClick={handlePayment}
         size="large"
+        className="w-full small:w-auto"
         data-testid="submit-order-button"
       >
         Bestellen en betalen

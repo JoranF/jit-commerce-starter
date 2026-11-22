@@ -100,10 +100,24 @@ export function compareVariants(
   results: VariantResult[],
   controlKey = "control",
   draws = 20_000,
-  seed = 42
+  seed = 42,
+  /**
+   * "conversion" (standaard): kans op een bestelling per bezoeker.
+   * "revenue_per_visitor": conversie × gemiddelde orderwaarde van die variant. Voor
+   * tests die de orderwaarde veranderen (bv. de set van twee voorselecteren), waar
+   * iets minder bestellingen tóch meer omzet kan zijn. De orderwaarde per variant
+   * wordt als vast genomen (alleen de conversie is onzeker): goed genoeg bij
+   * weinig verschillende producten.
+   */
+  metric: "conversion" | "revenue_per_visitor" = "conversion"
 ): Comparison[] {
   const control = results.find((r) => r.variant === controlKey)
   if (!control) throw new Error(`Geen '${controlKey}' variant in resultaten`)
+
+  const totalOrders = results.reduce((n, r) => n + r.converted, 0)
+  const overallAov = totalOrders ? results.reduce((n, r) => n + r.revenue, 0) / totalOrders : 1
+  const weight = (r: VariantResult) =>
+    metric === "revenue_per_visitor" ? (r.converted ? r.revenue / r.converted : overallAov) : 1
 
   const rand = rng(seed)
   const wins = new Map<string, number>(results.map((r) => [r.variant, 0]))
@@ -114,7 +128,7 @@ export function compareVariants(
     let bestVal = -1
     let controlVal = 0
     const vals = results.map((r) => {
-      const v = sampleBeta(1 + r.converted, 1 + Math.max(0, r.exposed - r.converted), rand)
+      const v = sampleBeta(1 + r.converted, 1 + Math.max(0, r.exposed - r.converted), rand) * weight(r)
       if (r.variant === controlKey) controlVal = v
       if (v > bestVal) {
         bestVal = v

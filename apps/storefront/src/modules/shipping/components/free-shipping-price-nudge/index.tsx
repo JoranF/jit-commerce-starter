@@ -150,10 +150,10 @@ function FreeShippingInline({
               <div className="flex items-center gap-1.5">
                 {" "}
                 <CheckCircleSolid className="text-green-500 inline-block" />{" "}
-                Free Shipping unlocked!
+                Gratis verzending!
               </div>
             ) : (
-              `Unlock Free Shipping`
+              `Gratis verzending`
             )}
           </div>
 
@@ -162,14 +162,14 @@ function FreeShippingInline({
               "opacity-0 invisible": price.target_reached,
             })}
           >
-            Only{" "}
+            Nog{" "}
             <span className="text-neutral-950">
               {convertToLocale({
                 amount: price.target_remaining,
                 currency_code: cart.currency_code,
               })}
             </span>{" "}
-            away
+            te gaan
           </div>
         </div>
         <div className="flex justify-between gap-1">
@@ -226,10 +226,10 @@ function FreeShippingPopup({
                 {price.target_reached ? (
                   <div className="flex items-center gap-1.5">
                     <CheckCircleSolid className="text-green-500 inline-block" />{" "}
-                    Free Shipping unlocked!
+                    Gratis verzending!
                   </div>
                 ) : (
-                  `Unlock Free Shipping`
+                  `Gratis verzending`
                 )}
               </div>
 
@@ -238,14 +238,14 @@ function FreeShippingPopup({
                   "opacity-0 invisible": price.target_reached,
                 })}
               >
-                Only{" "}
+                Nog{" "}
                 <span className="text-white">
                   {convertToLocale({
                     amount: price.target_remaining,
                     currency_code: cart.currency_code,
                   })}
                 </span>{" "}
-                away
+                te gaan
               </div>
             </div>
             <div className="flex justify-between gap-1">

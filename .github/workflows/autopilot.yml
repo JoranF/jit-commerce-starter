@@ -1,0 +1,113 @@
+name: Autopilot – Claude verbetert de winkel
+
+# Elke dinsdag (na het weekrapport van maandag): Claude leest de cijfers, kiest de
+# volgende stap uit docs/autopilot/README.md (nieuwe A/B-test, winnaar inbakken,
+# advies voor advertenties) en zet die klaar als pull request.
+#
+# Veiligheid:
+# - Claude mag alleen een PR maken, nooit zelf naar main pushen.
+# - Automatisch samenvoegen (= live) alleen met variable AUTOPILOT_AUTOMERGE=true én
+#   als de PR uitsluitend testinhoud raakt (zie stap "Mag dit automatisch live?").
+#   Al het andere wacht op jouw akkoord in GitHub.
+#
+# Nodig: secrets ANTHROPIC_API_KEY en POSTHOG_PERSONAL_API_KEY; variable
+# AUTOPILOT_ENABLED=true. Optioneel: secret AUTOPILOT_GITHUB_TOKEN (fine-grained PAT
+# met contents + pull requests) zodat CI ook op de PR draait.
+
+on:
+  schedule:
+    - cron: "23 6 * * 2" # dinsdag 06:23 UTC
+  workflow_dispatch:
+    inputs:
+      store:
+        description: "Winkel (analytics/src/stores.ts)"
+        default: "lichtval"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: autopilot
+  cancel-in-progress: false
+
+jobs:
+  autopilot:
+    if: ${{ vars.AUTOPILOT_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      STORE: ${{ github.event.inputs.store || 'lichtval' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.AUTOPILOT_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Analytics installeren
+        working-directory: analytics
+        run: npm ci
+
+      # De cijfers waar Claude op beslist (zelfde scripts als de dagelijkse jobs).
+      - name: Weekrapport (14 dagen) en stand van de tests
+        working-directory: analytics
+        env:
+          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          POSTHOG_APP_HOST: ${{ vars.POSTHOG_APP_HOST || 'https://eu.posthog.com' }}
+          META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
+        run: |
+          npm run report -- --store "$STORE" --days 14 || echo "rapport mislukt" > reports/report-failed.txt
+          npm run experiments -- --store "$STORE" || true
+          if [ -n "$META_ADS_TOKEN" ]; then npm run ads -- --store "$STORE" || true; fi
+          ls -R reports | head -50
+
+      - name: Claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.AUTOPILOT_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          claude_args: >-
+            --max-turns 60
+            --allowedTools "Read,Glob,Grep,Edit,Write,Bash(git:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(gh pr view:*),Bash(npm test:*),Bash(npm run typecheck:*),Bash(npx tsc:*),Bash(pnpm --filter:*),Bash(cd:*),Bash(ls:*),Bash(cat:*),Bash(date:*)"
+          prompt: |
+            Je bent de autopilot van de webshop "${{ env.STORE }}" in deze repository.
+            Lees eerst docs/autopilot/README.md (regels, wachtrij, werkwijze) en volg die precies,
+            daarna docs/autopilot/log.md (wat er eerder gebeurde) en de rapporten in analytics/reports/.
+
+            Doe deze week precies één ding (de eerste die van toepassing is):
+            1. Is een experiment klaar en uitgerold ("Automatisch uitgerold" / beslissing winner)?
+               Bak de winnaar in (de testtekst wordt de gewone tekst) en zet de volgende test uit de wachtrij klaar.
+            2. Loopt er geen test en staat er een klaar in de wachtrij? Zet die klaar (inhoud + keys op de drie plekken).
+            3. Anders: geen codewijziging. Schrijf alleen je analyse en advies in docs/autopilot/log.md.
+
+            Werk op een nieuwe branch "autopilot/<datum>", draai de checks uit de README, commit en
+            maak een pull request met `gh pr create` (titel begint met "Autopilot:"). In de PR-tekst:
+            wat je deed, waarom (met cijfers), hoe we weten of het werkt, en wat er mis kan gaan.
+            Push nooit naar main en voeg zelf niets samen. Schrijf in het Nederlands.
+
+      # Vaste regel, niet aan Claude: alleen testinhoud mag zonder mens live.
+      - name: Mag dit automatisch live?
+        if: ${{ vars.AUTOPILOT_AUTOMERGE == 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.AUTOPILOT_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          pr=$(gh pr list --state open --search "Autopilot in:title" --json number,headRefName --jq '.[0].number')
+          if [ -z "$pr" ]; then echo "Geen autopilot-PR."; exit 0; fi
+          files=$(gh pr view "$pr" --json files --jq '.files[].path')
+          echo "$files"
+          allowed='^(apps/storefront/src/stores/[a-z0-9-]+\.experiments\.ts|apps/storefront/src/lib/analytics/constants\.ts|analytics/src/config\.ts|docs/autopilot/.*)$'
+          if echo "$files" | grep -Evq "$allowed"; then
+            echo "PR #$pr raakt meer dan testinhoud: wacht op akkoord van een mens."
+            exit 0
+          fi
+          # De checks nog een keer zelf draaien (niet vertrouwen op wat Claude zei).
+          git fetch origin "pull/$pr/head:pr-$pr" && git checkout "pr-$pr"
+          (cd analytics && npm test && npm run typecheck)
+          (cd apps/storefront && npx tsc --noEmit)
+          gh pr merge "$pr" --squash --delete-branch
+          echo "PR #$pr automatisch samengevoegd (alleen testinhoud, checks groen)."

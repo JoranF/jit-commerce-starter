@@ -29,6 +29,26 @@ export const retrieveOrder = async (id: string) => {
     .catch((err) => medusaError(err))
 }
 
+/**
+ * Actuele status van een bestelling voor "Volg je bestelling" (geen cache): de
+ * verzendingen met track & trace. Het order-ID is het "wachtwoord" (net als op
+ * de bedankpagina); er staat geen adres of e-mail op die pagina.
+ */
+export const retrieveOrderStatus = async (id: string) => {
+  return sdk.client
+    .fetch<HttpTypes.StoreOrderResponse>(`/store/orders/${id}`, {
+      method: "GET",
+      query: {
+        fields:
+          "id,display_id,created_at,status,fulfillment_status,payment_status,*items,*fulfillments,*fulfillments.labels,shipping_address.country_code,shipping_address.first_name",
+      },
+      headers: { ...(await getAuthHeaders()) },
+      cache: "no-store",
+    })
+    .then(({ order }) => order)
+    .catch(() => null)
+}
+
 export const listOrders = async (
   limit: number = 10,
   offset: number = 0,

@@ -6,6 +6,8 @@ export const dynamic = "force-static"
 export const revalidate = 60
 
 export const metadata: Metadata = {
+  // Staat het bedrijfsadres op: wel bereikbaar via de site, niet in zoekmachines.
+  robots: { index: false, follow: true },
   title: "Algemene voorwaarden",
   description: `De voorwaarden voor bestellingen bij ${STORE_NAME}.`,
 }
