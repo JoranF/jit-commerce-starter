@@ -131,10 +131,52 @@ const cjModule = process.env.CJ_API_KEY
           storeName: process.env.CJ_STORE_NAME || undefined,
           createFulfillment: process.env.CJ_CREATE_FULFILLMENT !== "false",
           baseUrl: process.env.CJ_BASE_URL || undefined,
+          // Standaard: neutraal verpakken, geen factuur/prijzen in het pakket.
+          orderRemark: process.env.CJ_ORDER_REMARK,
         },
       },
     ]
   : []
+
+/**
+ * E-mail aan klanten: orderbevestiging, track & trace en annulering
+ * (src/subscribers/email-*.ts, teksten in src/lib/emails). Verstuurd via Resend
+ * (RESEND_API_KEY) of Brevo (BREVO_API_KEY), afzender EMAIL_FROM. Zonder key logt
+ * Medusa de mails alleen (lokaal handig). Het `feed`-kanaal is voor de admin.
+ */
+const emailApi = process.env.RESEND_API_KEY
+  ? { provider: "resend", apiKey: process.env.RESEND_API_KEY }
+  : process.env.BREVO_API_KEY
+    ? { provider: "brevo", apiKey: process.env.BREVO_API_KEY }
+    : null
+const notificationModule = {
+  resolve: "@medusajs/medusa/notification",
+  options: {
+    providers: [
+      emailApi && process.env.EMAIL_FROM
+        ? {
+            resolve: "./src/modules/email",
+            id: "email",
+            options: {
+              ...emailApi,
+              from: process.env.EMAIL_FROM,
+              replyTo: process.env.EMAIL_REPLY_TO || undefined,
+              channels: ["email"],
+            },
+          }
+        : {
+            resolve: "@medusajs/medusa/notification-local",
+            id: "local-email",
+            options: { channels: ["email"] },
+          },
+      {
+        resolve: "@medusajs/medusa/notification-local",
+        id: "local",
+        options: { channels: ["feed"] },
+      },
+    ],
+  },
+}
 
 module.exports = defineConfig({
   projectConfig: {
@@ -153,5 +195,12 @@ module.exports = defineConfig({
     disable: process.env.DISABLE_MEDUSA_ADMIN === "true",
     backendUrl: process.env.MEDUSA_BACKEND_URL,
   },
-  modules: [...redisModules, ...paymentModule, analyticsModule, fileModule, ...cjModule],
+  modules: [
+    ...redisModules,
+    ...paymentModule,
+    analyticsModule,
+    fileModule,
+    notificationModule,
+    ...cjModule,
+  ],
 })

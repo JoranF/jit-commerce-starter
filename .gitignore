@@ -62,3 +62,6 @@ Thumbs.db
 # JIT
 .env.production
 analytics/reports
+
+# Voorbeelden van e-mails (pnpm medusa exec ./src/scripts/preview-emails.ts)
+apps/backend/email-previews/
