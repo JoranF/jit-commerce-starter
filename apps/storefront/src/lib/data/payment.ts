@@ -18,8 +18,12 @@ function withoutTestPayment<T extends { id: string }>(providers: T[]): T[] {
   return real.length || process.env.NODE_ENV === "production" ? real : providers
 }
 
+/** PayPal bieden we niet aan, ook niet als hij per ongeluk in de admin aan de regio hangt. */
+const withoutExcluded = <T extends { id: string }>(providers: T[]): T[] =>
+  providers.filter((p) => !/paypal/i.test(p.id))
+
 /** iDEAL eerst (NL), dan Bancontact (BE), daarna de rest op naam. */
-const ORDER = [/ideal/i, /bancontact/i, /apple-pay/i, /card/i, /paypal/i]
+const ORDER = [/ideal/i, /bancontact/i, /apple-pay/i, /card/i]
 const rank = (id: string) => {
   const i = ORDER.findIndex((re) => re.test(id))
   return i === -1 ? ORDER.length : i
@@ -48,7 +52,7 @@ export const listCartPaymentMethods = async (regionId: string) => {
       }
     )
     .then(({ payment_providers }) =>
-      withoutTestPayment(payment_providers).sort(byCheckoutOrder)
+      withoutTestPayment(withoutExcluded(payment_providers)).sort(byCheckoutOrder)
     )
     .catch(() => {
       return null

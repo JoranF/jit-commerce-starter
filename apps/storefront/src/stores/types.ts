@@ -164,8 +164,8 @@ export type StoreConfig = {
     defaultPack?: { flag: string; test: string }
   }
 
-  /** Betaalmethodes onder de koopknop (logo's). Standaard iDEAL, Bancontact, kaart, PayPal. */
-  paymentMethods?: ("ideal" | "bancontact" | "card" | "paypal" | "applepay")[]
+  /** Betaalmethodes onder de koopknop (logo's). Standaard iDEAL, Bancontact, kaart. Geen PayPal. */
+  paymentMethods?: ("ideal" | "bancontact" | "card" | "applepay")[]
 
   faq: { title: string; items: { q: string; a: string }[] }
 

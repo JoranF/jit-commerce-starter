@@ -1,6 +1,6 @@
 import { MOLLIE_PROVIDER_IDS, wantedRegionProviders } from "../payment-providers"
 
-const available = [...MOLLIE_PROVIDER_IDS, "pp_mollie-hosted-checkout_mollie", "pp_system_default"]
+const available = [...MOLLIE_PROVIDER_IDS, "pp_mollie-paypal_mollie", "pp_mollie-hosted-checkout_mollie", "pp_system_default"]
 
 describe("wantedRegionProviders", () => {
   it("changes nothing without Mollie (local testing)", () => {
@@ -23,6 +23,20 @@ describe("wantedRegionProviders", () => {
     expect(
       wantedRegionProviders(["pp_mollie-ideal_mollie", "pp_system_default"], { mollie: true, allowTest: true, available })
     ).toBeNull()
+  })
+
+  it("does not offer PayPal", () => {
+    expect(MOLLIE_PROVIDER_IDS.some((id) => /paypal/i.test(id))).toBe(false)
+  })
+
+  it("removes PayPal from an existing region", () => {
+    expect(
+      wantedRegionProviders(["pp_mollie-ideal_mollie", "pp_mollie-paypal_mollie"], {
+        mollie: true,
+        allowTest: false,
+        available,
+      })
+    ).toEqual(["pp_mollie-ideal_mollie"])
   })
 
   it("is idempotent", () => {

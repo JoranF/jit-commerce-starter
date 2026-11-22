@@ -33,7 +33,7 @@ zegt dat ook eerlijk vanaf half november.
 - ✅ Betaling nog "pending" bij terugkomst: geen "mislukt" meer (dan betalen mensen dubbel), maar
   "wordt verwerkt".
 - ⬜ Mollie-account afmaken (identiteit/KvK-check duurt een paar dagen), iDEAL, Bancontact,
-  creditcard, PayPal en Apple Pay aanzetten.
+  creditcard en Apple Pay aanzetten (PayPal niet: gebruiken we niet).
 - ⬜ Dokploy backend: `MOLLIE_API_KEY=test_…` en **`MOLLIE_DESCRIPTION=Lichtval`** (dit staat op
   het bankafschrift van de klant; "Bestelling" herkent niemand → terugboekingen).
 - ⬜ Testbestellingen in testmodus: betaald, mislukt, geannuleerd, en een terugbetaling vanuit de

@@ -1,7 +1,6 @@
 import { CreditCard } from "@medusajs/icons"
 import Bancontact from "@modules/common/icons/bancontact"
 import Ideal from "@modules/common/icons/ideal"
-import PayPal from "@modules/common/icons/paypal"
 import React from "react"
 
 /* Map of payment provider_id to their title and icon. Add in any payment providers you want to use. */
@@ -21,15 +20,10 @@ export const paymentInfoMap: Record<
     title: "Bancontact",
     icon: <Bancontact />,
   },
-  pp_paypal_paypal: {
-    title: "PayPal",
-    icon: <PayPal />,
-  },
   // Mollie (@variablevic/mollie-payments-medusa)
   "pp_mollie-ideal_mollie": { title: "iDEAL", icon: <Ideal /> },
   "pp_mollie-bancontact_mollie": { title: "Bancontact", icon: <Bancontact /> },
   "pp_mollie-card_mollie": { title: "Creditcard", icon: <CreditCard /> },
-  "pp_mollie-paypal_mollie": { title: "PayPal", icon: <PayPal /> },
   "pp_mollie-apple-pay_mollie": { title: "Apple Pay", icon: <CreditCard /> },
   "pp_mollie-giftcard_mollie": { title: "Cadeaukaart", icon: <CreditCard /> },
   "pp_mollie-hosted-checkout_mollie": {
@@ -111,9 +105,6 @@ export const isStripeLike = (providerId?: string) => {
   return providerId?.startsWith("pp_stripe_") || isMedusaPayments(providerId)
 }
 
-export const isPaypal = (providerId?: string) => {
-  return providerId?.startsWith("pp_paypal")
-}
 export const isManual = (providerId?: string) => {
   return providerId?.startsWith("pp_system_default")
 }

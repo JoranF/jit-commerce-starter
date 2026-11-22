@@ -215,7 +215,7 @@ export const lichtval: StoreConfig = {
   //   warnings: ["Alleen voor gebruik binnenshuis.", "..."],
   // },
 
-  paymentMethods: ["ideal", "bancontact", "card", "paypal", "applepay"],
+  paymentMethods: ["ideal", "bancontact", "card", "applepay"],
 
   // A/B-tests zonder code; los bestand zodat de autopilot alleen dát mag aanpassen.
   experimentContent: lichtvalExperiments,

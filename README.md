@@ -7,7 +7,7 @@ Gebouwd op de officiële [Medusa DTC Starter](https://github.com/medusajs/dtc-st
 |---|---|---|
 | Winkel-backend + admin | [Medusa 2.22](https://medusajs.com) (Node/TypeScript, PostgreSQL) | `apps/backend` |
 | Storefront | Next.js 16 (Medusa DTC-storefront, NL-vertaald waar het telt) | `apps/storefront` |
-| Betalingen | Mollie: iDEAL, Bancontact, creditcard, PayPal, Apple Pay | plugin in backend |
+| Betalingen | Mollie: iDEAL, Bancontact, creditcard, Apple Pay (geen PayPal) | plugin in backend |
 | Analytics + A/B-tests | PostHog (EU-cloud of zelf gehost) | storefront + backend |
 | Automatisering | Dashboards, weekrapport, A/B-evaluatie, AI-testideeën | `analytics/` |
 | Deploy | Dokploy: losse services (db, redis, backend, storefront) | README → Live zetten |
@@ -144,7 +144,7 @@ Admin: `https://<api-domein>/app`.
 
 1. Account op [mollie.com](https://www.mollie.com), activeer iDEAL e.d., kopieer de **test**-key (`test_...`)
 2. Dokploy → `<id>-backend` → Environment → `MOLLIE_API_KEY=test_...` en `MOLLIE_DESCRIPTION=<winkelnaam>` (staat op het bankafschrift van de klant) → Redeploy
-3. Bij de start koppelt de backend de Mollie-methodes (iDEAL, Bancontact, creditcard, PayPal, Apple Pay) aan je regio's en haalt hij de **handmatige testbetaling** eraf: daarmee kon iedereen bestellen zonder te betalen. Alleen om te testen: `ALLOW_TEST_PAYMENT=true` (backend) en `NEXT_PUBLIC_ALLOW_TEST_PAYMENT=true` (storefront)
+3. Bij de start koppelt de backend de Mollie-methodes (iDEAL, Bancontact, creditcard, Apple Pay) aan je regio's, haalt PayPal eraf als die er nog op staat, en haalt hij de **handmatige testbetaling** eraf: daarmee kon iedereen bestellen zonder te betalen. Alleen om te testen: `ALLOW_TEST_PAYMENT=true` (backend) en `NEXT_PUBLIC_ALLOW_TEST_PAYMENT=true` (storefront)
 4. Test een bestelling (betaald, mislukt, geannuleerd, terugbetaling), en zet daarna `live_...`
 
 De Mollie-plugin (`@variablevic/mollie-payments-medusa`) is een community-plugin (v0.0.x, vastgepind op `0.0.13`). Test hem grondig voordat je live gaat.

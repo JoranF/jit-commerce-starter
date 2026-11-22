@@ -37,7 +37,7 @@ const redisModules = REDIS_URL
   : []
 
 /**
- * Betalingen: Mollie (iDEAL, Bancontact, creditcard, PayPal, Apple Pay).
+ * Betalingen: Mollie (iDEAL, Bancontact, creditcard, Apple Pay. Geen PayPal).
  * Zonder MOLLIE_API_KEY is alleen de handmatige testbetaling beschikbaar.
  */
 const paymentModule = MOLLIE_API_KEY
