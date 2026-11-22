@@ -17,7 +17,7 @@ const EmptyCartMessage = () => {
       </Text>
       <div>
         <InteractiveLink href={store.catalog ? "/store" : "/"}>
-          {store.catalog ? "Bekijk de winkel" : "Bekijk de lamp"}
+          {store.catalog ? "Bekijk de winkel" : `Bekijk ${store.productLabel.toLowerCase()}`}
         </InteractiveLink>
       </div>
     </div>

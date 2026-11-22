@@ -28,6 +28,10 @@ export type StoreConfig = {
   catalog: boolean
   /** Handle van het hoofdproduct in Medusa. */
   productHandle: string
+  /** Menu-/linktekst naar het product, bv. "De lamp" of "De koffie". */
+  productLabel: string
+  /** Anker van het koopblok op de homepage (zonder #). Standaard "kopen". */
+  buyAnchor?: string
 
   theme: {
     colors: {
@@ -62,6 +66,12 @@ export type StoreConfig = {
      * Apart voor het brede en het staande beeld.
      */
     lightOrigin: { wide: { x: number; y: number }; tall: { x: number; y: number } }
+    /**
+     * Het "lamp gaat aan"-moment (licht spreidt vanuit lightOrigin). Standaard aan;
+     * zet op false voor producten zonder licht. lightOrigin bepaalt dan alleen de
+     * uitsnede van het beeld.
+     */
+    glow?: boolean
   }
 
   intro: { title: string; body: string; image: StoreImage }
@@ -82,6 +92,24 @@ export type StoreConfig = {
   }
 
   faq: { title: string; items: { q: string; a: string }[] }
+
+  /**
+   * Landingspagina per advertentie-invalshoek. Een advertentie met `angle=<key>`
+   * in de URL krijgt deze kop/tekst in de hero (zelfde pagina, zelfde product),
+   * zodat advertentie en pagina hetzelfde zeggen. Onbekende of lege angle = de
+   * gewone hero. Per angle zie je in PostHog (ad_angle) en in het ads-rapport
+   * wat het oplevert.
+   */
+  angles?: Record<
+    string,
+    {
+      /** Korte naam voor rapporten, bv. "Cadeau". */
+      label: string
+      title?: string
+      lead?: string
+      cta?: string
+    }
+  >
 
   /** Toon bij gegenereerde beelden tot er echte productfoto's zijn. */
   imageNote?: string

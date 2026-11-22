@@ -50,6 +50,14 @@ export type StoreSetup = {
   hideShippingCodes?: string[]
   /** Demo-producten van de starter op concept zetten (niet verwijderen). */
   hideDemoProducts?: boolean
+  /**
+   * Verlaagd btw-tarief voor het product (bv. voedingsmiddelen). Het product krijgt
+   * producttype `typeName`, met per land een eigen tarief dat voorgaat op het
+   * standaardtarief van de regio (NL 21% → 9%). Verzendkosten krijgen hetzelfde
+   * tarief (ze volgen de goederen). Alleen voor winkels die uitsluitend dit soort
+   * producten verkopen. Idempotent.
+   */
+  reducedVat?: { typeName: string; rates: Record<string, number> }
 }
 
 export const STORE_SETUPS: Record<string, StoreSetup> = {
@@ -97,4 +105,43 @@ export const STORE_SETUPS: Record<string, StoreSetup> = {
     hideShippingCodes: ["express"],
     hideDemoProducts: true,
   },
+  tarrazu: {
+    id: "tarrazu",
+    product: {
+      handle: "tarrazu-koffiebonen",
+      title: "Tarrazú koffiebonen",
+      subtitle: "Hele bonen uit Costa Rica",
+      description: [
+        "Hele koffiebonen uit Costa Rica, het land dat bekendstaat om koffie van hooggelegen plantages.",
+        "In zakken van 250 g, 500 g en 1 kg. Maal ze vlak voor het zetten: filter middelgrof, espresso fijn, French press grof. Bewaar ze luchtdicht, koel en donker.",
+      ].join("\n\n"),
+      images: [{ file: "1-product.png", alt: "Een zak Tarrazú koffiebonen." }],
+      optionTitle: "Gewicht",
+      variants: [
+        { title: "250 g", sku: "TARRAZU-250", priceEur: 12.95 },
+        { title: "500 g", sku: "TARRAZU-500", priceEur: 22.95 },
+        { title: "1 kg", sku: "TARRAZU-1000", priceEur: 39.95 },
+      ],
+    },
+    // Aanname tot er een leverancier is: brander/importeur in de EU, 1–2 dagen verwerking,
+    // 1–3 dagen bezorging. Pas aan zodra de leverancier vaststaat (docs/beslissingen/tarrazu.md).
+    policies: {
+      return_window_days: 14,
+      free_returns: false,
+      shipping_rate: 4.95,
+      handling_days_min: 1,
+      handling_days_max: 2,
+      transit_days_min: 1,
+      transit_days_max: 3,
+    },
+    standardShipping: {
+      name: "Verzending met track & trace",
+      description: "Met track & trace.",
+    },
+    hideShippingCodes: ["express"],
+    hideDemoProducts: true,
+    // Koffie is een voedingsmiddel: verlaagd btw-tarief (NL 9%, BE 6%, DE 7%).
+    reducedVat: { typeName: "Voedingsmiddelen", rates: { nl: 9, be: 6, de: 7 } },
+  },
+  // new-store:insert (niet weghalen: hier voegt `pnpm new-store` winkels toe)
 }

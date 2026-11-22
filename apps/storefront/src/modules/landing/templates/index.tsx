@@ -1,7 +1,7 @@
 import { HttpTypes } from "@medusajs/types"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { toJsonLd } from "@lib/util/product-structured-data"
-import { fillPolicy, store, type PolicyValues } from "@stores"
+import { buyAnchor, fillPolicy, store, type PolicyValues } from "@stores"
 import Buy from "../components/buy"
 import Faq from "../components/faq"
 import Hero from "../components/hero"
@@ -19,10 +19,13 @@ export default function LandingTemplate({
   product,
   region,
   values,
+  angle,
 }: {
   product: HttpTypes.StoreProduct | null
   region: HttpTypes.StoreRegion
   values: PolicyValues
+  /** Advertentie-invalshoek (store.angles), via /<land>/a/<angle>. */
+  angle?: string
 }) {
   const price = product ? getProductPrice({ product }).cheapestPrice?.calculated_price : null
 
@@ -55,11 +58,12 @@ export default function LandingTemplate({
             product_name: product.title,
             handle: product.handle,
             page: "landing",
+            landing_angle: angle ?? "standaard",
             price,
           }}
         />
       )}
-      <Hero price={price} />
+      <Hero price={price} angle={angle} />
       <Intro />
       <Rooms />
       {product ? (
@@ -72,8 +76,8 @@ export default function LandingTemplate({
       ) : (
         // Product ontbreekt in Medusa (handle store.productHandle): maak het aan met
         // `medusa exec ./src/scripts/stores/setup-store.ts` in de backend.
-        <section id="lamp" className="border-t border-brand-ink/10 bg-brand-light py-20 text-brand-ink">
-          <p className="content-container text-lg">De lamp is binnenkort te bestellen.</p>
+        <section id={buyAnchor} className="border-t border-brand-ink/10 bg-brand-light py-20 text-brand-ink">
+          <p className="content-container text-lg">{store.productLabel} is binnenkort te bestellen.</p>
         </section>
       )}
       {faq.length > 0 && <Faq title={store.faq.title} items={faq} />}

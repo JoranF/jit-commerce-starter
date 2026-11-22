@@ -9,6 +9,8 @@
  *   POSTHOG_APP_HOST          https://eu.posthog.com (EU cloud) of je eigen instance
  */
 
+import { currentStore } from "./stores"
+
 export type PostHogEnv = {
   apiKey: string
   projectId: string
@@ -17,7 +19,8 @@ export type PostHogEnv = {
 
 export function envFromProcess(): PostHogEnv {
   const apiKey = process.env.POSTHOG_PERSONAL_API_KEY
-  const projectId = process.env.POSTHOG_PROJECT_ID
+  // Winkel gekozen (--store / STORE_ID)? Dan zijn project uit src/stores.ts.
+  const projectId = currentStore()?.posthogProjectId || process.env.POSTHOG_PROJECT_ID
   const host = (process.env.POSTHOG_APP_HOST || "https://eu.posthog.com").replace(/\/$/, "")
   if (!apiKey || !projectId) {
     throw new Error(

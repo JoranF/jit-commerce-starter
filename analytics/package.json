@@ -9,7 +9,9 @@
     "report": "tsx src/report.ts",
     "experiments": "tsx src/experiments.ts",
     "test": "tsx --test test/*.test.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "stores": "tsx src/list-stores.ts",
+    "ads": "tsx src/ads.ts"
   },
   "engines": {
     "node": ">=20"

@@ -3,7 +3,7 @@ import { listCollections } from "@lib/data/collections";
 import { Text, clx } from "@modules/common/components/ui";
 
 import LocalizedClientLink from "@modules/common/components/localized-client-link";
-import { store } from "@stores";
+import { buyAnchor, store } from "@stores";
 
 /** Footer voor een winkel met één product. Bedrijfsgegevens uit de winkelconfig. */
 function BrandFooter() {
@@ -20,7 +20,7 @@ function BrandFooter() {
     {
       title: "Winkel",
       links: [
-        { href: "/#lamp", label: "De lamp" },
+        { href: `/#${buyAnchor}`, label: store.productLabel },
         { href: "/#vragen", label: "Vragen" },
       ],
     },

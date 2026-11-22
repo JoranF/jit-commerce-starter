@@ -26,6 +26,8 @@ export const lichtval: StoreConfig = {
   tagline: "Wandlampen met het licht van water.",
   catalog: false,
   productHandle: "lichtval-wandlamp",
+  productLabel: "De lamp",
+  buyAnchor: "lamp",
 
   theme: {
     colors: {
@@ -162,6 +164,21 @@ export const lichtval: StoreConfig = {
         a: "Je betaalt veilig via Mollie, bijvoorbeeld met iDEAL, Bancontact of creditcard.",
       },
     ],
+  },
+
+  // Invalshoeken voor advertenties: zet `angle=<key>` in de URL van de advertentie.
+  angles: {
+    sfeer: { label: "Sfeer" },
+    slaapkamer: {
+      label: "Slaapkamer",
+      title: "Zacht licht naast je bed.",
+      lead: "Een wandlamp die een sluier van warm licht over je muur legt. Genoeg om bij te lezen, zacht genoeg om bij in slaap te vallen.",
+    },
+    cadeau: {
+      label: "Cadeau",
+      title: "Een cadeau dat elke avond aangaat.",
+      lead: "Een wandlamp met een plaat van gegolfd staal. Zet hem aan en er valt een zachte sluier van warm licht over de muur.",
+    },
   },
 
   imageNote: "Sfeerbeelden. De lamp die je ontvangt kan in afwerking licht afwijken.",

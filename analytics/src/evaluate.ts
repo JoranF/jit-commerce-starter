@@ -1,5 +1,6 @@
 import { EXPERIMENTS, type ExperimentConfig } from "./config"
 import { PostHogApi } from "./posthog"
+import { currentStore } from "./stores"
 import { getExperimentResults } from "./queries"
 import { compareVariants, decide, type Comparison, type Decision, type VariantResult } from "./stats"
 
@@ -26,7 +27,9 @@ export async function evaluateAll(ph: PostHogApi): Promise<ExperimentEvaluation[
   const phExperiments = await ph.listAll<PhExperiment>("/experiments/")
   const out: ExperimentEvaluation[] = []
 
-  for (const config of EXPERIMENTS) {
+  // Alleen de experimenten van deze winkel (stores.ts → experiments), standaard alle.
+  const enabled = currentStore()?.experiments
+  for (const config of EXPERIMENTS.filter((e) => !enabled?.length || enabled.includes(e.key))) {
     const exp = phExperiments.find((e) => e.feature_flag_key === config.key && !e.archived)
     if (!exp || !exp.start_date) {
       out.push({

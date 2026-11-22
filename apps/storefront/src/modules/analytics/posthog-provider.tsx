@@ -6,6 +6,7 @@ import { useEffect } from "react"
 import { getConsent } from "./consent"
 import { store } from "@stores"
 import { VISITOR_COOKIE } from "@lib/analytics/constants"
+import { AD_COOKIE, adProperties, decodeAdTouch } from "@lib/analytics/ad-touch"
 import { flushTrackQueue } from "./track"
 
 const KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY
@@ -33,6 +34,12 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!KEY || posthog.__loaded) return
     const visitorId = readCookie(VISITOR_COOKIE)
+    // Vaste properties op ELK event (ook $pageview en $feature_flag_called):
+    // - store: meerdere winkels in één project
+    // - ad_*: de advertentie waarmee deze bezoeker binnenkwam (funnel per advertentie)
+    // Via before_send i.p.v. posthog.register: zonder toestemming (cookieless)
+    // bewaart PostHog geregistreerde properties niet.
+    const fixed = { store: store.id, ...adProperties(decodeAdTouch(readCookie(AD_COOKIE))) }
     posthog.init(KEY, {
       api_host: "/ingest",
       ui_host: process.env.NEXT_PUBLIC_POSTHOG_UI_HOST || "https://eu.posthog.com",
@@ -51,14 +58,17 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       // worden gemaskeerd; opnames lopen alleen na cookietoestemming.
       enable_heatmaps: true,
       session_recording: { maskAllInputs: true },
-      loaded: () => flushTrackQueue(),
+      before_send: (event) => {
+        if (event) event.properties = { ...fixed, ...event.properties }
+        return event
+      },
     })
-    // Elk event krijgt de winkel mee, zodat meerdere winkels in één project passen.
-    posthog.register({ store: store.id })
     // Keuze uit de cookiebanner (consent-banner.tsx) toepassen.
     const consent = getConsent()
     if (consent === "granted") posthog.opt_in_capturing()
     if (consent === "denied") posthog.opt_out_capturing()
+    // Events die binnenkwamen voordat PostHog klaar was.
+    flushTrackQueue()
   }, [])
 
   if (!KEY) return <>{children}</>

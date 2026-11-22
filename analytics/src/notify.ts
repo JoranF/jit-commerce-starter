@@ -1,5 +1,6 @@
 import { appendFile, mkdir, writeFile } from "node:fs/promises"
 import path from "node:path"
+import { currentStore } from "./stores"
 
 /**
  * Stuur een rapport naar:
@@ -8,7 +9,10 @@ import path from "node:path"
  *  - REPORT_WEBHOOK_URL: Discord of Slack incoming webhook (optioneel)
  */
 export async function publish(name: string, markdown: string) {
-  const dir = path.resolve(process.cwd(), "reports")
+  // Per winkel een eigen map en een kop met de winkelnaam (ook in Slack/Discord).
+  const store = currentStore()
+  if (store) markdown = `# ${store.name}\n\n${markdown}`
+  const dir = path.resolve(process.cwd(), "reports", store?.id ?? "")
   await mkdir(dir, { recursive: true })
   const file = path.join(dir, `${name}.md`)
   await writeFile(file, markdown)

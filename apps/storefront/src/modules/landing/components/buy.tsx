@@ -1,12 +1,12 @@
 import { HttpTypes } from "@medusajs/types"
-import { fillPolicy, store, type PolicyValues } from "@stores"
+import { buyAnchor, fillPolicy, store, type PolicyValues } from "@stores"
 import ProductActions from "@modules/products/components/product-actions"
 import Image from "next/image"
 import Promises from "./promises"
 
 /**
  * Kopen op de homepage: foto, titel, prijs, knop, levertijd en de feiten.
- * Anker #lamp (de knop in de hero scrolt hierheen).
+ * Anker #<buyAnchor> (de knop in de hero scrolt hierheen).
  */
 export default function Buy({
   product,
@@ -22,7 +22,7 @@ export default function Buy({
 
   return (
     <section
-      id="lamp"
+      id={buyAnchor}
       className="scroll-mt-16 border-t border-brand-ink/10 bg-brand-light text-brand-ink"
       aria-labelledby="buy-title"
     >

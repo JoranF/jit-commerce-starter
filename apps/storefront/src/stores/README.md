@@ -15,18 +15,26 @@ voor de storefront-build). De backend draait bij elke start
 `setup-store.ts <STORE_ID>`: idempotent, maakt het product aan als het ontbreekt en
 zet levertijden en verzendopties goed.
 
-## Nieuwe winkel in 6 stappen
+## Nieuwe winkel
+
+```bash
+pnpm new-store <id> "<Naam>" --price 49
+```
+
+Dat maakt en registreert in één keer: de config (`<id>.ts`, met TODO's), placeholder-beelden,
+het product in `definitions.ts`, de winkel in `analytics/src/stores.ts` (A/B-tests, rapporten,
+advertenties) en `docs/beslissingen/<id>.md` met de break-even-rekensom en een checklist.
+Daarna:
 
 1. **Product kiezen** met de skill `product-research-nl` (Ads Library → marge → leverancier).
-2. **Beelden** met fal: eerst een productfoto, die als referentie voor de sfeerbeelden
-   (zodat het product overal gelijk is). Opslaan in `public/stores/<id>/` en
-   `apps/backend/src/scripts/assets/<id>/`.
-3. **Config**: kopieer `lichtval.ts` naar `<id>.ts`, pas alles aan en registreer hem in
-   `index.ts`. Andere lettertypen: `@fontsource`-pakket installeren en importeren in `fonts.ts`.
-4. **Backend**: voeg een `STORE_SETUPS["<id>"]` toe in `definitions.ts` (zelfde product-handle).
-5. **Dropshipping**: zet `cj_vid` in de variant-metadata (`variantMetadata`) zodra de
-   CJ-variant bekend is, en `CJ_API_KEY` op de backend.
-6. **Deploy** met `STORE_ID=<id>`; controleer met de screenshots-check (mobiel + desktop).
+2. **Beelden** met fal: eerst een productfoto, die als referentie voor de sfeerbeelden.
+   Vervang de placeholders in `public/stores/<id>/` en `apps/backend/src/scripts/assets/<id>/`.
+3. **TODO's invullen** in `<id>.ts` en `definitions.ts`; andere lettertypen via `fonts.ts`.
+   Advertentie-invalshoeken in `angles`.
+4. **Controleren**: `pnpm check-store <id>` (TODO's, beelden, bedrijfsgegevens, automatisering).
+5. **Dropshipping**: `cj_vid` in de variant-metadata en `CJ_API_KEY` op de backend.
+6. **Deploy** met `STORE_ID=<id>`, PostHog-project in `analytics/src/stores.ts`, en
+   `npm run setup -- --store <id>`. De workflows nemen de winkel daarna vanzelf mee.
 
 ## Regels voor teksten
 

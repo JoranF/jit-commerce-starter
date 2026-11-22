@@ -19,6 +19,10 @@ separate npm package.
 - Winkels (store factory): merk/teksten/beelden per winkel in `apps/storefront/src/stores/<id>.ts`,
   product en levertijden in `apps/backend/src/scripts/stores/definitions.ts`; kiezen met `STORE_ID`.
   Zie `apps/storefront/src/stores/README.md`. Termijnen in teksten via `{levertijd}` e.d., nooit hardcoded.
+  Nieuwe winkel: `pnpm new-store <id> "<Naam>"`, controle: `pnpm check-store <id>`. Automatisering per winkel
+  (PostHog-project, Meta-account, break-even CPA) in `analytics/src/stores.ts`; workflows draaien per winkel.
+- Advertenties: `utm_*`/`fbclid`/`angle` → cookie `jit_ad` (`apps/storefront/src/lib/analytics/ad-touch.ts`) → `ad_*` op
+  elk event en in `cart.metadata` → `order_completed`. `angle` kiest de hero uit `store.angles`. Ads-regels: `analytics/src/ads-rules.ts`.
 - Animaties in de storefront: Motion (`motion`, voorheen Framer Motion) via `@modules/common/components/motion`
   (`Reveal`, `Stagger`/`StaggerItem`, `m`). Spaarzaam, alleen transform/opacity; "minder beweging" wordt gerespecteerd.
 - Beelden en video (productfoto's, sfeer, advertenties): fal.ai via de MCP-connector. Genereer pas na akkoord op de kosten.
