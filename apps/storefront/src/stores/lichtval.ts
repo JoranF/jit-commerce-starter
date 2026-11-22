@@ -164,6 +164,10 @@ export const lichtval: StoreConfig = {
   imageNote: "Sfeerbeelden. De lamp die je ontvangt kan in afwerking licht afwijken.",
 
   company: {
+    legalName: "Joran Information Technology",
     kvk: "96539402",
+    vat: "NL005215436B31",
+    address: "Prins Bernhardstraat 8, 6668 AH Randwijk",
+    email: "joranfloor@gmail.com",
   },
 }
