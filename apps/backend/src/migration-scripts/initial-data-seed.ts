@@ -1,5 +1,6 @@
 import { MedusaContainer } from "@medusajs/framework";
 import { DEFAULT_REGION_STORE_POLICIES } from "../lib/region-store-policies";
+import { MOLLIE_PROVIDER_IDS, TEST_PAYMENT_PROVIDER_ID } from "../lib/payment-providers";
 import {
   ContainerRegistrationKeys,
   ModuleRegistrationName,
@@ -60,18 +61,14 @@ export default async function initial_data_seed({
   // Standaard btw-tarieven (2026). Verlaagde tarieven (9% NL / 6% BE / 7% DE)
   // stel je per productcategorie in via Admin > Settings > Tax Regions.
   const vatRates: Record<string, number> = { nl: 21, be: 21, de: 19 };
-  // Mollie-betaalmethodes worden alleen gekoppeld als MOLLIE_API_KEY gezet is.
+  // Mollie-betaalmethodes worden alleen gekoppeld als MOLLIE_API_KEY gezet is. Dan
+  // géén handmatige testbetaling: daarmee kan iedereen bestellen zonder te betalen.
   const paymentProviders = process.env.MOLLIE_API_KEY
     ? [
-        "pp_mollie-ideal_mollie",
-        "pp_mollie-bancontact_mollie",
-        "pp_mollie-card_mollie",
-        "pp_mollie-paypal_mollie",
-        "pp_mollie-apple-pay_mollie",
-        "pp_mollie-hosted-checkout_mollie",
-        "pp_system_default",
+        ...MOLLIE_PROVIDER_IDS,
+        ...(process.env.ALLOW_TEST_PAYMENT === "true" ? [TEST_PAYMENT_PROVIDER_ID] : []),
       ]
-    : ["pp_system_default"];
+    : [TEST_PAYMENT_PROVIDER_ID];
 
   // Idempotent: is de winkel al ingericht (bv. dev → productie, of een eerdere
   // run onder een andere bestandsnaam), dan niets doen.

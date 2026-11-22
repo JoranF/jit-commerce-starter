@@ -3,6 +3,7 @@ import {
   chooseLogistic,
   cjOrderNumber,
   getCjLines,
+  isPaidByRealProvider,
   maxDays,
   splitHouseNumber,
   type OrderLike,
@@ -32,8 +33,8 @@ const order = (over: Partial<OrderLike> = {}): OrderLike => ({
 describe("getCjLines", () => {
   it("keeps only CJ-linked items and falls back to product metadata", () => {
     expect(getCjLines(order())).toEqual([
-      { vid: "VID-1", quantity: 2, storeLineItemId: "item_1", fromCountry: undefined, logistic: undefined },
-      { vid: "VID-3", quantity: 1, storeLineItemId: "item_3", fromCountry: "DE", logistic: undefined },
+      { vid: "VID-1", quantity: 2, itemQuantity: 2, storeLineItemId: "item_1", fromCountry: undefined, logistic: undefined },
+      { vid: "VID-3", quantity: 1, itemQuantity: 1, storeLineItemId: "item_3", fromCountry: "DE", logistic: undefined },
     ])
   })
 
@@ -49,6 +50,74 @@ describe("getCjLines", () => {
       ],
     })
     expect(getCjLines(o)[0].vid).toBe("V")
+  })
+
+  it("multiplies by cj_quantity for set variants (Duo = 2 lamps at CJ)", () => {
+    const o = order({
+      items: [
+        { id: "duo", quantity: 3, variant: { metadata: { cj_vid: "LAMP", cj_quantity: 2 } } },
+        { id: "str", quantity: 1, variant: { metadata: { cj_vid: "LAMP", cj_quantity: "2" } } },
+        { id: "bad", quantity: 1, variant: { metadata: { cj_vid: "LAMP", cj_quantity: "0" } } },
+      ],
+    })
+    expect(getCjLines(o).map((l) => [l.storeLineItemId, l.quantity, l.itemQuantity])).toEqual([
+      ["duo", 6, 3],
+      ["str", 2, 1],
+      ["bad", 1, 1],
+    ])
+  })
+
+  it("buildCjOrder sends CJ units, not Medusa line quantities", () => {
+    const o = order({
+      items: [{ id: "duo", quantity: 1, variant: { metadata: { cj_vid: "LAMP", cj_quantity: 2 } } }],
+    })
+    const input = buildCjOrder(o, getCjLines(o), {
+      logisticName: "CJPacket Ordinary",
+      fromCountryCode: "CN",
+      autoPay: false,
+      sandbox: false,
+    })
+    expect(input.products).toEqual([{ vid: "LAMP", quantity: 2, storeLineItemId: "duo" }])
+    // Neutraal verpakken staat standaard aan.
+    expect(input.remark).toMatch(/no invoice, no prices/)
+    expect(
+      buildCjOrder(o, getCjLines(o), { logisticName: "X", fromCountryCode: "CN", autoPay: false, sandbox: false, remark: "" })
+        .remark
+    ).toBeUndefined()
+  })
+})
+
+describe("isPaidByRealProvider", () => {
+  it("blocks orders paid with the manual test payment", () => {
+    expect(
+      isPaidByRealProvider(order({ payment_collections: [{ payments: [{ provider_id: "pp_system_default" }] }] }))
+    ).toBe(false)
+  })
+
+  it("blocks orders without any payment", () => {
+    expect(isPaidByRealProvider(order({ payment_collections: [] }))).toBe(false)
+    expect(isPaidByRealProvider(order({ payment_collections: [{ payments: [] }] }))).toBe(false)
+  })
+
+  it("allows Mollie payments, ignoring canceled ones", () => {
+    expect(
+      isPaidByRealProvider(
+        order({ payment_collections: [{ payments: [{ provider_id: "pp_mollie-ideal_mollie" }] }] })
+      )
+    ).toBe(true)
+    expect(
+      isPaidByRealProvider(
+        order({
+          payment_collections: [
+            { payments: [{ provider_id: "pp_mollie-ideal_mollie", canceled_at: "2026-11-22T10:00:00Z" }] },
+          ],
+        })
+      )
+    ).toBe(false)
+  })
+
+  it("does not block when payments were not loaded", () => {
+    expect(isPaidByRealProvider(order())).toBe(true)
   })
 })
 

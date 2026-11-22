@@ -33,25 +33,35 @@ export async function GET(req: NextRequest) {
     // cart kan al afgerond zijn; dan proberen we gewoon te completen
   }
 
-  try {
-    const res = await sdk.store.cart.complete(cartId)
-
-    if (res.type === "order") {
-      const response = NextResponse.redirect(
-        `${origin}/${countryCode}/order/${res.order.id}/confirmed`
-      )
-      response.cookies.set(CART_COOKIE, "", { maxAge: -1, path: "/" })
-      return response
+  // Soms is de betaling nog "pending" als de klant terugkomt (de bank bevestigt een
+  // paar seconden later). Dan even wachten en opnieuw proberen, i.p.v. "mislukt" te
+  // tonen terwijl het geld wél binnenkomt (en de klant twee keer betaalt).
+  let pending = false
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, 1500))
+    try {
+      const res = await sdk.store.cart.complete(cartId)
+      if (res.type === "order") {
+        const response = NextResponse.redirect(
+          `${origin}/${countryCode}/order/${res.order.id}/confirmed`
+        )
+        response.cookies.set(CART_COOKIE, "", { maxAge: -1, path: "/" })
+        return response
+      }
+      // type === "cart": betaling (nog) niet gelukt
+      pending = isPending(res.error?.message)
+    } catch (e) {
+      const message = (e as Error).message
+      pending = isPending(message)
+      if (!pending) console.warn("[mollie] afronden na redirect mislukt:", message)
     }
-
-    // type === "cart": betaling (nog) niet gelukt
-    return NextResponse.redirect(
-      `${origin}/${countryCode}/checkout?step=payment&payment_status=failed`
-    )
-  } catch (e) {
-    console.warn("[mollie] afronden na redirect mislukt:", (e as Error).message)
-    return NextResponse.redirect(
-      `${origin}/${countryCode}/checkout?step=payment&payment_status=failed`
-    )
+    if (!pending) break
   }
+
+  return NextResponse.redirect(
+    `${origin}/${countryCode}/checkout?step=payment&payment_status=${pending ? "pending" : "failed"}`
+  )
 }
+
+/** De Mollie-plugin meldt "Payment is not authorized: current status is pending". */
+const isPending = (message?: string) => /status is pending/i.test(message ?? "")

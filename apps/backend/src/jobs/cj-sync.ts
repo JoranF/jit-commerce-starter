@@ -2,10 +2,13 @@ import type { MedusaContainer } from "@medusajs/framework/types"
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import { getCjLines } from "../modules/cj-dropshipping/lib/build-order"
 import { resolveCj } from "../modules/cj-dropshipping/lib/resolve"
-import { CJ_ORDER_FIELDS, forwardOrderToCjWorkflow } from "../workflows/cj/forward-order-to-cj"
+import {
+  CJ_MAX_ATTEMPTS,
+  CJ_ORDER_FIELDS,
+  forwardOrderToCjWorkflow,
+} from "../workflows/cj/forward-order-to-cj"
 import { isFinalCjStatus, syncCjOrder, type SyncableOrder } from "../workflows/cj/sync-cj-order"
 
-const MAX_ATTEMPTS = 5
 const DAY = 86_400_000
 
 /**
@@ -46,7 +49,7 @@ export default async function cjSyncJob(container: MedusaContainer) {
         o.status !== "canceled" &&
         age > 10 * 60_000 && // give the order.placed subscriber time first
         age < 7 * DAY &&
-        Number(meta.cj_attempts ?? 0) < MAX_ATTEMPTS &&
+        Number(meta.cj_attempts ?? 0) < CJ_MAX_ATTEMPTS &&
         getCjLines(o).length
       ) {
         await forwardOrderToCjWorkflow(container).run({ input: { order_id: o.id } })
