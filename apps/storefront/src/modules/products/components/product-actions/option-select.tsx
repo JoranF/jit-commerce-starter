@@ -21,11 +21,14 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
   "data-testid": dataTestId,
   disabled,
 }) => {
-  const filteredOptions = (option.values ?? []).map((v) => v.value)
+  // Volgorde uit de admin (rank), zodat "1 lamp" vóór "2 lampen" staat.
+  const filteredOptions = [...(option.values ?? [])]
+    .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+    .map((v) => v.value)
 
   return (
     <fieldset className="flex flex-col gap-y-3" disabled={disabled}>
-      <legend className="text-sm mb-3">Select {title}</legend>
+      <legend className="text-sm mb-3">{title}</legend>
       <div
         className="flex flex-wrap justify-between gap-2"
         data-testid={dataTestId}

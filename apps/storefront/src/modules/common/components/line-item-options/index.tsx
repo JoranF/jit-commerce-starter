@@ -24,7 +24,7 @@ const LineItemOptions = ({
       data-value={dataValue}
       className="inline-block txt-medium text-ui-fg-subtle w-full overflow-hidden text-ellipsis"
     >
-      Uitvoering: {title}
+      {title}
     </Text>
   )
 }
