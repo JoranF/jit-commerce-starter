@@ -67,9 +67,9 @@ Thank you!
 
 | | CJ | AliExpress (reference) |
 |---|---|---|
-| Price Solo incl. shipping to NL | | ~$63 ⚠️ |
+| Price Solo incl. shipping to NL | **$54.15** (lamp $36.31 + CJPacket Ordinary E $14.64 + duty $3.20), product page 2026-11-22. Sensitive line: $60.58 | ~$63 ⚠️ |
 | Price Duo incl. shipping to NL | | |
-| EU warehouse? Delivery time | | China, 7–12 days |
+| EU warehouse? Delivery time | No (CJ 0, factory 10,361). Processing 1–3 days, delivery 7–15 days | China, 7–12 days |
 | Power version / EU plug | | ? |
 | Light colour (K) | | ? |
 | Pattern moves by itself? (video) | | ? |
