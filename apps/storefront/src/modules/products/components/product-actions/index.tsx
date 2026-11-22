@@ -185,13 +185,16 @@ export default function ProductActions({
       params.delete("v_id")
     }
 
-    // scroll: false — anders springt de pagina naar boven bij het kiezen van een
-    // variant (op de landingspagina staat het koopblok ver onder de hero).
-    router.replace(pathname + "?" + params.toString(), { scroll: false })
-    // Sync the URL only when the selection changes: useRouter() can return a new
-    // object after a navigation, which would re-run this effect.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- see above
-  }, [selectedVariant, isValidVariant, isUrlVariantApplied])
+    // Alleen de URL bijwerken, geen navigatie: router.replace haalt de pagina opnieuw
+    // op en laat de pagina dan alsnog naar boven springen (ook met scroll: false).
+    // Next.js houdt useSearchParams() in sync met history.replaceState, dus
+    // BuyImage en de galerij wisselen gewoon mee.
+    window.history.replaceState(
+      null,
+      "",
+      pathname + "?" + params.toString()
+    )
+  }, [selectedVariant, isValidVariant, isUrlVariantApplied, pathname])
 
   const inStock = useMemo(
     () => isVariantInStock(selectedVariant),
