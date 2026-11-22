@@ -1,4 +1,4 @@
-import { store } from "@stores"
+import { buyAnchor, store } from "@stores"
 import { getImageProps } from "next/image"
 import type { CSSProperties } from "react"
 
@@ -59,11 +59,13 @@ export default function Hero({
         />
       </picture>
 
-      {/* De lamp gaat aan: van donker naar licht, vanuit de lamp. */}
-      <div
-        aria-hidden
-        className="lamp-on -z-10 small:[--lx:var(--lx-wide)] small:[--ly:var(--ly-wide)]"
-      />
+      {/* De lamp gaat aan: van donker naar licht, vanuit de lamp (store.hero.glow). */}
+      {store.hero.glow !== false && (
+        <div
+          aria-hidden
+          className="lamp-on -z-10 small:[--lx:var(--lx-wide)] small:[--ly:var(--ly-wide)]"
+        />
+      )}
 
       {/* Leesbaarheid van de tekst: onder op mobiel, links op desktop. */}
       <div
@@ -85,7 +87,7 @@ export default function Hero({
           </p>
           <div className="rise mt-9 flex flex-wrap items-center gap-x-6 gap-y-3 [--d:1.35s]">
             <a
-              href="#lamp"
+              href={`#${buyAnchor}`}
               className="inline-flex h-12 items-center rounded-full bg-brand-accent px-7 text-base font-medium text-brand-ink transition-colors hover:bg-brand-accent/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-accent"
             >
               {hero.cta}

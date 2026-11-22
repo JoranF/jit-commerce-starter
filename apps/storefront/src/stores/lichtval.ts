@@ -26,6 +26,8 @@ export const lichtval: StoreConfig = {
   tagline: "Wandlampen met het licht van water.",
   catalog: false,
   productHandle: "lichtval-wandlamp",
+  productLabel: "De lamp",
+  buyAnchor: "lamp",
 
   theme: {
     colors: {

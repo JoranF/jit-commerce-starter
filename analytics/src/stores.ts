@@ -42,6 +42,17 @@ export const STORES: StoreAnalytics[] = [
       expectedOrderValue: 134,
     },
   },
+  {
+    id: "tarrazu",
+    name: "Tarrazú",
+    posthogProjectId: "",
+    meta: {
+      adAccountId: "",
+      // Nog geen inkoopprijs (geen leverancier): rekensom in docs/beslissingen/tarrazu.md.
+      breakEvenCpa: 0,
+      expectedOrderValue: 30,
+    },
+  },
   // new-store:insert (niet weghalen: hier voegt `pnpm new-store` winkels toe)
 ]
 

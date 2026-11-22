@@ -8,7 +8,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import CartButton from "@modules/layout/components/cart-button"
 import Search from "@modules/layout/components/search"
 import SideMenu from "@modules/layout/components/side-menu"
-import { store } from "@stores"
+import { buyAnchor, store } from "@stores"
 
 /** Navigatie voor een winkel met één product: merk, twee ankers, winkelmand. */
 function BrandNav() {
@@ -29,8 +29,8 @@ function BrandNav() {
             {store.name}
           </LocalizedClientLink>
           <div className="flex items-center gap-x-7 text-base text-brand-ink/75">
-            <LocalizedClientLink href="/#lamp" className={`hidden xsmall:inline ${link}`}>
-              De lamp
+            <LocalizedClientLink href={`/#${buyAnchor}`} className={`hidden xsmall:inline ${link}`}>
+              {store.productLabel}
             </LocalizedClientLink>
             <LocalizedClientLink href="/#vragen" className={`hidden xsmall:inline ${link}`}>
               Vragen

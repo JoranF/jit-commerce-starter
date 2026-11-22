@@ -45,8 +45,17 @@ const optionsAsKeymap = (
   }, {})
 }
 
-const getDefaultVariant = (product: HttpTypes.StoreProduct) =>
-  product.variants?.find(isVariantInStock) ?? product.variants?.[0]
+/** Varianten in de volgorde uit de admin/definitie (variant_rank). */
+const rankedVariants = (product: HttpTypes.StoreProduct) =>
+  [...(product.variants ?? [])].sort(
+    (a, b) => ((a as { variant_rank?: number }).variant_rank ?? 0) - ((b as { variant_rank?: number }).variant_rank ?? 0)
+  )
+
+// Eerste leverbare variant in die volgorde (bv. 250 g, niet 1 kg).
+const getDefaultVariant = (product: HttpTypes.StoreProduct) => {
+  const variants = rankedVariants(product)
+  return variants.find(isVariantInStock) ?? variants[0]
+}
 
 export default function ProductActions({
   product,
@@ -221,6 +230,7 @@ export default function ProductActions({
                     <div key={option.id}>
                       <OptionSelect
                         option={option}
+                        variants={product.variants ?? undefined}
                         current={options[option.id]}
                         updateOption={setOptionValue}
                         title={option.title ?? ""}

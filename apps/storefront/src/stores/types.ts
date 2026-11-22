@@ -28,6 +28,10 @@ export type StoreConfig = {
   catalog: boolean
   /** Handle van het hoofdproduct in Medusa. */
   productHandle: string
+  /** Menu-/linktekst naar het product, bv. "De lamp" of "De koffie". */
+  productLabel: string
+  /** Anker van het koopblok op de homepage (zonder #). Standaard "kopen". */
+  buyAnchor?: string
 
   theme: {
     colors: {
@@ -62,6 +66,12 @@ export type StoreConfig = {
      * Apart voor het brede en het staande beeld.
      */
     lightOrigin: { wide: { x: number; y: number }; tall: { x: number; y: number } }
+    /**
+     * Het "lamp gaat aan"-moment (licht spreidt vanuit lightOrigin). Standaard aan;
+     * zet op false voor producten zonder licht. lightOrigin bepaalt dan alleen de
+     * uitsnede van het beeld.
+     */
+    glow?: boolean
   }
 
   intro: { title: string; body: string; image: StoreImage }

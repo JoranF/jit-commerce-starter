@@ -65,7 +65,8 @@ function insertAt(file, marker, text, needle) {
   created.push(`${rel(file)} (bijgewerkt)`)
 }
 
-// ── Placeholder-beelden: effen PNG in de merkkleur (geen dependencies) ──────────
+// ── Placeholder-beelden: effen PNG (geen dependencies) ────────────────────────────
+// Vervang ze door echte beelden; andere kleur: --placeholder "#4A3326".
 function png(hex) {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))
   const w = 16
@@ -108,10 +109,10 @@ function png(hex) {
 const colors = { dark: "#1F2A33", light: "#F2F0EB", ink: "#1A1F24", accent: "#E8B86B", muted: "#66707A" }
 const siteImages = ["hero-breed", "hero-mobiel", "detail", "kamer-1", "kamer-2", "kamer-3", "product"]
 for (const img of siteImages) {
-  write(path.join(root, `apps/storefront/public/stores/${id}/${img}.png`), png(colors.dark))
+  write(path.join(root, `apps/storefront/public/stores/${id}/${img}.png`), png(flag("placeholder") || colors.dark))
 }
 for (const img of ["1-product"]) {
-  write(path.join(root, `apps/backend/src/scripts/assets/${id}/${img}.png`), png(colors.dark))
+  write(path.join(root, `apps/backend/src/scripts/assets/${id}/${img}.png`), png(flag("placeholder") || colors.dark))
 }
 
 // ── Storefront-config ─────────────────────────────────────────────────────────
@@ -136,6 +137,8 @@ export const ${camel}: StoreConfig = {
   tagline: "TODO: één zin over de winkel (footer, meta description).",
   catalog: false,
   productHandle: "${handle}",
+  // Menu-/linktekst naar het product.
+  productLabel: "Het product",
 
   theme: {
     // TODO: merkkleuren (skill frontend-design). Lettertypen: zie fonts.ts.
@@ -160,7 +163,9 @@ export const ${camel}: StoreConfig = {
     cta: "Bekijk het product",
     wide: ${img("hero-breed", "TODO: beschrijf het beeld", 2400, 1340)},
     tall: ${img("hero-mobiel", "TODO: beschrijf het beeld", 1290, 2311)},
+    // Uitsnede van de hero-beelden (in %). glow: true = het "lamp gaat aan"-effect vanuit dit punt.
     lightOrigin: { wide: { x: 70, y: 45 }, tall: { x: 55, y: 35 } },
+    glow: false,
   },
 
   intro: {

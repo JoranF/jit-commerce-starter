@@ -127,6 +127,8 @@ async function syncVariants(
           product_id: product.id,
           title: v.title,
           sku: v.sku,
+          // Volgorde uit de definitie (bv. 250 g, 500 g, 1 kg), ook in de winkel.
+          variant_rank: p.variants.indexOf(v),
           manage_inventory: false, // dropshipping: geen eigen voorraad
           options: { [p.optionTitle]: v.title },
           prices: [{ currency_code: "eur", amount: v.priceEur }],
@@ -211,6 +213,69 @@ async function applyRevision(
  *
  *   pnpm medusa exec ./src/scripts/stores/setup-store.ts lichtval
  */
+async function applyReducedVat(
+  container: ExecArgs["container"],
+  setup: StoreSetup,
+  log: (msg: string) => void
+) {
+  const { typeName, rates } = setup.reducedVat!
+  const productModule = container.resolve(Modules.PRODUCT)
+  const taxModule = container.resolve(Modules.TAX)
+  const query = container.resolve(ContainerRegistrationKeys.QUERY)
+
+  let [type] = await productModule.listProductTypes({ value: typeName })
+  if (!type) {
+    ;[type] = await productModule.createProductTypes([{ value: typeName }])
+    log(`producttype "${typeName}" aangemaakt`)
+  }
+
+  const { data: products } = await query.graph({
+    entity: "product",
+    fields: ["id", "type_id"],
+    filters: { handle: setup.product.handle },
+  })
+  const product = products[0]
+  if (product && product.type_id !== type.id) {
+    await updateProductsWorkflow(container).run({
+      input: { selector: { id: product.id }, update: { type_id: type.id } },
+    })
+  }
+
+  // Verzendkosten volgen het btw-tarief van de goederen (NL: "bijkomende kosten").
+  // Deze winkel verkoopt alleen dit product, dus de verzendopties krijgen hetzelfde tarief.
+  const { data: shippingOptions } = await query.graph({ entity: "shipping_option", fields: ["id"] })
+  const rules = [
+    { reference: "product_type", reference_id: type.id },
+    ...shippingOptions.map((o) => ({ reference: "shipping_option", reference_id: o.id })),
+  ]
+
+  const code = (cc: string) => `VAT_${cc.toUpperCase()}_${typeName.toUpperCase().replace(/[^A-Z0-9]+/g, "_")}`
+  const done: string[] = []
+  for (const [country, rate] of Object.entries(rates)) {
+    // Landregio (zonder provincie-onderverdeling): de eerste met deze landcode.
+    const [region] = await taxModule.listTaxRegions({ country_code: country.toLowerCase() })
+    if (!region) {
+      log(`geen btw-regio voor ${country.toUpperCase()}, tarief ${rate}% overgeslagen`)
+      continue
+    }
+    const [existing] = await taxModule.listTaxRates({ code: code(country) })
+    if (existing) {
+      // Tarief en regels bijwerken (ook nieuwe verzendopties).
+      await taxModule.updateTaxRates(existing.id, { rate, rules })
+    } else {
+      await taxModule.createTaxRates({
+        tax_region_id: region.id,
+        name: `Btw ${country.toUpperCase()} ${typeName}`,
+        code: code(country),
+        rate,
+        rules,
+      })
+    }
+    done.push(`${country.toUpperCase()} ${rate}%`)
+  }
+  log(`btw ${typeName}: ${done.join(", ")} (ook op ${shippingOptions.length} verzendoptie(s))`)
+}
+
 export default async function setupStore({ container, args }: ExecArgs) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
   const query = container.resolve(ContainerRegistrationKeys.QUERY)
@@ -303,9 +368,10 @@ export default async function setupStore({ container, args }: ExecArgs) {
             shipping_profile_id: profile?.id,
             sales_channels: channel ? [{ id: channel.id }] : [],
             options: [{ title: p.optionTitle, values: p.variants.map((v) => v.title) }],
-            variants: p.variants.map((v) => ({
+            variants: p.variants.map((v, i) => ({
               title: v.title,
               sku: v.sku,
+              variant_rank: i, // volgorde in de winkel = volgorde in de definitie
               manage_inventory: false, // dropshipping: geen eigen voorraad
               options: { [p.optionTitle]: v.title },
               prices: [{ currency_code: "eur", amount: v.priceEur }],
@@ -346,6 +412,15 @@ export default async function setupStore({ container, args }: ExecArgs) {
       setup,
       log
     )
+  }
+
+  // 3b. Verlaagd btw-tarief (bv. 9% voor voedingsmiddelen) via het producttype.
+  if (setup.reducedVat) {
+    try {
+      await applyReducedVat(container, setup, log)
+    } catch (e) {
+      log(`verlaagd btw-tarief instellen faalde: ${(e as Error).message}`)
+    }
   }
 
   // 4. Demo-producten van de starter op concept (niet verwijderen).

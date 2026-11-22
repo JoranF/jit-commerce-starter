@@ -1,4 +1,5 @@
 import { lichtval } from "./lichtval"
+import { tarrazu } from "./tarrazu"
 // new-store:import
 import type { StoreConfig } from "./types"
 
@@ -10,6 +11,7 @@ export type { StoreConfig, StoreImage } from "./types"
  */
 const STORES: Record<string, StoreConfig> = {
   [lichtval.id]: lichtval,
+  [tarrazu.id]: tarrazu,
   // new-store:register
 }
 
@@ -23,6 +25,9 @@ if (!STORES[id]) {
 
 /** De actieve winkel (vast per build: NEXT_PUBLIC_STORE_ID). */
 export const store: StoreConfig = STORES[id]
+
+/** Anker van het koopblok op de homepage (zonder #). */
+export const buyAnchor = store.buyAnchor || "kopen"
 
 /** "#16323A" → "22 50 58" (voor Tailwind-kleuren met opacity). */
 const toRgb = (hex: string) => {
