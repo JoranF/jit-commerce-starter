@@ -4,7 +4,10 @@ import type { ExecArgs } from "@medusajs/framework/types"
 import { ContainerRegistrationKeys, MedusaError, Modules, ProductStatus } from "@medusajs/framework/utils"
 import {
   createProductsWorkflow,
+  createProductVariantsWorkflow,
+  updateProductOptionsWorkflow,
   updateProductsWorkflow,
+  updateProductVariantsWorkflow,
   updateRegionsWorkflow,
   uploadFilesWorkflow,
 } from "@medusajs/medusa/core-flows"
@@ -42,6 +45,90 @@ async function uploadImages(container: ExecArgs["container"], setup: StoreSetup)
     },
   })
   return result.map((file, i) => ({ url: file.url, metadata: { alt: setup.product.images[i].alt } }))
+}
+
+type ExistingProduct = {
+  id: string
+  options?: { id: string; title: string; values?: { value: string }[] | null }[] | null
+  variants?: { id: string; sku?: string | null }[] | null
+}
+
+/**
+ * Brengt de varianten van een bestaand product in lijn met de definitie:
+ * optie hernoemen/aanvullen, bekende varianten (op SKU) de juiste optiewaarde
+ * geven en ontbrekende varianten aanmaken. Prijzen van bestaande varianten
+ * blijven ongemoeid (die beheer je in de admin).
+ */
+async function syncVariants(
+  container: ExecArgs["container"],
+  product: ExistingProduct,
+  setup: StoreSetup,
+  log: (msg: string) => void
+) {
+  const p = setup.product
+  const option = product.options?.[0]
+  if (!option || (product.options?.length ?? 0) > 1) {
+    log("varianten niet bijgewerkt: verwacht precies één productoptie, pas ze aan in de admin")
+    return
+  }
+  const wanted = p.variants.map((v) => v.title)
+  const ranks = Object.fromEntries(wanted.map((v, i) => [v, i]))
+  const currentValues = (option.values ?? []).map((v) => v.value)
+  const variants = product.variants ?? []
+  const missing = p.variants.filter((v) => !variants.some((pv) => pv.sku === v.sku))
+  const unknown = variants.filter((pv) => !p.variants.some((v) => v.sku === pv.sku))
+  const stale = currentValues.filter((v) => !wanted.includes(v))
+  const optionOk =
+    option.title === p.optionTitle && wanted.every((w) => currentValues.includes(w)) && !stale.length
+  if (optionOk && !missing.length) return
+
+  // 1. Optie hernoemen en nieuwe waarden toevoegen (oude blijven tot de varianten om zijn).
+  await updateProductOptionsWorkflow(container).run({
+    input: {
+      selector: { id: option.id },
+      update: { title: p.optionTitle, values: [...new Set([...wanted, ...currentValues])], ranks },
+    },
+  })
+
+  // 2. Bekende varianten de nieuwe optiewaarde geven.
+  for (const pv of variants) {
+    const def = p.variants.find((v) => v.sku === pv.sku)
+    if (!def) continue
+    await updateProductVariantsWorkflow(container).run({
+      input: {
+        selector: { id: pv.id },
+        update: { title: def.title, options: { [p.optionTitle]: def.title } },
+      },
+    })
+  }
+
+  // 3. Ontbrekende varianten aanmaken.
+  if (missing.length) {
+    await createProductVariantsWorkflow(container).run({
+      input: {
+        product_variants: missing.map((v) => ({
+          product_id: product.id,
+          title: v.title,
+          sku: v.sku,
+          manage_inventory: false, // dropshipping: geen eigen voorraad
+          options: { [p.optionTitle]: v.title },
+          prices: [{ currency_code: "eur", amount: v.priceEur }],
+          metadata: v.metadata,
+        })),
+      },
+    })
+  }
+
+  // 4. Oude optiewaarden weghalen, tenzij een onbekende variant ze nog gebruikt.
+  if (stale.length && !unknown.length) {
+    await updateProductOptionsWorkflow(container).run({
+      input: { selector: { id: option.id }, update: { values: wanted, ranks } },
+    })
+  }
+  log(
+    `varianten bijgewerkt (${missing.length} toegevoegd: ${missing.map((v) => v.title).join(", ") || "geen"}` +
+      `${unknown.length ? `; ${unknown.length} onbekende variant(en) laten staan` : ""})`
+  )
 }
 
 /**
@@ -108,7 +195,16 @@ export default async function setupStore({ container, args }: ExecArgs) {
   const { product: p } = setup
   const { data: existing } = await query.graph({
     entity: "product",
-    fields: ["id", "status", "images.id", "variants.id"],
+    fields: [
+      "id",
+      "status",
+      "images.id",
+      "variants.id",
+      "variants.sku",
+      "options.id",
+      "options.title",
+      "options.values.value",
+    ],
     filters: { handle: p.handle },
   })
 
@@ -131,22 +227,22 @@ export default async function setupStore({ container, args }: ExecArgs) {
             images,
             shipping_profile_id: profile?.id,
             sales_channels: channel ? [{ id: channel.id }] : [],
-            options: [{ title: "Uitvoering", values: ["Standaard"] }],
-            variants: [
-              {
-                title: "Standaard",
-                sku: p.sku,
-                manage_inventory: false, // dropshipping: geen eigen voorraad
-                options: { Uitvoering: "Standaard" },
-                prices: [{ currency_code: "eur", amount: p.priceEur }],
-                metadata: p.variantMetadata,
-              },
-            ],
+            options: [{ title: p.optionTitle, values: p.variants.map((v) => v.title) }],
+            variants: p.variants.map((v) => ({
+              title: v.title,
+              sku: v.sku,
+              manage_inventory: false, // dropshipping: geen eigen voorraad
+              options: { [p.optionTitle]: v.title },
+              prices: [{ currency_code: "eur", amount: v.priceEur }],
+              metadata: v.metadata,
+            })),
           },
         ],
       },
     })
-    log(`product "${p.title}" aangemaakt (€${p.priceEur}, ${images.length} foto's)`)
+    log(
+      `product "${p.title}" aangemaakt (${p.variants.map((v) => `${v.title} €${v.priceEur}`).join(", ")}, ${images.length} foto's)`
+    )
   } else {
     const current = existing[0]
     const update: Record<string, unknown> = {
@@ -163,6 +259,7 @@ export default async function setupStore({ container, args }: ExecArgs) {
       input: { selector: { id: current.id }, update },
     })
     log(`product "${p.title}" bestond al: teksten bijgewerkt (prijs en voorraad beheer je in de admin)`)
+    await syncVariants(container, current as ExistingProduct, setup, log)
   }
 
   // 4. Demo-producten van de starter op concept (niet verwijderen).

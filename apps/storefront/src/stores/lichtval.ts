@@ -147,6 +147,10 @@ export const lichtval: StoreConfig = {
         a: "Nee, het patroon staat stil, net als de schaduw van een raam. Draai je de kop van de lamp, dan schuift het patroon over de muur.",
       },
       {
+        q: "Kan ik er twee bestellen?",
+        a: "Ja. Kies bij het bestellen voor 2 lampen: dan betaal je minder dan voor twee losse lampen. Mooi aan weerszijden van het bed of naast elkaar in de hal.",
+      },
+      {
         q: "Kan ik de lamp terugsturen?",
         a: "Ja. Je hebt {bedenktijd} dagen bedenktijd na ontvangst. Stuur ons een e-mail, dan regelen we de retour. De verzendkosten voor het terugsturen zijn voor jou; je krijgt je geld terug zodra de lamp bij ons is.",
       },
