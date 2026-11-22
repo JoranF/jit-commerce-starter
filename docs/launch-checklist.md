@@ -21,8 +21,10 @@ zegt dat ook eerlijk vanaf half november.
 - ✅ Duo stuurt nu echt 2 lampen naar CJ (`cj_quantity`; was een bug: er ging er 1).
 - ✅ Alleen echt betaalde bestellingen gaan naar CJ (een testbetaling wordt tegengehouden).
 - ✅ Bij elke CJ-bestelling: "neutral packaging, no invoice, no prices" (`CJ_ORDER_REMARK` om aan te passen).
-- ⬜ Na het sample: eigen foto's in `public/stores/lichtval/` en video (`store.video` in
-  `apps/storefront/src/stores/lichtval.ts`, de sectie verschijnt vanzelf). Dan `imageNote` weg.
+- ✅ Video op de site: echte opname van de lamp (uit → aan), `public/stores/lichtval/aan.mp4`;
+  advertentieversie (12 s, aan + aan de schijf draaien): `marketing/lichtval/video-aan-draaien.mp4`.
+- ⬜ Mag je de leveranciersvideo voor advertenties gebruiken? Bij CJ/AliExpress meestal wel voor
+  verkopers van het product; even navragen. Echte foto's later alsnog (dan `imageNote` weg).
 - ⬜ FAQ "Hoe sluit ik hem aan?" toevoegen zodra je het weet; feit "Licht" aanpassen (230 V, Kelvin).
 - ⬜ Check met het sample of je bij bezorging niets extra betaalde (de FAQ belooft dat).
 

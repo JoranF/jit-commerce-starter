@@ -93,6 +93,13 @@ Afgekeurd: feed-a (dubbele band bovenin), duo-b (zichtbaar snoer, aansluiting no
 Kosten: 12 beelden ≈ $1,80. De kop "Waterlicht op je muur." blijft voorlopig staan. Echte maten van de "Small": 33 cm hoog, schijf 10,5 cm, 8 cm diep,
 220 V (maattekening CJ). Na de sample vervangen door eigen foto's.
 
+## Video (2026-11-22)
+
+Geen sample gekocht. Video = echte opname van de lamp (aangeleverd door de eigenaar), geknipt:
+`aan.mp4` (3,7 s, uit → aan, loop op de site), `marketing/lichtval/video-aan-draaien.mp4`
+(12 s, aan + schijf draaien, voor advertenties). Zonder geluid. Er zijn ook 2 AI-video's via fal
+gestart (≈ $0,90 incl. 2 "lamp uit"-beelden); de echte opname heeft de voorkeur.
+
 ## Klantcontact en dropshipping (2026-11-22)
 
 | Keuze | Waarde | Waar |

@@ -204,6 +204,20 @@ export const lichtval: StoreConfig = {
     },
   },
 
+  // Echte opname van de lamp (leveranciersvideo, 22 nov 2026): uit → aan in een donkere kamer.
+  video: {
+    title: "Zo gaat hij aan.",
+    body: "Een echte opname van de lamp, zonder filters. Draai je aan de schijf, dan verandert het patroon mee.",
+    src: "/stores/lichtval/aan.mp4",
+    poster: {
+      src: "/stores/lichtval/aan-poster.jpg",
+      alt: "De wandlamp aan op een donkere muur, met een waaier van warm licht rond de ronde schijf.",
+      width: 720,
+      height: 960,
+    },
+    aspect: 3 / 4,
+  },
+
   imageNote: "Sfeerbeelden. De lamp die je ontvangt kan in afwerking licht afwijken.",
 
   // TODO vóór livegang: fabrikant (naam + adres uit de CE-verklaring van CJ) en
