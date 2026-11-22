@@ -23,7 +23,7 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
 }) => {
   // Volgorde uit de admin (rank), zodat "1 lamp" vóór "2 lampen" staat.
   const filteredOptions = [...(option.values ?? [])]
-    .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+    .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0) || a.value.localeCompare(b.value, "nl"))
     .map((v) => v.value)
 
   return (

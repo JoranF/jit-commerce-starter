@@ -5,6 +5,7 @@ import { ContainerRegistrationKeys, MedusaError, Modules, ProductStatus } from "
 import {
   createProductsWorkflow,
   createProductVariantsWorkflow,
+  setProductProductOptionsWorkflow,
   updateProductOptionsWorkflow,
   updateProductsWorkflow,
   updateProductVariantsWorkflow,
@@ -55,9 +56,11 @@ type ExistingProduct = {
 
 /**
  * Brengt de varianten van een bestaand product in lijn met de definitie:
- * optie hernoemen/aanvullen, bekende varianten (op SKU) de juiste optiewaarde
- * geven en ontbrekende varianten aanmaken. Prijzen van bestaande varianten
- * blijven ongemoeid (die beheer je in de admin).
+ * optie hernoemen, gewenste waarden aan de optie én aan de selectie van het
+ * product koppelen (Medusa 2.16+: product_product_option_value), bekende
+ * varianten (op SKU) de juiste optiewaarde geven, ontbrekende varianten aanmaken
+ * en ongebruikte oude waarden van het product halen. Idempotent. Prijzen van
+ * bestaande varianten blijven ongemoeid (zie `revision`).
  */
 async function syncVariants(
   container: ExecArgs["container"],
@@ -66,31 +69,45 @@ async function syncVariants(
   log: (msg: string) => void
 ) {
   const p = setup.product
-  const option = product.options?.[0]
-  if (!option || (product.options?.length ?? 0) > 1) {
+  const productOption = product.options?.[0]
+  if (!productOption || (product.options?.length ?? 0) > 1) {
     log("varianten niet bijgewerkt: verwacht precies één productoptie, pas ze aan in de admin")
     return
   }
+  const query = container.resolve(ContainerRegistrationKeys.QUERY)
   const wanted = p.variants.map((v) => v.title)
-  const ranks = Object.fromEntries(wanted.map((v, i) => [v, i]))
-  const currentValues = (option.values ?? []).map((v) => v.value)
   const variants = product.variants ?? []
   const missing = p.variants.filter((v) => !variants.some((pv) => pv.sku === v.sku))
   const unknown = variants.filter((pv) => !p.variants.some((v) => v.sku === pv.sku))
-  const stale = currentValues.filter((v) => !wanted.includes(v))
-  const optionOk =
-    option.title === p.optionTitle && wanted.every((w) => currentValues.includes(w)) && !stale.length
-  if (optionOk && !missing.length) return
 
-  // 1. Optie hernoemen en nieuwe waarden toevoegen (oude blijven tot de varianten om zijn).
-  await updateProductOptionsWorkflow(container).run({
+  // 1. Titel van de optie.
+  if (productOption.title !== p.optionTitle) {
+    await updateProductOptionsWorkflow(container).run({
+      input: { selector: { id: productOption.id }, update: { title: p.optionTitle } },
+    })
+  }
+
+  // 2. Gewenste waarden aan de selectie van het product koppelen (bestaande waarde
+  //    op de optie hergebruiken, anders aanmaken). Al gekoppelde waarden worden overgeslagen.
+  const { data: options } = await query.graph({
+    entity: "product_option",
+    fields: ["id", "values.id", "values.value"],
+    filters: { id: productOption.id },
+  })
+  const optionValues = (options[0]?.values ?? []) as { id: string; value: string }[]
+  await setProductProductOptionsWorkflow(container).run({
     input: {
-      selector: { id: option.id },
-      update: { title: p.optionTitle, values: [...new Set([...wanted, ...currentValues])], ranks },
+      product_id: product.id,
+      update: [
+        {
+          product_option_id: productOption.id,
+          add: wanted.map((w) => optionValues.find((v) => v.value === w)?.id ?? { value: w }),
+        },
+      ],
     },
   })
 
-  // 2. Bekende varianten de nieuwe optiewaarde geven.
+  // 3. Bekende varianten de juiste optiewaarde geven.
   for (const pv of variants) {
     const def = p.variants.find((v) => v.sku === pv.sku)
     if (!def) continue
@@ -102,7 +119,7 @@ async function syncVariants(
     })
   }
 
-  // 3. Ontbrekende varianten aanmaken.
+  // 4. Ontbrekende varianten aanmaken.
   if (missing.length) {
     await createProductVariantsWorkflow(container).run({
       input: {
@@ -119,16 +136,22 @@ async function syncVariants(
     })
   }
 
-  // 4. Oude optiewaarden weghalen, tenzij een onbekende variant ze nog gebruikt.
+  // 5. Oude waarden van het product halen, tenzij een onbekende variant ze nog gebruikt.
+  const stale = optionValues.filter((v) => !wanted.includes(v.value)).map((v) => v.id)
   if (stale.length && !unknown.length) {
-    await updateProductOptionsWorkflow(container).run({
-      input: { selector: { id: option.id }, update: { values: wanted, ranks } },
+    await setProductProductOptionsWorkflow(container).run({
+      input: {
+        product_id: product.id,
+        update: [{ product_option_id: productOption.id, remove: stale }],
+      },
     })
   }
-  log(
-    `varianten bijgewerkt (${missing.length} toegevoegd: ${missing.map((v) => v.title).join(", ") || "geen"}` +
-      `${unknown.length ? `; ${unknown.length} onbekende variant(en) laten staan` : ""})`
-  )
+  if (missing.length || productOption.title !== p.optionTitle) {
+    log(
+      `varianten bijgewerkt (${missing.length} toegevoegd: ${missing.map((v) => v.title).join(", ") || "geen"}` +
+        `${unknown.length ? `; ${unknown.length} onbekende variant(en) laten staan` : ""})`
+    )
+  }
 }
 
 /**
@@ -311,8 +334,18 @@ export default async function setupStore({ container, args }: ExecArgs) {
       input: { selector: { id: current.id }, update },
     })
     log(`product "${p.title}" bestond al: teksten bijgewerkt (prijs en voorraad beheer je in de admin)`)
-    await syncVariants(container, current as ExistingProduct, setup, log)
-    await applyRevision(container, current as ExistingProduct & { metadata?: Record<string, unknown> | null }, setup, log)
+    // Los van elkaar: een fout in de varianten mag de revisie (foto's, prijzen) niet tegenhouden.
+    try {
+      await syncVariants(container, current as ExistingProduct, setup, log)
+    } catch (e) {
+      log(`varianten bijwerken faalde: ${(e as Error).message}`)
+    }
+    await applyRevision(
+      container,
+      current as ExistingProduct & { metadata?: Record<string, unknown> | null },
+      setup,
+      log
+    )
   }
 
   // 4. Demo-producten van de starter op concept (niet verwijderen).
