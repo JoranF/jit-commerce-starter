@@ -85,7 +85,7 @@ de CJ-lamp. Vervangen door nieuwe AI-beelden op basis van de CJ-productfoto's:
 | Ruimte "Boven de bank" (`woonkamer.jpg`) | woonkamer-b, 4:5 uitgesneden |
 | Ruimte "Naast het bed" (`slaapkamer.jpg`): set van twee | duo-a |
 | Ruimte "In de hal" (`hal.jpg`) | story-a, 4:5 uitgesneden |
-| Hero breed + mobiel (`hero-breed.jpg`, `hero-mobiel.jpg`) | oude hero bewerkt: lamp vervangen, compositie gelijk (lichtpunt 77/33 en 57/33) |
+| Hero breed + mobiel (`hero-breed.jpg`, `hero-mobiel.jpg`) | breed: oude hero bewerkt, lamp vervangen (lichtpunt 77/33); mobiel: uitsnede 9:16 uit het brede beeld (lichtpunt 57/33). Eerste mobiele versie afgekeurd: staalplaat stond los naast de lamp |
 | Advertenties (`marketing/lichtval/`) | feed-b (4:5), story-a (9:16) |
 
 Afgekeurd: feed-a (dubbele band bovenin), duo-b (zichtbaar snoer, aansluiting nog onbekend).
