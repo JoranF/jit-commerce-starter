@@ -58,7 +58,7 @@ export async function evaluateAll(ph: PostHogApi): Promise<ExperimentEvaluation[
       }
     }
 
-    const comparisons = compareVariants(results)
+    const comparisons = compareVariants(results, "control", 20_000, 42, config.metric)
     const decision = decide(results, comparisons, {
       minExposuresPerVariant: config.minExposuresPerVariant,
       minDays: config.minDays,

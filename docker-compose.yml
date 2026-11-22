@@ -64,6 +64,7 @@ services:
       MOLLIE_API_KEY: ${MOLLIE_API_KEY:-}
       MOLLIE_REDIRECT_URL: ${STORE_URL}/api/mollie/return
       MOLLIE_DESCRIPTION: ${MOLLIE_DESCRIPTION:-Bestelling}
+      ALLOW_TEST_PAYMENT: ${ALLOW_TEST_PAYMENT:-false}
       # Winkel (product, levertijden; zie src/scripts/stores) — leeg = niets klaarzetten
       STORE_ID: ${STORE_ID:-lichtval}
       # Dropshipping (CJ) — leeg = uit
@@ -76,6 +77,15 @@ services:
       CJ_ORDER_PREFIX: ${CJ_ORDER_PREFIX:-jit}
       CJ_STORE_NAME: ${CJ_STORE_NAME:-}
       CJ_CREATE_FULFILLMENT: ${CJ_CREATE_FULFILLMENT:-true}
+      CJ_ORDER_REMARK: ${CJ_ORDER_REMARK:-}
+      # E-mail aan klanten (leeg = alleen loggen)
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      BREVO_API_KEY: ${BREVO_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      EMAIL_REPLY_TO: ${EMAIL_REPLY_TO:-}
+      SHOP_OWNER_EMAIL: ${SHOP_OWNER_EMAIL:-}
+      OPS_WEBHOOK_URL: ${OPS_WEBHOOK_URL:-}
+      STORE_URL: ${STORE_URL}
       # Server-side analytics
       POSTHOG_EVENTS_KEY: ${POSTHOG_KEY:-}
       POSTHOG_HOST: ${POSTHOG_INGEST_HOST:-https://eu.i.posthog.com}

@@ -47,3 +47,15 @@ test("gelijke varianten → ~50% kans, geen winnaar", () => {
   const d = decide(results, cmp, { minExposuresPerVariant: 500, minDays: 14, winProbability: 0.95, daysRunning: 20 })
   assert.equal(d.status, "running")
 })
+
+test("revenue_per_visitor: minder bestellingen maar hogere orderwaarde kan winnen", () => {
+  // control: 30 × €134; test: 27 × €200 (meer sets) bij evenveel bezoekers
+  const results = [
+    { variant: "control", exposed: 1500, converted: 30, revenue: 30 * 134 },
+    { variant: "test", exposed: 1500, converted: 27, revenue: 27 * 200 },
+  ]
+  const conv = compareVariants(results, "control", 20_000, 42, "conversion").find((c) => c.variant === "test")!
+  const rev = compareVariants(results, "control", 20_000, 42, "revenue_per_visitor").find((c) => c.variant === "test")!
+  assert.ok(conv.probabilityBetterThanControl < 0.5)
+  assert.ok(rev.probabilityBetterThanControl > 0.8)
+})

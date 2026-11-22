@@ -28,6 +28,14 @@ separate npm package.
 - Beelden en video (productfoto's, sfeer, advertenties): fal.ai via de MCP-connector. Genereer pas na akkoord op de kosten.
 - Keuzes per winkel (leverancier, prijzen, varianten, rekensom) staan in `docs/beslissingen/<id>.md`. Werk dat bij als je zo'n keuze wijzigt.
 - Deploy: Dokploy met losse services per winkel (`<id>-db`, `<id>-redis`, `<id>-backend`, `<id>-storefront`), start-first updates + healthchecks; zie README. `docker-compose.yml` = lokaal/één host. Build-context = repo-root, `NEXT_PUBLIC_*` zijn build args.
+- E-mail aan klanten: teksten in `apps/backend/src/lib/emails/templates.ts` (getest), versturen via subscribers
+  `email-*.ts` en provider `src/modules/email` (Resend/Brevo). Adres van het bedrijf alleen in de orderbevestiging.
+  Nazorg (onderweg-mail, lijstje voor de eigenaar): job `order-care`. Nooit de herkomst (land leverancier) noemen.
+- Testbetaling (`pp_system_default`) mag nooit in productie: bootstrap haalt hem weg zodra `MOLLIE_API_KEY` er is;
+  CJ stuurt alleen echt betaalde bestellingen door.
+- A/B-tests zonder code: inhoud in `apps/storefront/src/stores/<id>.experiments.ts`; wachtrij en regels van de
+  autopilot (Claude, wekelijks als PR) in `docs/autopilot/README.md`. `cd analytics && npm test` controleert de keys.
+- Wat er nog moet voor livegang: `docs/launch-checklist.md`.
 - Checks: `pnpm --filter @dtc/backend build`, `pnpm --filter @dtc/storefront build`,
   `cd apps/storefront && npx tsc --noEmit` (0 fouten verwacht), `cd analytics && npm test`.
 

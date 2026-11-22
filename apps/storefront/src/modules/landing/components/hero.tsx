@@ -1,4 +1,5 @@
-import { buyAnchor, store } from "@stores"
+import { store } from "@stores"
+import HeroCopy from "./hero-copy"
 import { getImageProps } from "next/image"
 import type { CSSProperties } from "react"
 
@@ -32,12 +33,18 @@ export default function Hero({
   const wideSet = wideProps.srcSet || wideProps.src
   const tallSet = tallSrcSet || img.src
 
+  // Mobiel: beeld onderaan uitlijnen, zodat de lamp hoger in beeld staat en de kop
+  // eronder past (anders staat de tekst over de lamp heen). Waar de lamp dan staat
+  // hangt af van de schermverhouding: min(y%, 100% − (1 − y) × beeldhoogte), met
+  // beeldhoogte = 100vw / (breedte/hoogte) zolang het beeld op de breedte schaalt.
+  const tallY = lightOrigin.tall.y
+  const tallShift = (((100 - tallY) / 100) * (tall.height / tall.width) * 100).toFixed(2)
   const vars = {
     "--lx": `${lightOrigin.tall.x}%`,
-    "--ly": `${lightOrigin.tall.y}%`,
+    "--ly": `min(${tallY}%, calc(100% - ${tallShift}vw))`,
     "--lx-wide": `${lightOrigin.wide.x}%`,
     "--ly-wide": `${lightOrigin.wide.y}%`,
-    "--pos": `${lightOrigin.tall.x}% ${lightOrigin.tall.y}%`,
+    "--pos": `${lightOrigin.tall.x}% 100%`,
     "--pos-wide": `${lightOrigin.wide.x}% ${lightOrigin.wide.y}%`,
   } as CSSProperties
 
@@ -46,6 +53,8 @@ export default function Hero({
       className="relative isolate flex min-h-[calc(100svh-4rem)] overflow-hidden bg-brand-dark text-brand-light small:min-h-[min(calc(100svh-4rem),58rem)]"
       style={vars}
       aria-labelledby="hero-title"
+      // De vaste koopbalk op mobiel blijft weg zolang de hero in beeld is (die heeft zijn eigen knop).
+      data-hero
     >
       <picture>
         <source media="(min-width: 1024px)" srcSet={wideSet} />
@@ -73,28 +82,13 @@ export default function Hero({
         className="absolute inset-0 -z-10 bg-gradient-to-t from-brand-dark/90 via-brand-dark/45 via-40% to-transparent to-70% small:bg-gradient-to-r small:from-brand-dark/80 small:via-brand-dark/35 small:via-45% small:to-transparent small:to-70%"
       />
 
-      {/* pb-32 op mobiel: ruimte voor de vaste koopbalk onderin. */}
-      <div className="content-container flex w-full flex-col justify-end pb-32 pt-32 small:justify-center small:pb-24">
-        <div className="max-w-[34rem]">
-          <h1
-            id="hero-title"
-            className="rise font-display text-[clamp(3rem,9vw,6.5rem)] leading-[0.95] tracking-[-0.015em] [text-wrap:balance] [--d:0.9s]"
-          >
-            {hero.title}
-          </h1>
-          <p className="rise mt-6 max-w-[32ch] text-lg leading-relaxed text-brand-light/85 small:text-xl [--d:1.15s]">
-            {hero.lead}
-          </p>
-          <div className="rise mt-9 flex flex-wrap items-center gap-x-6 gap-y-3 [--d:1.35s]">
-            <a
-              href={`#${buyAnchor}`}
-              className="inline-flex h-12 items-center rounded-full bg-brand-accent px-7 text-base font-medium text-brand-ink transition-colors hover:bg-brand-accent/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-accent"
-            >
-              {hero.cta}
-            </a>
-            {price && <span className="text-lg text-brand-light/85">{price}</span>}
-          </div>
-        </div>
+      <div className="content-container flex w-full flex-col justify-end pb-10 pt-32 small:justify-center small:pb-24">
+        <HeroCopy
+          copy={{ title: hero.title, lead: hero.lead, cta: hero.cta }}
+          // Geen kop-test op advertentiepagina's (/a/<angle>): daar hoort de kop bij de advertentie.
+          test={override ? undefined : store.experimentContent?.heroCopy}
+          price={price}
+        />
       </div>
     </section>
   )

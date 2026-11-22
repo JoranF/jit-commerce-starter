@@ -110,9 +110,10 @@ export async function syncCjOrder(
     !(order.fulfillments ?? []).length
   ) {
     try {
+      // Medusa line quantities (a "2 lampen" line is 1 item here, 2 units at CJ).
       const items = getCjLines(order).map((l) => ({
         id: l.storeLineItemId!,
-        quantity: l.quantity,
+        quantity: l.itemQuantity,
       }))
       const labels = [{ tracking_number: tracking, tracking_url: trackingUrl, label_url: trackingUrl }]
       const { result: fulfillment } = await createOrderFulfillmentWorkflow(container).run({

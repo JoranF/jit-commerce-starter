@@ -46,6 +46,13 @@ jobs:
           cache: npm
           cache-dependency-path: analytics/package-lock.json
       - run: npm ci
+      # Nieuwe experimenten uit config.ts (bv. door de autopilot) als draft aanmaken,
+      # zodat de wachtrij ze kan starten. Idempotent: bestaande blijven staan.
+      - if: ${{ vars.AUTO_LAUNCH_EXPERIMENTS == 'true' }}
+        run: npm run setup -- --store ${{ matrix.store }}
+        env:
+          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          POSTHOG_APP_HOST: ${{ vars.POSTHOG_APP_HOST || 'https://eu.posthog.com' }}
       - run: npm run experiments -- --store ${{ matrix.store }}
         env:
           POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
@@ -53,3 +60,4 @@ jobs:
           REPORT_WEBHOOK_URL: ${{ secrets.REPORT_WEBHOOK_URL }}
           AUTO_SHIP_WINNERS: ${{ vars.AUTO_SHIP_WINNERS || 'false' }}
           AUTO_LAUNCH_EXPERIMENTS: ${{ vars.AUTO_LAUNCH_EXPERIMENTS || 'false' }}
+          MAX_CONCURRENT_EXPERIMENTS: ${{ vars.MAX_CONCURRENT_EXPERIMENTS || '1' }}

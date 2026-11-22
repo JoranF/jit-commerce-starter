@@ -1,4 +1,5 @@
 import { MedusaError } from "@medusajs/framework/utils"
+import { isTestPaymentProvider } from "../../../lib/payment-providers"
 import type { CjCreateOrderInput, CjFreightOption, CjOrderProduct } from "../client"
 
 /**
@@ -7,6 +8,8 @@ import type { CjCreateOrderInput, CjFreightOption, CjOrderProduct } from "../cli
  *
  * Linking a Medusa variant to CJ = set variant metadata:
  *   cj_vid           (required) CJ variant id
+ *   cj_quantity      (optional) CJ units per unit of this variant, e.g. 2 for a
+ *                    "set of two" variant that is linked to the single CJ item
  *   cj_from_country  (optional) warehouse country, e.g. "CN", "DE", "NL"
  *   cj_logistic      (optional) fixed CJ shipping method, e.g. "CJPacket Ordinary"
  * Product metadata with the same keys works as a fallback for all its variants.
@@ -19,6 +22,11 @@ export type OrderItemLike = {
   variant_id?: string | null
   variant?: { metadata?: Record<string, unknown> | null } | null
   product?: { metadata?: Record<string, unknown> | null } | null
+}
+
+export type PaymentLike = {
+  provider_id?: string | null
+  canceled_at?: string | Date | null
 }
 
 export type AddressLike = {
@@ -41,9 +49,13 @@ export type OrderLike = {
   shipping_address?: AddressLike | null
   items?: OrderItemLike[] | null
   metadata?: Record<string, unknown> | null
+  /** Loaded by the workflow; used to never ship orders that weren't really paid. */
+  payment_collections?: { payments?: PaymentLike[] | null }[] | null
 }
 
 export type CjLine = CjOrderProduct & {
+  /** Quantity of the Medusa line item (CJ `quantity` = this × cj_quantity). */
+  itemQuantity: number
   fromCountry?: string
   logistic?: string
 }
@@ -54,17 +66,49 @@ function meta(item: OrderItemLike, key: string): string | undefined {
   return str(item.variant?.metadata?.[key]) ?? str(item.product?.metadata?.[key])
 }
 
-/** Order lines that are linked to CJ (have a cj_vid). Others are ignored. */
+/** Positive whole number from metadata (number or numeric string), else undefined. */
+function metaInt(item: OrderItemLike, key: string): number | undefined {
+  for (const source of [item.variant?.metadata, item.product?.metadata]) {
+    const raw = source?.[key]
+    const n = typeof raw === "number" ? raw : typeof raw === "string" && raw.trim() ? Number(raw) : NaN
+    if (Number.isFinite(n) && n >= 1) {
+      return Math.round(n)
+    }
+  }
+  return undefined
+}
+
+/**
+ * Order lines that are linked to CJ (have a cj_vid). Others are ignored.
+ * A variant with `cj_quantity: 2` (e.g. "2 lampen") sends 2 CJ units per unit sold.
+ */
 export function getCjLines(order: OrderLike): CjLine[] {
   return (order.items ?? [])
-    .map((item) => ({
-      vid: meta(item, "cj_vid") ?? "",
-      quantity: Math.round(Number(item.quantity)),
-      storeLineItemId: item.id,
-      fromCountry: meta(item, "cj_from_country")?.toUpperCase(),
-      logistic: meta(item, "cj_logistic"),
-    }))
-    .filter((l) => l.vid && l.quantity > 0)
+    .map((item) => {
+      const itemQuantity = Math.round(Number(item.quantity))
+      return {
+        vid: meta(item, "cj_vid") ?? "",
+        quantity: itemQuantity * (metaInt(item, "cj_quantity") ?? 1),
+        itemQuantity,
+        storeLineItemId: item.id,
+        fromCountry: meta(item, "cj_from_country")?.toUpperCase(),
+        logistic: meta(item, "cj_logistic"),
+      }
+    })
+    .filter((l) => l.vid && l.itemQuantity > 0)
+}
+
+/**
+ * Was this order paid through a real payment provider (Mollie etc.)? An order paid
+ * with Medusa's manual "test payment" must never be shipped. Returns true when the
+ * payments weren't loaded (caller didn't ask), so it only blocks on evidence.
+ */
+export function isPaidByRealProvider(order: OrderLike): boolean {
+  if (order.payment_collections === undefined) {
+    return true
+  }
+  const payments = (order.payment_collections ?? []).flatMap((pc) => pc?.payments ?? [])
+  return payments.some((p) => !p.canceled_at && !!p.provider_id && !isTestPaymentProvider(p.provider_id))
 }
 
 /** The order number we send to CJ. Stable → CJ rejects duplicates. */
@@ -124,6 +168,14 @@ const countryName = (code: string) => {
   }
 }
 
+/**
+ * Opmerking bij elke CJ-bestelling: neutraal verpakken. Geen factuur of prijzen van de
+ * leverancier in het pakket (klanten die "€ 15" op een pakbon zien, voelen zich
+ * opgelicht) en geen reclame van anderen. Aan te passen met CJ_ORDER_REMARK.
+ */
+export const DEFAULT_CJ_REMARK =
+  "Neutral packaging please: no invoice, no prices, no supplier or promotional material in the parcel."
+
 export type BuildOptions = {
   logisticName: string
   fromCountryCode: string
@@ -131,6 +183,8 @@ export type BuildOptions = {
   sandbox: boolean
   orderNumberPrefix?: string
   storeName?: string
+  /** Opmerking voor CJ bij de bestelling. Standaard DEFAULT_CJ_REMARK; "" = geen. */
+  remark?: string
 }
 
 export function buildCjOrder(
@@ -158,11 +212,13 @@ export function buildCjOrder(
     shippingCustomerName: name || a.company || "Customer",
     shippingPhone: str(a.phone),
     email: str(order.email),
+    remark: (opts.remark ?? DEFAULT_CJ_REMARK) || undefined,
     logisticName: opts.logisticName,
     fromCountryCode: opts.fromCountryCode,
     payType: opts.autoPay ? 2 : 3,
     isSandbox: opts.sandbox ? 1 : 0,
     storeName: opts.storeName,
+    // CJ units (already multiplied by cj_quantity), not the Medusa line quantity.
     products: lines.map(({ vid, quantity, storeLineItemId }) => ({
       vid,
       quantity,

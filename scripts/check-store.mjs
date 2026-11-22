@@ -38,6 +38,14 @@ if (!config) {
   for (const field of ["legalName", "kvk", "address", "email"]) {
     if (!new RegExp(`${field}:\\s*"[^"]+"`).test(company)) errors.push(`company.${field} ontbreekt (wettelijk verplicht)`)
   }
+  if (/email:\s*"[^"]+@(gmail|hotmail|outlook|live|yahoo)\./.test(company)) {
+    warnings.push("company.email is een privé-adres: een adres op je eigen domein wekt meer vertrouwen")
+  }
+  // GPSR (EU 2023/988): fabrikant + verantwoordelijke in de EU op de productpagina.
+  const code = config.replace(/^\s*\/\/.*$/gm, "")
+  if (!/productSafety:\s*\{/.test(code)) {
+    errors.push("productSafety ontbreekt: fabrikant en verantwoordelijke in de EU (GPSR) zijn verplicht op de productpagina")
+  }
   for (const src of config.matchAll(/src:\s*"([^"]+)"/g)) {
     const file = path.join(root, "apps/storefront/public", src[1])
     if (!existsSync(file)) errors.push(`beeld ontbreekt: public${src[1]}`)

@@ -83,7 +83,7 @@ const Addresses = ({
                 <BillingAddress cart={cart} />
               </div>
             )}
-            <SubmitButton className="mt-6" data-testid="submit-address-button">
+            <SubmitButton className="mt-6 w-full small:w-auto" data-testid="submit-address-button">
               Verder naar verzending
             </SubmitButton>
             <ErrorMessage error={message} data-testid="address-error-message" />

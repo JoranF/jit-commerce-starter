@@ -1,3 +1,4 @@
+import { lichtvalExperiments } from "./lichtval.experiments"
 import type { StoreConfig } from "./types"
 
 /**
@@ -134,6 +135,15 @@ export const lichtval: StoreConfig = {
       "2 jaar garantie",
     ],
     ctaText: { control: "In winkelmand", test: "Bestel de lamp" },
+    packs: { unit: "lamp", sizes: { "1 lamp": 1, "2 lampen": 2 } },
+    optionImages: {
+      "2 lampen": {
+        src: "/stores/lichtval/slaapkamer.jpg",
+        alt: "Twee Lichtval wandlampen aan weerszijden van een bed, allebei aan.",
+        width: 1500,
+        height: 1862,
+      },
+    },
   },
 
   faq: {
@@ -142,6 +152,19 @@ export const lichtval: StoreConfig = {
       {
         q: "Wanneer is mijn lamp in huis?",
         a: "We versturen je lamp binnen {verwerking} werkdagen. Daarna duurt de bezorging {bezorging} werkdagen. Zodra hij onderweg is, krijg je een track & trace-code per e-mail.",
+      },
+      {
+        q: "Waar is mijn bestelling?",
+        a: "In de bevestiging van je bestelling staat een link naar 'Volg je bestelling'. Daar zie je waar je pakket is en wanneer het aankomt. Duurt het langer dan {levertijd} werkdagen? Mail ons, dan zoeken we het voor je uit.",
+      },
+      {
+        // TODO bij het sample controleren: kwam het pakket zonder extra kosten aan?
+        q: "Moet ik bij de bezorging nog iets betalen?",
+        a: "Nee. Alle kosten zitten in de prijs en de verzendkosten. Je betaalt bij de bezorging niets extra, ook geen douane- of invoerkosten.",
+      },
+      {
+        q: "Wat als mijn lamp beschadigd aankomt?",
+        a: "Stuur ons een foto van de lamp en de verpakking. Dan sturen we je een nieuwe lamp of krijg je je geld terug, wat jij wilt. De kapotte lamp hoef je niet terug te sturen.",
       },
       {
         q: "Beweegt het licht?",
@@ -182,6 +205,20 @@ export const lichtval: StoreConfig = {
   },
 
   imageNote: "Sfeerbeelden. De lamp die je ontvangt kan in afwerking licht afwijken.",
+
+  // TODO vóór livegang: fabrikant (naam + adres uit de CE-verklaring van CJ) en
+  // waarschuwingen (aansluiting) invullen; tot dan meldt `pnpm check-store` dit.
+  // productSafety: {
+  //   manufacturer: "<naam en adres fabrikant>",
+  //   euResponsible: "Joran Information Technology, Prins Bernhardstraat 8, 6668 AH Randwijk, joranfloor@gmail.com",
+  //   identifier: "LICHTVAL-WANDLAMP",
+  //   warnings: ["Alleen voor gebruik binnenshuis.", "..."],
+  // },
+
+  paymentMethods: ["ideal", "bancontact", "card", "paypal", "applepay"],
+
+  // A/B-tests zonder code; los bestand zodat de autopilot alleen dát mag aanpassen.
+  experimentContent: lichtvalExperiments,
 
   company: {
     legalName: "Joran Information Technology",

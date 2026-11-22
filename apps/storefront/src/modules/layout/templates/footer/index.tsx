@@ -8,9 +8,10 @@ import { buyAnchor, store } from "@stores";
 /** Footer voor een winkel met één product. Bedrijfsgegevens uit de winkelconfig. */
 function BrandFooter() {
   const { company } = store;
+  // Bewust zonder adres: dat staat één klik verder op de contactpagina
+  // ("Bedrijfsgegevens"), zoals de wet vraagt (rechtstreeks en permanent bereikbaar),
+  // maar niet op elke pagina van de winkel.
   const details = [
-    company.legalName,
-    company.address,
     company.kvk && `KvK ${company.kvk}`,
     company.vat && `Btw ${company.vat}`,
   ].filter(Boolean) as string[];
@@ -82,7 +83,13 @@ function BrandFooter() {
         <p>
           © {new Date().getFullYear()} {company.legalName || store.name}
         </p>
-        {details.length > 0 && <p>{details.join(", ")}</p>}
+        <p>
+          {details.join(" · ")}
+          {details.length > 0 && " · "}
+          <LocalizedClientLink href="/contact" className={`underline underline-offset-4 ${link}`}>
+            Bedrijfsgegevens
+          </LocalizedClientLink>
+        </p>
       </div>
     </footer>
   );

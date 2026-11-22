@@ -36,6 +36,10 @@ export type AnalyticsEvent = (typeof EVENTS)[keyof typeof EVENTS]
  * (of laat `analytics/` dat doen met `yarn setup`) met exact deze keys.
  */
 export const EXPERIMENTS = {
+  /** Koopblok: control = 1 lamp voorgeselecteerd, test = de set (store.experimentContent.defaultPack). */
+  defaultPack: "default-pack",
+  /** Hero: control = store.hero, test = store.experimentContent.heroCopy.test. */
+  heroCopy: "hero-copy",
   /** Tekst van de winkelwagen-knop op de productpagina. */
   pdpCtaText: "pdp-cta-text",
   /**

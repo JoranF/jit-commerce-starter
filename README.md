@@ -43,6 +43,12 @@ Gebouwd op de officiële [Medusa DTC Starter](https://github.com/medusajs/dtc-st
 - Track & trace komt terug (job elke 30 min) en de bestelling staat in Medusa op verzonden; blok met status + knoppen op de bestelpagina in de admin
 - Aan met `CJ_API_KEY`; uitleg in [`apps/backend/src/modules/cj-dropshipping/README.md`](apps/backend/src/modules/cj-dropshipping/README.md)
 
+**E-mail en nazorg** (belangrijk bij dropshipping: stilte = "waar blijft mijn pakket?" en terugboekingen)
+- Orderbevestiging met bedrijfsgegevens, verwachte bezorgdatum, bedenktijd en modelformulier (wettelijk verplicht), verzendmail met track & trace, "nog onderweg"-mail als de vroegste verwachte datum voorbij is, annuleringsmail. Via Resend of Brevo; zonder key alleen gelogd. Teksten: `apps/backend/src/lib/emails/`, bekijken: `pnpm medusa exec ./src/scripts/preview-emails.ts`
+- **Volg je bestelling** (`/<land>/order/<id>/status`): stappen in gewone taal en de verwachte datum, met de vervoerder als extra link
+- Jij krijgt een mail bij elke bestelling en elke ochtend een lijstje met bestellingen die aandacht vragen (CJ-fout, onbetaald in CJ, te laat verzonden, te lang onderweg); job `order-care`
+- CJ verpakt neutraal (geen factuur of prijzen in het pakket), alleen echt betaalde bestellingen worden verstuurd, een set van twee (`cj_quantity: 2`) gaat als twee stuks naar CJ
+
 **Meten**
 - Browser-events via eigen domein (`/ingest`) → minder last van adblockers
 - E-commerce funnel: `product_viewed` → `buy_section_viewed` → `product_added_to_cart` → `cart_viewed` → `checkout_started` → `payment_redirected` → **`order_completed`**
@@ -57,7 +63,9 @@ Gebouwd op de officiële [Medusa DTC Starter](https://github.com/medusajs/dtc-st
 - **Landingspagina per invalshoek**: `angle=<key>` in de advertentie-URL geeft een eigen hero-kop en -tekst (`angles` in de winkelconfig), statisch en zonder verspringen
 - **Ads-autopilot** (`npm run ads`): pauzeert verliezers en schaalt winnende advertentiesets op, op basis van je break-even CPA. Standaard alleen advies
 
-**A/B-testen**
+**A/B-testen** (wachtrij, één tegelijk, in deze volgorde)
+- `default-pack`: "2 lampen" voorgeselecteerd (beslist op omzet per bezoeker, niet alleen conversie)
+- `hero-copy`: andere kop in de hero (inhoud in `stores/<id>.experiments.ts`, wisselt onzichtbaar tijdens de intro-animatie)
 - `atc-flow`: na "In winkelmand" een bevestiging met knop **Afrekenen** (control) vs. **direct naar de checkout** (test)
 - `pdp-cta-text`: tekst van de koopknop (`In winkelmand` vs. `Bestel de lamp`, uit de winkelconfig)
 - Client: `useExperiment("flag")` · Server (zonder flikkering): `getExperimentVariant("flag")`
@@ -68,7 +76,8 @@ Gebouwd op de officiële [Medusa DTC Starter](https://github.com/medusajs/dtc-st
 | `npm run setup` | Maakt dashboard (funnel, omzet, AOV, conversie, landen) + experimenten in PostHog | eenmalig / na wijzigingen |
 | `npm run report` | Weekrapport: KPI's vs. vorige week, grootste funnel-lek, **checkout per stap + foutmeldingen**, top-producten, A/B-status, optioneel 3 testideeën van Claude | elke maandag |
 | `npm run ads` | Meta-uitgaven per advertentie naast echte bestellingen (PostHog); verliezers pauzeren, winnaars +20% budget. Advies, of uitvoeren met `ADS_AUTOPILOT=true` | dagelijks |
-| `npm run experiments` | Bayesiaanse evaluatie van lopende tests; met `AUTO_LAUNCH_EXPERIMENTS=true` worden nieuwe tests automatisch gestart, met `AUTO_SHIP_WINNERS=true` wordt een winnaar automatisch op 100% gezet | dagelijks |
+| `npm run experiments` | Bayesiaanse evaluatie van lopende tests; met `AUTO_LAUNCH_EXPERIMENTS=true` worden nieuwe tests automatisch aangemaakt en gestart (wachtrij: één tegelijk, `MAX_CONCURRENT_EXPERIMENTS`), met `AUTO_SHIP_WINNERS=true` wordt een winnaar automatisch op 100% gezet | dagelijks |
+| **Autopilot** (Claude) | Leest de cijfers en zet de volgende test klaar of bakt een winnaar in, als pull request. Regels en wachtrij: [`docs/autopilot/README.md`](docs/autopilot/README.md). Met `AUTOPILOT_AUTOMERGE=true` gaan PR's die alleen testinhoud raken zelf live | dinsdag |
 
 Alle commando's draaien per winkel: `npm run <commando> -- --store <id>` (PostHog-project en
 advertentieaccount uit `analytics/src/stores.ts`). In GitHub Actions gebeurt dat automatisch voor
@@ -134,12 +143,17 @@ Admin: `https://<api-domein>/app`.
 ## Mollie aanzetten
 
 1. Account op [mollie.com](https://www.mollie.com), activeer iDEAL e.d., kopieer de **test**-key (`test_...`)
-2. Dokploy → `<id>-backend` → Environment → `MOLLIE_API_KEY=test_...` → Redeploy
-3. Koppel de methodes aan je regio: Admin → Settings → Regions → *Benelux & Duitsland* → Payment providers → vink `mollie-ideal`, `mollie-bancontact`, … aan
-   (staat `MOLLIE_API_KEY` al bij de allereerste start, dan doet de seed dit automatisch)
-4. Test een bestelling, en zet daarna `live_...`
+2. Dokploy → `<id>-backend` → Environment → `MOLLIE_API_KEY=test_...` en `MOLLIE_DESCRIPTION=<winkelnaam>` (staat op het bankafschrift van de klant) → Redeploy
+3. Bij de start koppelt de backend de Mollie-methodes (iDEAL, Bancontact, creditcard, PayPal, Apple Pay) aan je regio's en haalt hij de **handmatige testbetaling** eraf: daarmee kon iedereen bestellen zonder te betalen. Alleen om te testen: `ALLOW_TEST_PAYMENT=true` (backend) en `NEXT_PUBLIC_ALLOW_TEST_PAYMENT=true` (storefront)
+4. Test een bestelling (betaald, mislukt, geannuleerd, terugbetaling), en zet daarna `live_...`
 
 De Mollie-plugin (`@variablevic/mollie-payments-medusa`) is een community-plugin (v0.0.x, vastgepind op `0.0.13`). Test hem grondig voordat je live gaat.
+
+## E-mail aanzetten
+
+1. Account bij [Resend](https://resend.com) of [Brevo](https://www.brevo.com) (EU) en je domein verifiëren (SPF/DKIM-records in je DNS), anders belanden mails in de spam
+2. Dokploy → `<id>-backend` → `RESEND_API_KEY` (of `BREVO_API_KEY`), `EMAIL_FROM=Lichtval <hallo@jouwdomein.nl>`, `EMAIL_REPLY_TO` (je inbox), `SHOP_OWNER_EMAIL` (meldingen voor jou) en optioneel `OPS_WEBHOOK_URL` (Discord/Slack)
+3. Merk en bedrijfsgegevens in de mails komen uit `brand` in `apps/backend/src/scripts/stores/definitions.ts` (gelijk houden met de winkelconfig)
 
 ## Meta Pixel + Conversions API aanzetten
 
@@ -203,9 +217,12 @@ Aanzetten:
 Lokaal proberen: `cd analytics && META_ADS_TOKEN=… npx --yes dotenv-cli -- npm run ads -- --store <id>`
 
 ### Een nieuw experiment toevoegen
-1. Voeg de key toe aan `EXPERIMENTS` in `apps/storefront/src/lib/analytics/constants.ts` en aan `analytics/src/config.ts` (hypothese, varianten, beslisregels)
-2. Gebruik hem in een component: `const { variant } = useExperiment(EXPERIMENTS.mijnTest)`
-3. `npm run setup` maakt hem aan in PostHog → Launch → de dagelijkse check houdt hem in de gaten
+**Zonder code** (hero-kop of voorselectie): inhoud in `apps/storefront/src/stores/<id>.experiments.ts`, key in `constants.ts` en het experiment in `analytics/src/config.ts`. Zie [`docs/autopilot/README.md`](docs/autopilot/README.md); `npm test` in `analytics/` controleert dat de keys overal gelijk zijn.
+
+**Met code**:
+1. Voeg de key toe aan `EXPERIMENTS` in `apps/storefront/src/lib/analytics/constants.ts` en aan `analytics/src/config.ts` (hypothese, varianten, beslisregels; `metric: "revenue_per_visitor"` als de orderwaarde kan veranderen)
+2. Gebruik hem in een component: `const { variant } = useExperiment(EXPERIMENTS.mijnTest)` (boven de vouw: `useTimedExperiment`, zonder flikkering)
+3. De dagelijkse check maakt hem aan in PostHog en start hem als hij aan de beurt is (volgorde in `config.ts` = prioriteit)
 
 **Vuistregels:** minimaal 2 weken, minimaal ~500 bezoekers per variant, en niet tussentijds stoppen omdat het er goed uitziet. De scripts dwingen dit af. Bij weinig verkeer: test grote veranderingen (prijs, aanbod, productpagina), niet een knopkleur.
 

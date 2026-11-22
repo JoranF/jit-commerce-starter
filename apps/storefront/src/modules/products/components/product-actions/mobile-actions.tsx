@@ -1,6 +1,6 @@
 import { Dialog, Transition } from "@headlessui/react"
 import { Button, clx } from "@modules/common/components/ui"
-import React, { Fragment, useMemo } from "react"
+import React, { Fragment, useEffect, useMemo, useState } from "react"
 
 import useToggleState from "@lib/hooks/use-toggle-state"
 import ChevronDown from "@modules/common/icons/chevron-down"
@@ -30,6 +30,25 @@ type MobileActionsProps = {
   optionsDisabled: boolean
 }
 
+/**
+ * Staat er een hero met eigen koopknop in beeld (`[data-hero]`, landingspagina)?
+ * Dan geen vaste koopbalk eroverheen: één duidelijke knop boven de vouw.
+ */
+function useHeroInView() {
+  const [inView, setInView] = useState(false)
+  useEffect(() => {
+    const hero = document.querySelector("[data-hero]")
+    if (!hero) return
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), {
+      // Pas "uit beeld" als de onderkant van de hero bijna weg is.
+      rootMargin: "0px 0px -85% 0px",
+    })
+    io.observe(hero)
+    return () => io.disconnect()
+  }, [])
+  return inView
+}
+
 const MobileActions: React.FC<MobileActionsProps> = ({
   product,
   variant,
@@ -44,6 +63,8 @@ const MobileActions: React.FC<MobileActionsProps> = ({
   optionsDisabled,
 }) => {
   const { state, open, close } = useToggleState()
+  const heroInView = useHeroInView()
+  const visible = show && !heroInView
 
   const price = getProductPrice({
     product: product,
@@ -65,12 +86,12 @@ const MobileActions: React.FC<MobileActionsProps> = ({
     <>
       <div
         className={clx("lg:hidden inset-x-0 bottom-0 fixed z-50", {
-          "pointer-events-none": !show,
+          "pointer-events-none": !visible,
         })}
       >
         <Transition
           as={Fragment}
-          show={show}
+          show={visible}
           enter="ease-in-out duration-300"
           enterFrom="opacity-0"
           enterTo="opacity-100"

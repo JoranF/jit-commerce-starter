@@ -53,9 +53,45 @@ export type ExperimentConfig = {
   winProbability: number
   /** Mag de automatisering de winnaar zelf op 100% zetten? (ook AUTO_SHIP_WINNERS=true nodig) */
   autoShip: boolean
+  /** Waarop een winnaar wordt gekozen. Standaard conversie; omzet per bezoeker als de orderwaarde verandert. */
+  metric?: "conversion" | "revenue_per_visitor"
 }
 
+/**
+ * Volgorde = prioriteit. De dagelijkse check start er hooguit
+ * MAX_CONCURRENT_EXPERIMENTS tegelijk (standaard 1), van boven naar beneden.
+ * Nieuwe test? Zie docs/autopilot/README.md (ook de autopilot volgt die regels).
+ */
 export const EXPERIMENTS: ExperimentConfig[] = [
+  {
+    key: "default-pack",
+    name: "Koopblok: '2 lampen' voorgeselecteerd",
+    hypothesis:
+      "Als de set van twee al gekozen is (met 'Bespaar €39' en de foto met twee lampen), kiezen meer mensen twee lampen. De conversie daalt hooguit een beetje, de omzet per bezoeker stijgt.",
+    variants: [
+      { key: "control", name: "1 lamp voorgeselecteerd" },
+      { key: "test", name: "2 lampen voorgeselecteerd" },
+    ],
+    minExposuresPerVariant: 500,
+    minDays: 14,
+    winProbability: 0.95,
+    autoShip: true,
+    metric: "revenue_per_visitor",
+  },
+  {
+    key: "hero-copy",
+    name: "Hero: andere kop en tekst (winkelconfig experimentContent.heroCopy)",
+    hypothesis:
+      "Een kop die zegt wat het oplevert (sfeer in huis) in plaats van wat het is, laat meer bezoekers doorklikken naar de lamp en bestellen.",
+    variants: [
+      { key: "control", name: "Huidige kop" },
+      { key: "test", name: "Kop uit experimentContent.heroCopy.test" },
+    ],
+    minExposuresPerVariant: 500,
+    minDays: 14,
+    winProbability: 0.95,
+    autoShip: true,
+  },
   {
     key: "atc-flow",
     name: "Na 'In winkelmand': bevestiging vs. direct naar checkout",

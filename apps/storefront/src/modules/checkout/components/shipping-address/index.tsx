@@ -20,6 +20,7 @@ const ShippingAddress = ({
   onChange: () => void
 }) => {
   const countryCode = (useParams().countryCode as string | undefined)?.toLowerCase()
+  const [showCompany, setShowCompany] = useState(false)
   const [formData, setFormData] = useState<Record<string, string>>({
     "shipping_address.first_name": cart?.shipping_address?.first_name || "",
     "shipping_address.last_name": cart?.shipping_address?.last_name || "",
@@ -123,7 +124,28 @@ const ShippingAddress = ({
           />
         </Container>
       )}
-      <div className="grid grid-cols-2 gap-4">
+      {/*
+        Mobiel één kolom (Baymard: minder fouten, sneller), e-mail eerst (dan kunnen we
+        je de bevestiging sturen, ook als je halverwege stopt), bedrijfsnaam alleen
+        als je erom vraagt.
+      */}
+      <div className="grid grid-cols-1 gap-4 small:grid-cols-2">
+        <div className="small:col-span-2">
+          <Input
+            label="E-mail"
+            name="email"
+            type="email"
+            title="Vul een geldig e-mailadres in."
+            autoComplete="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            data-testid="shipping-email-input"
+          />
+          <p className="mt-1.5 text-small-regular text-ui-fg-subtle">
+            Voor je orderbevestiging en de track &amp; trace.
+          </p>
+        </div>
         <Input
           label="Voornaam"
           name="shipping_address.first_name"
@@ -142,52 +164,78 @@ const ShippingAddress = ({
           required
           data-testid="shipping-last-name-input"
         />
-        <Input
-          label="Straat en huisnummer"
-          name="shipping_address.address_1"
-          autoComplete="address-line1"
-          value={formData["shipping_address.address_1"]}
-          onChange={handleChange}
-          required
-          data-testid="shipping-address-input"
-        />
-        <Input
-          label="Bedrijf"
-          name="shipping_address.company"
-          value={formData["shipping_address.company"]}
-          onChange={handleChange}
-          autoComplete="organization"
-          data-testid="shipping-company-input"
-        />
-        <Input
-          label="Postcode"
-          name="shipping_address.postal_code"
-          autoComplete="postal-code"
-          value={formData["shipping_address.postal_code"]}
-          onChange={handleChange}
-          required
-          data-testid="shipping-postal-code-input"
-        />
-        <Input
-          label="Plaats"
-          name="shipping_address.city"
-          autoComplete="address-level2"
-          value={formData["shipping_address.city"]}
-          onChange={handleChange}
-          required
-          data-testid="shipping-city-input"
-        />
-        <div className="col-span-2">
-        <CountrySelect
-          name="shipping_address.country_code"
-          autoComplete="country"
-          region={cart?.region}
-          value={formData["shipping_address.country_code"]}
-          onChange={handleChange}
-          required
-          data-testid="shipping-country-select"
-        />
+        <div className="small:col-span-2">
+          <Input
+            label="Straat en huisnummer"
+            name="shipping_address.address_1"
+            autoComplete="address-line1"
+            value={formData["shipping_address.address_1"]}
+            onChange={handleChange}
+            required
+            data-testid="shipping-address-input"
+          />
         </div>
+        <div className="grid grid-cols-[minmax(7rem,2fr)_3fr] gap-4 small:col-span-2">
+          <Input
+            label="Postcode"
+            name="shipping_address.postal_code"
+            autoComplete="postal-code"
+            value={formData["shipping_address.postal_code"]}
+            onChange={handleChange}
+            required
+            data-testid="shipping-postal-code-input"
+          />
+          <Input
+            label="Plaats"
+            name="shipping_address.city"
+            autoComplete="address-level2"
+            value={formData["shipping_address.city"]}
+            onChange={handleChange}
+            required
+            data-testid="shipping-city-input"
+          />
+        </div>
+        <div className="small:col-span-2">
+          <CountrySelect
+            name="shipping_address.country_code"
+            autoComplete="country"
+            region={cart?.region}
+            value={formData["shipping_address.country_code"]}
+            onChange={handleChange}
+            required
+            data-testid="shipping-country-select"
+          />
+        </div>
+        <div className="small:col-span-2">
+          <Input
+            label="Telefoon (optioneel, voor de bezorger)"
+            name="shipping_address.phone"
+            autoComplete="tel"
+            value={formData["shipping_address.phone"]}
+            onChange={handleChange}
+            data-testid="shipping-phone-input"
+          />
+        </div>
+        {showCompany || formData["shipping_address.company"] ? (
+          <div className="small:col-span-2">
+            <Input
+              label="Bedrijfsnaam"
+              name="shipping_address.company"
+              value={formData["shipping_address.company"]}
+              onChange={handleChange}
+              autoComplete="organization"
+              data-testid="shipping-company-input"
+            />
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowCompany(true)}
+            className="justify-self-start text-small-regular text-ui-fg-subtle underline underline-offset-4 small:col-span-2"
+          >
+            Bedrijfsnaam toevoegen
+          </button>
+        )}
         {/* Provincie is niet nodig in NL/BE/DE; verborgen veld houdt een bestaande waarde vast. */}
         <input
           type="hidden"
@@ -202,27 +250,6 @@ const ShippingAddress = ({
           checked={checked}
           onChange={onChange}
           data-testid="billing-address-checkbox"
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <Input
-          label="E-mail"
-          name="email"
-          type="email"
-          title="Vul een geldig e-mailadres in."
-          autoComplete="email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-          data-testid="shipping-email-input"
-        />
-        <Input
-          label="Telefoon"
-          name="shipping_address.phone"
-          autoComplete="tel"
-          value={formData["shipping_address.phone"]}
-          onChange={handleChange}
-          data-testid="shipping-phone-input"
         />
       </div>
     </>

@@ -6,7 +6,9 @@ import Buy from "../components/buy"
 import Faq from "../components/faq"
 import Hero from "../components/hero"
 import Intro from "../components/intro"
+import Reviews from "../components/reviews"
 import Rooms from "../components/rooms"
+import Video from "../components/video"
 import { EVENTS } from "@lib/analytics/constants"
 import { TrackEvent } from "@modules/analytics/track"
 import TrackInView from "@modules/analytics/track-in-view"
@@ -65,6 +67,7 @@ export default function LandingTemplate({
       )}
       <Hero price={price} angle={angle} />
       <Intro />
+      <Video />
       <Rooms />
       {product ? (
         <TrackInView
@@ -80,6 +83,7 @@ export default function LandingTemplate({
           <p className="content-container text-lg">{store.productLabel} is binnenkort te bestellen.</p>
         </section>
       )}
+      <Reviews />
       {faq.length > 0 && <Faq title={store.faq.title} items={faq} />}
     </>
   )

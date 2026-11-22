@@ -93,9 +93,24 @@ Afgekeurd: feed-a (dubbele band bovenin), duo-b (zichtbaar snoer, aansluiting no
 Kosten: 12 beelden ≈ $1,80. De kop "Waterlicht op je muur." blijft voorlopig staan. Echte maten van de "Small": 33 cm hoog, schijf 10,5 cm, 8 cm diep,
 220 V (maattekening CJ). Na de sample vervangen door eigen foto's.
 
+## Klantcontact en dropshipping (2026-11-22)
+
+| Keuze | Waarde | Waar |
+|---|---|---|
+| Herkomst | Nergens genoemd in winkel, mails of statuspagina; ook nooit "verzonden vanuit Nederland" (dat is misleidend). Echte oplossing later: EU-voorraad | teksten, `CJ_ORDER_REMARK` |
+| Verpakking | Neutraal: geen factuur, prijzen of reclame van de leverancier (opmerking bij elke CJ-bestelling) | `build-order.ts` → `DEFAULT_CJ_REMARK` |
+| Communicatie | Bevestiging met bezorgdatum, verzendmail, "nog onderweg"-mail, statuspagina "Volg je bestelling" | `apps/backend/src/lib/emails`, job `order-care` |
+| Bezorgdatum op de site | "Bestel je vandaag, dan is hij er tussen … en …" + kerstmelding vanaf 15 nov | `delivery-estimate.tsx` |
+| Beschadigd | Foto sturen → nieuwe lamp of geld terug, niet terugsturen (CJ vergoedt met foto) | FAQ in `lichtval.ts` |
+| Douanekosten | "Je betaalt bij bezorging niets extra" ⚠️ controleren met het sample | FAQ |
+| Bedrijfsadres | Niet meer in de footer; wel op contact, voorwaarden, retour (noindex, niet in de sitemap) en in de orderbevestiging (wettelijk). Advies: zakelijk adres huren | footer, `sitemap.ts`, mails |
+| Duo bij CJ | `cj_quantity: 2` op de variant "2 lampen" (anders stuurt CJ er één) | `definitions.ts` |
+
 ## Volgende stappen
 
 1. Sample bestellen (1 lamp, Ordinary E, $54,15): levertijd, verpakking, lamp aan op video.
 2. Bij CJ navragen: prijs Duo (2 in één pakket), CE/RoHS, stekker of vaste aansluiting, Kelvin.
 3. `cj_vid` van de variant ophalen (met `CJ_API_KEY`) en in `definitions.ts` zetten
-   (`metadata: { cj_vid }`, voor de Duo met aantal 2).
+   (`metadata: { cj_vid }`, voor de Duo `{ cj_vid, cj_quantity: 2 }`).
+4. Alles voor livegang: [`../launch-checklist.md`](../launch-checklist.md). Potentie en
+   rekensom met de CJ-prijs: [`../product-research/2026-11-lichtval-hercheck.md`](../product-research/2026-11-lichtval-hercheck.md).

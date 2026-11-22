@@ -13,6 +13,8 @@ export const dynamic = "force-static"
 export const revalidate = 60
 
 export const metadata: Metadata = {
+  // Staat het bedrijfsadres op: wel bereikbaar via de site, niet in zoekmachines.
+  robots: { index: false, follow: true },
   title: "Retourneren",
   description: "Bedenktijd, retourneren en terugbetaling.",
 }

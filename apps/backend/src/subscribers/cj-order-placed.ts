@@ -20,7 +20,9 @@ export default async function cjOrderPlaced({
     const { result } = await forwardOrderToCjWorkflow(container).run({
       input: { order_id: data.id },
     })
-    if (result.status === "error") {
+    if (result.status === "blocked") {
+      logger.warn(`[cj] order ${data.id} NOT forwarded: not paid through a real payment provider`)
+    } else if (result.status === "error") {
       logger.warn(`[cj] order ${data.id} not forwarded: ${String(result.metadata?.cj_error)}`)
     } else if (result.status === "created") {
       logger.info(`[cj] order ${data.id} forwarded to CJ`)

@@ -9,7 +9,14 @@ import {
 import { useQueryGraphStep } from "@medusajs/medusa/core-flows"
 import { CJ_DROPSHIPPING_MODULE } from "../../modules/cj-dropshipping"
 import type CjDropshippingService from "../../modules/cj-dropshipping/service"
-import type { OrderLike } from "../../modules/cj-dropshipping/lib/build-order"
+import {
+  getCjLines,
+  isPaidByRealProvider,
+  type OrderLike,
+} from "../../modules/cj-dropshipping/lib/build-order"
+
+/** After this many failed attempts the cj-sync job stops retrying an order. */
+export const CJ_MAX_ATTEMPTS = 5
 
 /**
  * Forwards a Medusa order to CJ Dropshipping and records the outcome in
@@ -30,6 +37,9 @@ export const CJ_ORDER_FIELDS = [
   "items.variant_id",
   "items.variant.metadata",
   "items.product.metadata",
+  // Never ship an order that wasn't really paid (see isPaidByRealProvider).
+  "payment_collections.payments.provider_id",
+  "payment_collections.payments.canceled_at",
 ]
 
 export type ForwardOrderToCjInput = { order_id: string; force?: boolean }
@@ -52,6 +62,24 @@ const forwardToCjStep = createStep(
     }
 
     const attempts = Number(meta.cj_attempts ?? 0) + 1
+
+    // Paid with Medusa's manual "test payment" (or not at all): don't ship, don't
+    // retry. In CJ sandbox mode test orders are fine. "Doorsturen naar CJ" in the
+    // admin (force) still works if you really want to send it.
+    if (!force && !cj.options.sandbox && getCjLines(order).length && !isPaidByRealProvider(order)) {
+      return new StepResponse({
+        order_id: order.id,
+        status: "blocked",
+        metadata: {
+          cj_status: "blocked",
+          cj_error:
+            "Niet doorgestuurd: deze bestelling is niet via Mollie betaald (testbetaling). Klopt het toch? Gebruik 'Doorsturen naar CJ'.",
+          cj_attempts: CJ_MAX_ATTEMPTS,
+          cj_last_attempt_at: new Date().toISOString(),
+        },
+      })
+    }
+
     try {
       const res = await cj.forwardOrder(order)
       if (res.status === "skipped") {

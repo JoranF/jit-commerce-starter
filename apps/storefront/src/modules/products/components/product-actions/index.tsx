@@ -7,14 +7,17 @@ import { isVariantInStock } from "@lib/util/inventory"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@modules/common/components/ui"
 import Divider from "@modules/common/components/divider"
-import OptionSelect from "@modules/products/components/product-actions/option-select"
+import OptionSelect, {
+  type OptionDetail,
+} from "@modules/products/components/product-actions/option-select"
+import { convertToLocale } from "@lib/util/money"
 import { isEqual } from "lodash"
 import { useParams, usePathname } from "next/navigation"
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
 import { useRouter } from "next/navigation"
-import { EVENTS, EXPERIMENTS } from "@lib/analytics/constants"
+import { EVENTS, EXPERIMENTS, type ExperimentKey } from "@lib/analytics/constants"
 import { track, useExperiment } from "@modules/analytics/track"
 import { store } from "@stores"
 import { brandButton } from "./brand-button"
@@ -57,6 +60,39 @@ const getDefaultVariant = (product: HttpTypes.StoreProduct) => {
   return variants.find(isVariantInStock) ?? variants[0]
 }
 
+/**
+ * Prijs, prijs per stuk en besparing per set (store.buy.packs), uit de echte
+ * variantprijzen. Alleen voor producten met één optie (bv. "Aantal").
+ */
+function packDetails(
+  product: HttpTypes.StoreProduct
+): Record<string, Record<string, OptionDetail>> | undefined {
+  const packs = store.buy.packs
+  const option = product.options?.length === 1 ? product.options[0] : undefined
+  if (!packs || !option) return undefined
+  const priceOf = (value: string) =>
+    product.variants?.find((v) =>
+      v.options?.some((o) => o.option_id === option.id && o.value === value)
+    )?.calculated_price
+  const unitValue = Object.entries(packs.sizes).find(([, n]) => n === 1)?.[0]
+  const unit = unitValue ? priceOf(unitValue)?.calculated_amount : undefined
+  const out: Record<string, OptionDetail> = {}
+  for (const [value, n] of Object.entries(packs.sizes)) {
+    const price = priceOf(value)
+    const amount = price?.calculated_amount
+    if (amount == null || !price?.currency_code) continue
+    const fmt = (x: number) =>
+      convertToLocale({ amount: x, currency_code: price.currency_code! })
+    const save = unit != null && n > 1 ? unit * n - amount : 0
+    out[value] = {
+      price: fmt(amount),
+      sub: n > 1 ? `${fmt(amount / n)} per ${packs.unit}` : undefined,
+      badge: save >= 1 ? `Bespaar ${fmt(save)}` : undefined,
+    }
+  }
+  return Object.keys(out).length ? { [option.id]: out } : undefined
+}
+
 export default function ProductActions({
   product,
   disabled,
@@ -87,13 +123,31 @@ export default function ProductActions({
     })
   }, [product.variants, options])
 
+  // Heeft de bezoeker zelf iets gekozen? Dan zet het experiment default-pack niets meer om.
+  const touched = useRef(false)
+
   // update the options when a variant is selected
   const setOptionValue = (optionId: string, value: string) => {
+    touched.current = true
     setOptions((prev) => ({
       ...prev,
       [optionId]: value,
     }))
   }
+
+  // Experiment default-pack: variant "test" kiest de set voor (bv. "2 lampen").
+  // Het koopblok staat onder de vouw, dus dit wisselt voordat iemand het ziet.
+  const packValue = store.experimentContent?.defaultPack?.test
+  const { variant: packVariant, ready: packReady } = useExperiment(
+    (store.experimentContent?.defaultPack?.flag ?? EXPERIMENTS.defaultPack) as ExperimentKey
+  )
+  useEffect(() => {
+    if (!packValue || !packReady || packVariant !== "test" || touched.current) return
+    if (new URLSearchParams(window.location.search).get("v_id")) return
+    const pack = product.variants?.find((v) => v.options?.some((o) => o.value === packValue))
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- de variant van het experiment is pas na het laden bekend
+    if (pack) setOptions(optionsAsKeymap(pack.options) ?? {})
+  }, [packValue, packReady, packVariant, product.variants])
 
   //check if the selected options produce a valid variant
   const isValidVariant = useMemo(() => {
@@ -131,7 +185,9 @@ export default function ProductActions({
       params.delete("v_id")
     }
 
-    router.replace(pathname + "?" + params.toString())
+    // scroll: false — anders springt de pagina naar boven bij het kiezen van een
+    // variant (op de landingspagina staat het koopblok ver onder de hero).
+    router.replace(pathname + "?" + params.toString(), { scroll: false })
     // Sync the URL only when the selection changes: useRouter() can return a new
     // object after a navigation, which would re-run this effect.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- see above
@@ -141,6 +197,8 @@ export default function ProductActions({
     () => isVariantInStock(selectedVariant),
     [selectedVariant]
   )
+
+  const optionDetails = useMemo(() => packDetails(product), [product])
 
   const actionsRef = useRef<HTMLDivElement>(null)
 
@@ -235,6 +293,7 @@ export default function ProductActions({
                         updateOption={setOptionValue}
                         title={option.title ?? ""}
                         name={`options[${option.id}]`}
+                        details={optionDetails?.[option.id]}
                         data-testid="product-options"
                         disabled={!!disabled || isAdding}
                       />

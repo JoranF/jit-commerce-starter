@@ -1,8 +1,13 @@
 import { HttpTypes } from "@medusajs/types"
 import { buyAnchor, fillPolicy, store, type PolicyValues } from "@stores"
 import ProductActions from "@modules/products/components/product-actions"
-import Image from "next/image"
+import { Suspense } from "react"
+import BuyImage from "./buy-image"
+import DeliveryEstimate from "./delivery-estimate"
+import PaymentMethods from "./payment-methods"
+import ProductSafety from "./product-safety"
 import Promises from "./promises"
+import { RatingLine } from "./reviews"
 
 /**
  * Kopen op de homepage: foto, titel, prijs, knop, levertijd en de feiten.
@@ -20,6 +25,14 @@ export default function Buy({
   const { buy } = store
   const availability = fillPolicy("In huis binnen {levertijd} werkdagen", values)
 
+  // Beeld per variant (bv. "2 lampen" → foto met twee lampen), op variant-ID.
+  const byVariant: Record<string, (typeof buy)["image"]> = {}
+  for (const v of product.variants ?? []) {
+    const value = v.options?.[0]?.value
+    const img = value ? buy.optionImages?.[value] : undefined
+    if (img) byVariant[v.id] = img
+  }
+
   return (
     <section
       id={buyAnchor}
@@ -28,15 +41,10 @@ export default function Buy({
     >
       <div className="content-container grid gap-10 py-20 small:grid-cols-12 small:gap-16 small:py-32">
         <div className="small:col-span-6">
-          <div className="relative aspect-square overflow-hidden rounded-[2px] bg-brand-dark/10">
-            <Image
-              src={buy.image.src}
-              alt={buy.image.alt}
-              fill
-              sizes="(min-width: 1024px) 45vw, 100vw"
-              className="object-cover"
-            />
-          </div>
+          {/* useSearchParams: Suspense zodat de pagina statisch kan blijven. */}
+          <Suspense fallback={<BuyImage image={buy.image} byVariant={{}} />}>
+            <BuyImage image={buy.image} byVariant={byVariant} />
+          </Suspense>
         </div>
 
         <div className="small:col-span-5 small:col-start-8 small:self-center">
@@ -49,6 +57,9 @@ export default function Buy({
           {product.subtitle && (
             <p className="mt-3 text-lg text-brand-ink/75">{product.subtitle}</p>
           )}
+          <div className="mt-3">
+            <RatingLine />
+          </div>
 
           <div className="mt-8 [&_[data-testid=product-price]]:text-2xl">
             <ProductActions
@@ -59,7 +70,10 @@ export default function Buy({
             />
           </div>
 
+          <DeliveryEstimate levertijd={values.levertijd} className="mt-5" />
+
           <Promises values={values} className="mt-8" />
+          <PaymentMethods className="mt-6" />
 
           {buy.facts.length > 0 && (
             <dl className="mt-8 grid grid-cols-[auto_1fr] gap-x-8 gap-y-3 text-base">
@@ -71,6 +85,7 @@ export default function Buy({
               ))}
             </dl>
           )}
+          <ProductSafety />
         </div>
       </div>
     </section>

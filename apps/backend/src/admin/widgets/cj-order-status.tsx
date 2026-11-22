@@ -13,6 +13,7 @@ const STATUS: Record<string, { label: string; color: "green" | "orange" | "red" 
   delivered: { label: "Bezorgd", color: "green" },
   cancelled: { label: "Geannuleerd bij CJ", color: "red" },
   error: { label: "Doorsturen mislukt", color: "red" },
+  blocked: { label: "Niet doorgestuurd: niet betaald via Mollie", color: "red" },
 }
 
 const Row = ({ label, children }: { label: string; children: React.ReactNode }) => (

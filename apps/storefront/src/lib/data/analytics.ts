@@ -18,6 +18,12 @@ import { getAuthHeaders, getCartId } from "./cookies"
  *
  * Faalt nooit hard: analytics mag de checkout niet blokkeren.
  */
+function fbcFromTouch(touch: ReturnType<typeof decodeAdTouch>): string | undefined {
+  if (!touch?.fbclid) return undefined
+  const at = touch.at ? Date.parse(touch.at) : NaN
+  return `fb.1.${Number.isFinite(at) ? at : Date.now()}.${touch.fbclid}`
+}
+
 export async function attachAnalyticsToCart(cartId?: string) {
   try {
     const id = cartId || (await getCartId())
@@ -35,12 +41,16 @@ export async function attachAnalyticsToCart(cartId?: string) {
 
     const features = distinctId ? await getFeatureProperties(distinctId) : {}
     // Met welke advertentie kwam deze klant binnen (ad_source, ad_campaign, ad_ad, …)?
-    const ad = adProperties(decodeAdTouch(jar.get(AD_COOKIE)?.value))
+    const touch = decodeAdTouch(jar.get(AD_COOKIE)?.value)
+    const ad = adProperties(touch)
     const meta = consent
       ? {
           meta_consent: true,
           meta_fbp: jar.get("_fbp")?.value,
-          meta_fbc: jar.get("_fbc")?.value,
+          // _fbc zet de pixel pas na toestemming; klikte iemand eerst op een advertentie
+          // en accepteerde later, dan maken we hem zelf uit de bewaarde fbclid (formaat
+          // van Meta: fb.1.<kliktijd in ms>.<fbclid>). Betere toeschrijving in Meta.
+          meta_fbc: jar.get("_fbc")?.value || fbcFromTouch(touch),
           meta_ua: h.get("user-agent") ?? undefined,
           meta_ip: h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || undefined,
           meta_source_url: h.get("referer") ?? undefined,

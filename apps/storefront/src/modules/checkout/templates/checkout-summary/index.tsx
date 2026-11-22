@@ -1,6 +1,7 @@
 import { Heading } from "@modules/common/components/ui"
 
 import ItemsPreviewTemplate from "@modules/cart/templates/preview"
+import CheckoutTrust from "@modules/checkout/components/checkout-trust"
 import DiscountCode from "@modules/checkout/components/discount-code"
 import CartTotals from "@modules/common/components/cart-totals"
 import Divider from "@modules/common/components/divider"
@@ -23,6 +24,7 @@ const CheckoutSummary = ({ cart }: { cart: HttpTypes.StoreCart }) => {
         <div className="my-6">
           <DiscountCode cart={cart} />
         </div>
+        <CheckoutTrust cart={cart} />
       </div>
     </div>
   )

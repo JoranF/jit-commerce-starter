@@ -3,15 +3,9 @@ import { listRegions } from "@lib/data/regions"
 import { getSiteOrigin, listCountryCodes } from "@lib/util/site"
 import type { MetadataRoute } from "next"
 
-const STATIC_PATHS = [
-  "",
-  "/store",
-  "/shipping",
-  "/returns",
-  "/terms",
-  "/privacy",
-  "/contact",
-]
+// Retourneren, voorwaarden, privacy en contact staan bewust niet in de sitemap: daar
+// staat het bedrijfsadres op en ze zijn noindex (wel bereikbaar via de footer).
+const STATIC_PATHS = ["", "/store", "/shipping"]
 const PAGE_SIZE = 200
 
 type Page<T> = { items: T[]; count: number }

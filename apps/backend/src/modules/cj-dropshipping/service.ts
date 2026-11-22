@@ -29,6 +29,8 @@ export type CjModuleOptions = {
   createFulfillment?: boolean
   /** Override the API base URL (tests / mock server). */
   baseUrl?: string
+  /** Note on every CJ order (default: neutral packaging, no invoice). "" = none. */
+  orderRemark?: string
 }
 
 export type CjForwardedOrder = {
@@ -48,7 +50,10 @@ type InjectedDependencies = Record<string, unknown>
 
 export default class CjDropshippingService {
   protected client: CjClient
-  readonly options: Required<Omit<CjModuleOptions, "storeName" | "baseUrl">> & { storeName?: string }
+  readonly options: Required<Omit<CjModuleOptions, "storeName" | "baseUrl" | "orderRemark">> & {
+    storeName?: string
+    orderRemark?: string
+  }
 
   constructor(_deps: InjectedDependencies, options: CjModuleOptions) {
     this.options = {
@@ -61,6 +66,7 @@ export default class CjDropshippingService {
       orderNumberPrefix: options.orderNumberPrefix ?? "medusa",
       storeName: options.storeName,
       createFulfillment: options.createFulfillment ?? true,
+      orderRemark: options.orderRemark,
     }
     this.client = new CjClient({ apiKey: this.options.apiKey, baseUrl: options.baseUrl })
   }
@@ -118,6 +124,7 @@ export default class CjDropshippingService {
         sandbox: this.options.sandbox,
         orderNumberPrefix: this.options.orderNumberPrefix,
         storeName: this.options.storeName,
+        remark: this.options.orderRemark,
       })
       input.orderNumber = orderNumber
 

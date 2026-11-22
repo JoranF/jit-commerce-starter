@@ -58,6 +58,17 @@ export type StoreSetup = {
    * producten verkopen. Idempotent.
    */
   reducedVat?: { typeName: string; rates: Record<string, number> }
+  /**
+   * Merk en bedrijfsgegevens voor de e-mails aan klanten (bevestiging, verzending).
+   * Gelijk houden met apps/storefront/src/stores/<id>.ts (company, theme.colors).
+   * De bevestigingsmail moet wettelijk je bedrijfsgegevens en het herroepingsrecht noemen.
+   */
+  brand?: {
+    name: string
+    /** Kleuren in de e-mail: donker (kop, knop), licht (achtergrond), accent (lijntje). */
+    colors?: { dark: string; light: string; accent?: string }
+    company: { legalName: string; kvk?: string; vat?: string; address?: string; email: string }
+  }
 }
 
 export const STORE_SETUPS: Record<string, StoreSetup> = {
@@ -84,6 +95,8 @@ export const STORE_SETUPS: Record<string, StoreSetup> = {
       optionTitle: "Aantal",
       variants: [
         { title: "1 lamp", sku: "LICHTVAL-WANDLAMP", priceEur: 129 },
+        // Zodra de vid bekend is: metadata: { cj_vid: "<vid van de lamp>", cj_quantity: 2 }
+        // (één Duo = twee lampen bij CJ; zonder cj_quantity stuurt CJ er maar één).
         { title: "2 lampen", sku: "LICHTVAL-WANDLAMP-DUO", priceEur: 219 },
       ],
     },
@@ -104,6 +117,17 @@ export const STORE_SETUPS: Record<string, StoreSetup> = {
     },
     hideShippingCodes: ["express"],
     hideDemoProducts: true,
+    brand: {
+      name: "Lichtval",
+      colors: { dark: "#16323A", light: "#EDEFEB", accent: "#F0CB86" },
+      company: {
+        legalName: "Joran Information Technology",
+        kvk: "96539402",
+        vat: "NL005215436B31",
+        address: "Prins Bernhardstraat 8, 6668 AH Randwijk",
+        email: "joranfloor@gmail.com",
+      },
+    },
   },
   tarrazu: {
     id: "tarrazu",

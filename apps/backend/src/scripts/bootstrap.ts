@@ -1,5 +1,7 @@
-import { ExecArgs } from "@medusajs/framework/types"
+import { ExecArgs, MedusaContainer } from "@medusajs/framework/types"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
+import { updateRegionsWorkflow } from "@medusajs/medusa/core-flows"
+import { wantedRegionProviders } from "../lib/payment-providers"
 
 /**
  * Draait bij elke container-start ná `medusa db:migrate` (zie docker-entrypoint.sh).
@@ -10,6 +12,9 @@ import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
  * 1. MEDUSA_PUBLISHABLE_KEY gezet → de publishable key krijgt precies die waarde.
  *    Zo kun je dezelfde key vooraf in de storefront zetten (NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY).
  * 2. MEDUSA_ADMIN_EMAIL + MEDUSA_ADMIN_PASSWORD → admin-gebruiker aanmaken (eenmalig).
+ * 3. MOLLIE_API_KEY gezet → Mollie-betaalmethodes aan de regio's gekoppeld en de
+ *    handmatige testbetaling eraf (anders kan iedereen bestellen zonder te betalen).
+ *    ALLOW_TEST_PAYMENT=true laat de testbetaling staan, alleen om te testen.
  */
 export default async function bootstrap({ container }: ExecArgs) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
@@ -57,10 +62,47 @@ export default async function bootstrap({ container }: ExecArgs) {
     }
   }
 
+  await syncPaymentProviders(container).catch((e) =>
+    logger.warn(`[bootstrap] Betaalmethodes bijwerken mislukt: ${(e as Error).message}`)
+  )
+
   const [key] = await pg("api_key")
     .select("token")
     .where({ type: "publishable" })
     .whereNull("deleted_at")
     .limit(1)
   if (key) logger.info(`[bootstrap] Publishable key: ${key.token}`)
+}
+
+async function syncPaymentProviders(container: MedusaContainer) {
+  const mollie = !!process.env.MOLLIE_API_KEY
+  if (!mollie) {
+    return
+  }
+  const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
+  const query = container.resolve(ContainerRegistrationKeys.QUERY)
+  const providers = await container
+    .resolve(Modules.PAYMENT)
+    .listPaymentProviders({ is_enabled: true }, { take: 200 })
+  const available = providers.map((p) => p.id)
+
+  const { data: regions } = await query.graph({
+    entity: "region",
+    fields: ["id", "name", "payment_providers.id"],
+  })
+  for (const region of regions as { id: string; name: string; payment_providers?: { id: string }[] }[]) {
+    const current = (region.payment_providers ?? []).map((p) => p.id)
+    const next = wantedRegionProviders(current, {
+      mollie,
+      allowTest: process.env.ALLOW_TEST_PAYMENT === "true",
+      available,
+    })
+    if (!next) {
+      continue
+    }
+    await updateRegionsWorkflow(container).run({
+      input: { selector: { id: region.id }, update: { payment_providers: next } },
+    })
+    logger.info(`[bootstrap] Betaalmethodes ${region.name}: ${next.join(", ")}`)
+  }
 }
