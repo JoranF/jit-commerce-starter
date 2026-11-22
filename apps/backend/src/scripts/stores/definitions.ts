@@ -13,6 +13,13 @@ export type StoreSetup = {
     title: string
     subtitle?: string
     description: string
+    /**
+     * Verhoog dit getal om een bestaand product eenmalig te laten bijwerken bij de
+     * volgende start: foto's vervangen en de prijzen van de varianten op de waarden
+     * hieronder zetten (ook als ze in de admin zijn aangepast). Staat als
+     * `store_setup_revision` in de metadata van het product.
+     */
+    revision?: number
     /** Bestanden in src/scripts/assets/<id>/, in volgorde; de eerste is de thumbnail. */
     images: { file: string; alt: string }[]
     /** Naam van de productoptie waar de varianten op verschillen, bv. "Aantal". */
@@ -63,6 +70,8 @@ export const STORE_SETUPS: Record<string, StoreSetup> = {
         { file: "4-slaapkamer.jpg", alt: "Twee wandlampen aan weerszijden van een bed met grijsgroen linnen." },
         { file: "5-hal.jpg", alt: "De wandlamp aan in een smalle hal met jassen aan de haak." },
       ],
+      // 2: foto's van de echte CJ-lamp, prijs 1 lamp €119 → €129 (22 nov 2026).
+      revision: 2,
       // Keuzes en rekensom: docs/beslissingen/lichtval.md
       optionTitle: "Aantal",
       variants: [
