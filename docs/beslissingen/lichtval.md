@@ -73,10 +73,23 @@ als hoofdaanbod. Beide is nu zo ingesteld.
 CJ's 7–15 dagen zijn waarschijnlijk kalenderdagen en passen dan binnen 8–15 werkdagen.
 Na de sample controleren; duurt het langer, dan `transit_days_max` verhogen.
 
-## Beelden
+## Beelden (2026-11-22)
 
-Sfeerbeelden met fal.ai, op basis van de bestaande productfoto zodat de lamp gelijk blijft.
-Alleen genereren na akkoord op de kosten. Zie de commit en `apps/storefront/public/stores/lichtval/`.
+De eerste sfeerbeelden toonden een andere lamp (ronde muurplaat, arm, gehamerde schijf) dan
+de CJ-lamp. Vervangen door nieuwe AI-beelden op basis van de CJ-productfoto's:
+
+| Plek | Bron (fal, Nano Banana Pro edit, 2K) |
+|---|---|
+| Koopblok + productfoto 1 (`lamp.jpg`, `1-lamp.jpg`) | product-a |
+| Intro close-up (`detail.jpg`, `3-detail.jpg`) | feed-b, vierkant uitgesneden |
+| Ruimte "Boven de bank" (`woonkamer.jpg`) | woonkamer-b, 4:5 uitgesneden |
+| Ruimte "Naast het bed" (`slaapkamer.jpg`): set van twee | duo-a |
+| Ruimte "In de hal" (`hal.jpg`) | story-a, 4:5 uitgesneden |
+| Advertenties (`marketing/lichtval/`) | feed-b (4:5), story-a (9:16) |
+
+Afgekeurd: feed-a (dubbele band bovenin), duo-b (zichtbaar snoer, aansluiting nog onbekend).
+Kosten: 10 beelden ≈ $1,50. Echte maten van de "Small": 33 cm hoog, schijf 10,5 cm, 8 cm diep,
+220 V (maattekening CJ). Na de sample vervangen door eigen foto's.
 
 ## Volgende stappen
 

@@ -1,8 +1,9 @@
 import type { StoreConfig } from "./types"
 
 /**
- * Lichtval: winkel met één product, een wandlamp met een gehamerde reflector die
- * een waterpatroon op de muur werpt.
+ * Lichtval: winkel met één product, een wandlamp (CJ, "Small Size Warm Light", 33 cm)
+ * met een plaat van gegolfd staal die een zachte sluier van licht op de muur werpt.
+ * Keuzes en rekensom: docs/beslissingen/lichtval.md.
  *
  * Ontwerp (zie .claude/skills/frontend-design):
  * - Kleur: de muur bij schemering (petrol) tegen het warme licht van de lamp.
@@ -14,12 +15,10 @@ import type { StoreConfig } from "./types"
  * - Links uitgelijnd, veel ruimte, geen kaartjes, geen labels in hoofdletters.
  *
  * TODO vóór livegang (na ontvangst sample):
- * - Beelden zijn AI-sfeerbeelden (fal). Vervang door eigen foto's van de echte lamp
- *   en haal dan `imageNote` weg.
- * - Patroon staat stil en is met de hand te verstellen (bevestigd via de AliExpress-
- *   listing, 21 nov 2026); FAQ "Beweegt het licht?" klopt. Nog controleren met de
- *   sample: overige `buy.facts`, aansluiting (stekker of vaste aansluiting) en lichtkleur.
- * - Vul `company` in (KvK, adres, e-mail): wettelijk verplicht.
+ * - Beelden zijn AI-sfeerbeelden (fal, op basis van de CJ-productfoto's, 22 nov 2026).
+ *   Vervang door eigen foto's van de sample en haal dan `imageNote` weg.
+ * - Nog controleren met de sample: aansluiting (stekker of vaste aansluiting), lichtkleur,
+ *   of het patroon stilstaat, en de maten in `buy.facts`.
  */
 export const lichtval: StoreConfig = {
   id: "lichtval",
@@ -44,12 +43,12 @@ export const lichtval: StoreConfig = {
   seo: {
     title: "Lichtval | Wandlamp met waterlicht",
     description:
-      "Een wandlamp van aluminium en staal met een gehamerde reflector. Hij werpt een zacht golfpatroon op je muur, zoals licht dat van water weerkaatst.",
+      "Een wandlamp met een plaat van gegolfd staal. Hij werpt een zachte sluier van warm licht op je muur, zoals licht dat door water valt.",
   },
 
   hero: {
     title: "Waterlicht op je muur.",
-    lead: "Een wandlamp met een reflector van gehamerd staal. Zet hem aan en je muur krijgt het patroon van licht op water.",
+    lead: "Een wandlamp met een plaat van gegolfd staal. Zet hem aan en er valt een zachte sluier van warm licht over je muur.",
     cta: "Bekijk de lamp",
     wide: {
       src: "/stores/lichtval/hero-breed.jpg",
@@ -68,10 +67,10 @@ export const lichtval: StoreConfig = {
 
   intro: {
     title: "Rust, zodra het donker wordt.",
-    body: "Het licht valt op een reflector van gehamerd staal en breekt daar in zachte golven, zoals zonlicht dat van water weerkaatst. Draai de kop een stukje en het patroon schuift mee over de muur.",
+    body: "Achter de ronde schijf zit een plaat van gegolfd staal. Het licht valt erop en breekt in zachte plooien, zoals licht dat door water op de bodem valt. Overdag een rustig object, 's avonds de mooiste plek van de kamer.",
     image: {
       src: "/stores/lichtval/detail.jpg",
-      alt: "Close-up van de aluminium kop en de gehamerde stalen reflector, met warm licht op het metaal.",
+      alt: "Close-up van de wandlamp aan op een ruwe muur: een donkere ronde schijf op een smalle staaf, met een sluier van warm licht eromheen.",
       width: 1500,
       height: 1500,
     },
@@ -83,7 +82,7 @@ export const lichtval: StoreConfig = {
       {
         image: {
           src: "/stores/lichtval/woonkamer.jpg",
-          alt: "De wandlamp boven een zandkleurige bank in een woonkamer, 's avonds.",
+          alt: "De wandlamp aan boven een zandkleurige bank in een woonkamer, 's avonds.",
           width: 1500,
           height: 1862,
         },
@@ -93,17 +92,17 @@ export const lichtval: StoreConfig = {
       {
         image: {
           src: "/stores/lichtval/slaapkamer.jpg",
-          alt: "De wandlamp naast een bed met grijsgroen linnen, in een donkere slaapkamer.",
+          alt: "Twee wandlampen aan weerszijden van een bed met grijsgroen linnen, in een donkere slaapkamer.",
           width: 1500,
           height: 1862,
         },
         title: "Naast het bed",
-        body: "Zacht genoeg om bij te lezen of in slaap te vallen.",
+        body: "Eén aan elke kant, met de set van twee. Zacht genoeg om in slaap te vallen.",
       },
       {
         image: {
           src: "/stores/lichtval/hal.jpg",
-          alt: "De wandlamp in een smalle hal met een houten bankje en een jas aan de haak.",
+          alt: "De wandlamp aan in een smalle hal, met jassen aan de haak en een houten bankje.",
           width: 1500,
           height: 1862,
         },
@@ -117,14 +116,14 @@ export const lichtval: StoreConfig = {
     title: "Lichtval wandlamp",
     image: {
       src: "/stores/lichtval/lamp.jpg",
-      alt: "De Lichtval wandlamp: ronde muurplaat, dunne stalen arm, aluminium kop en een gehamerde stalen reflector.",
+      alt: "De Lichtval wandlamp aan: een donkere ronde schijf op een smalle verticale staaf, met een sluier van warm licht op een lichte muur.",
       width: 1600,
       height: 1600,
     },
     facts: [
-      { label: "Materiaal", value: "Aluminium en roestvrij staal" },
-      { label: "Reflector", value: "Gehamerd staal" },
-      { label: "Kop", value: "Draait tot 180°" },
+      { label: "Materiaal", value: "Metaal en gegolfd roestvrij staal" },
+      { label: "Maat", value: "33 cm hoog, schijf 10,5 cm, 8 cm diep" },
+      { label: "Licht", value: "Warm wit, 220 V" },
     ],
     promises: [
       "In huis binnen {levertijd} werkdagen, met track & trace",
@@ -144,7 +143,7 @@ export const lichtval: StoreConfig = {
       },
       {
         q: "Beweegt het licht?",
-        a: "Nee, het patroon staat stil, net als de schaduw van een raam. Draai je de kop van de lamp, dan schuift het patroon over de muur.",
+        a: "Nee, het patroon staat stil, net als de schaduw van een raam. Het is een zachte, vaste sluier van licht op je muur.",
       },
       {
         q: "Kan ik er twee bestellen?",

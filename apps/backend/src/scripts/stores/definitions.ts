@@ -51,17 +51,17 @@ export const STORE_SETUPS: Record<string, StoreSetup> = {
     product: {
       handle: "lichtval-wandlamp",
       title: "Lichtval wandlamp",
-      subtitle: "Met een reflector van gehamerd staal",
+      subtitle: "Met een plaat van gegolfd staal",
       description: [
-        "Een wandlamp van aluminium en roestvrij staal. Het licht valt op een reflector van gehamerd staal en breekt daar in zachte golven, zoals zonlicht dat van water weerkaatst.",
-        "De kop draait tot 180°. Draai hem een stukje en het golfpatroon schuift mee over de muur. Mooi boven de bank, naast het bed of in de hal.",
+        "Een wandlamp met een donkere ronde schijf op een smalle staaf. Erachter zit een plaat van gegolfd roestvrij staal: het licht valt erop en breekt in een zachte sluier over je muur, zoals licht dat door water valt.",
+        "33 cm hoog, schijf van 10,5 cm, 8 cm diep. Warm wit licht, 220 V. Mooi boven de bank, naast het bed of in de hal. Neem er twee voor aan weerszijden van het bed.",
       ].join("\n\n"),
       images: [
-        { file: "1-lamp.jpg", alt: "De Lichtval wandlamp: ronde muurplaat, dunne stalen arm, aluminium kop en een gehamerde stalen reflector, met een golvend lichtpatroon op de muur." },
-        { file: "2-woonkamer.jpg", alt: "De wandlamp boven een zandkleurige bank in een woonkamer, 's avonds." },
-        { file: "3-detail.jpg", alt: "Close-up van de aluminium kop en de gehamerde stalen reflector." },
-        { file: "4-slaapkamer.jpg", alt: "De wandlamp naast een bed met grijsgroen linnen, in een donkere slaapkamer." },
-        { file: "5-hal.jpg", alt: "De wandlamp in een smalle hal met een houten bankje." },
+        { file: "1-lamp.jpg", alt: "De Lichtval wandlamp aan: een donkere ronde schijf op een smalle verticale staaf, met een sluier van warm licht op een lichte muur." },
+        { file: "2-woonkamer.jpg", alt: "De wandlamp aan boven een zandkleurige bank in een woonkamer, 's avonds." },
+        { file: "3-detail.jpg", alt: "Close-up van de wandlamp aan op een ruwe muur, met een sluier van warm licht." },
+        { file: "4-slaapkamer.jpg", alt: "Twee wandlampen aan weerszijden van een bed met grijsgroen linnen." },
+        { file: "5-hal.jpg", alt: "De wandlamp aan in een smalle hal met jassen aan de haak." },
       ],
       // Keuzes en rekensom: docs/beslissingen/lichtval.md
       optionTitle: "Aantal",
