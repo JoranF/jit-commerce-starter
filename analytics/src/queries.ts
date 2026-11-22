@@ -196,3 +196,21 @@ export async function getCheckoutErrors(ph: PostHogApi, days: number, limit = 5)
   )
   return rows.map((r) => ({ step: String(r.step || "?"), error: String(r.error || ""), visitors: n(r.visitors) }))
 }
+
+export type AdRevenueRow = { adId: string; orders: number; revenue: number }
+
+/** Bestellingen en omzet per advertentie (order_completed.ad_ad), laatste `days` dagen. */
+export async function getAdRevenue(ph: PostHogApi, days: number): Promise<AdRevenueRow[]> {
+  const rows = await ph.hogql(
+    `SELECT toString(properties.ad_ad) AS ad_id,
+            count() AS orders,
+            sum(toFloat(properties.revenue)) AS revenue
+     FROM events
+     WHERE event = ${sqlString(EVENTS.orderCompleted)}
+       AND timestamp >= now() - INTERVAL ${days} DAY
+       AND toString(properties.ad_ad) != ''
+     GROUP BY ad_id`,
+    "jit: revenue per ad"
+  )
+  return rows.map((r) => ({ adId: String(r.ad_id), orders: n(r.orders), revenue: n(r.revenue) }))
+}

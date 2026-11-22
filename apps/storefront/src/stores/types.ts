@@ -83,6 +83,24 @@ export type StoreConfig = {
 
   faq: { title: string; items: { q: string; a: string }[] }
 
+  /**
+   * Landingspagina per advertentie-invalshoek. Een advertentie met `angle=<key>`
+   * in de URL krijgt deze kop/tekst in de hero (zelfde pagina, zelfde product),
+   * zodat advertentie en pagina hetzelfde zeggen. Onbekende of lege angle = de
+   * gewone hero. Per angle zie je in PostHog (ad_angle) en in het ads-rapport
+   * wat het oplevert.
+   */
+  angles?: Record<
+    string,
+    {
+      /** Korte naam voor rapporten, bv. "Cadeau". */
+      label: string
+      title?: string
+      lead?: string
+      cta?: string
+    }
+  >
+
   /** Toon bij gegenereerde beelden tot er echte productfoto's zijn. */
   imageNote?: string
   /**

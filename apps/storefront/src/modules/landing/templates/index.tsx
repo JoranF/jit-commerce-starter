@@ -19,10 +19,13 @@ export default function LandingTemplate({
   product,
   region,
   values,
+  angle,
 }: {
   product: HttpTypes.StoreProduct | null
   region: HttpTypes.StoreRegion
   values: PolicyValues
+  /** Advertentie-invalshoek (store.angles), via /<land>/a/<angle>. */
+  angle?: string
 }) {
   const price = product ? getProductPrice({ product }).cheapestPrice?.calculated_price : null
 
@@ -55,11 +58,12 @@ export default function LandingTemplate({
             product_name: product.title,
             handle: product.handle,
             page: "landing",
+            landing_angle: angle ?? "standaard",
             price,
           }}
         />
       )}
-      <Hero price={price} />
+      <Hero price={price} angle={angle} />
       <Intro />
       <Rooms />
       {product ? (

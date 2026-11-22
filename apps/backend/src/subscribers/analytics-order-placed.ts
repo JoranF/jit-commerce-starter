@@ -67,6 +67,11 @@ export default async function analyticsOrderPlaced({
     const featureProps = Object.fromEntries(
       Object.entries(cartMeta).filter(([k]) => k.startsWith("$feature/"))
     )
+    // Advertentie waarmee de klant binnenkwam (ad_source, ad_campaign, ad_adset,
+    // ad_ad, ad_angle; gezet door de storefront). Basis voor omzet per advertentie.
+    const adProps = Object.fromEntries(
+      Object.entries(cartMeta).filter(([k, v]) => k.startsWith("ad_") && typeof v === "string")
+    )
 
     await analytics.track({
       event: "order_completed",
@@ -95,7 +100,10 @@ export default async function analyticsOrderPlaced({
         country: order.shipping_address?.country_code,
         has_account: Boolean((order as any).customer?.has_account),
         source: "medusa-backend",
+        // Zelfde property als de storefront registreert: meerdere winkels in één project.
+        ...(process.env.STORE_ID ? { store: process.env.STORE_ID } : {}),
         ...featureProps,
+        ...adProps,
       },
     })
   } catch (e) {

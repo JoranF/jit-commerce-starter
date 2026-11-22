@@ -34,6 +34,8 @@ Gebouwd op de officiële [Medusa DTC Starter](https://github.com/medusajs/dtc-st
 - Eén codebase, meerdere winkels: merk, kleuren, fonts, teksten en beelden per winkel in `apps/storefront/src/stores/<id>.ts`
 - Winkel met één product (`catalog: false`): homepage = landingspagina met "de lamp gaat aan"-moment, eigen productpagina, minimale navigatie
 - Backend-setup per winkel (`STORE_ID`): product met foto's, levertijden, verzendopties (idempotent, draait bij elke start)
+- **Nieuwe winkel in één commando**: `pnpm new-store <id> "<Naam>"` maakt config, backend-product, analytics- en advertentie-instellingen, placeholders en een checklist aan. `pnpm check-store <id>` zegt wat er nog ontbreekt voor livegang
+- Elke winkel krijgt vanzelf alle automatisering (A/B-tests, weekrapport, advertenties): de GitHub-workflows draaien per winkel uit `analytics/src/stores.ts`
 - Eerste winkel: **Lichtval** (wandlamp met waterlicht). Uitleg: [`apps/storefront/src/stores/README.md`](apps/storefront/src/stores/README.md)
 
 **Dropshipping (CJ Dropshipping)**
@@ -50,6 +52,11 @@ Gebouwd op de officiële [Medusa DTC Starter](https://github.com/medusajs/dtc-st
 - Eén bezoekers-ID (`jit_vid` cookie, gezet in middleware) voor browser én server → experimenten worden correct toegeschreven
 - Cookiebanner: zonder toestemming (ook als iemand nog niet geklikt heeft) meet PostHog alleen **cookieless** (anoniem). A/B-resultaten tellen alleen bezoekers met toestemming, omdat alleen die aan hun bestelling te koppelen zijn
 
+**Advertenties (Meta)**
+- Elke advertentieklik wordt bewaard (`utm_*`, `fbclid`, `angle`; cookie `jit_ad`, 30 dagen, laatste klik telt) en gaat mee op elk PostHog-event (`ad_*`) en op `order_completed` → **echte omzet per advertentie**
+- **Landingspagina per invalshoek**: `angle=<key>` in de advertentie-URL geeft een eigen hero-kop en -tekst (`angles` in de winkelconfig), statisch en zonder verspringen
+- **Ads-autopilot** (`npm run ads`): pauzeert verliezers en schaalt winnende advertentiesets op, op basis van je break-even CPA. Standaard alleen advies
+
 **A/B-testen**
 - `atc-flow`: na "In winkelmand" een bevestiging met knop **Afrekenen** (control) vs. **direct naar de checkout** (test)
 - `pdp-cta-text`: tekst van de koopknop (`In winkelmand` vs. `Bestel de lamp`, uit de winkelconfig)
@@ -60,9 +67,13 @@ Gebouwd op de officiële [Medusa DTC Starter](https://github.com/medusajs/dtc-st
 |---|---|---|
 | `npm run setup` | Maakt dashboard (funnel, omzet, AOV, conversie, landen) + experimenten in PostHog | eenmalig / na wijzigingen |
 | `npm run report` | Weekrapport: KPI's vs. vorige week, grootste funnel-lek, **checkout per stap + foutmeldingen**, top-producten, A/B-status, optioneel 3 testideeën van Claude | elke maandag |
+| `npm run ads` | Meta-uitgaven per advertentie naast echte bestellingen (PostHog); verliezers pauzeren, winnaars +20% budget. Advies, of uitvoeren met `ADS_AUTOPILOT=true` | dagelijks |
 | `npm run experiments` | Bayesiaanse evaluatie van lopende tests; met `AUTO_LAUNCH_EXPERIMENTS=true` worden nieuwe tests automatisch gestart, met `AUTO_SHIP_WINNERS=true` wordt een winnaar automatisch op 100% gezet | dagelijks |
 
-Rapporten gaan naar `analytics/reports/`, de GitHub job summary en optioneel Discord/Slack (`REPORT_WEBHOOK_URL`).
+Alle commando's draaien per winkel: `npm run <commando> -- --store <id>` (PostHog-project en
+advertentieaccount uit `analytics/src/stores.ts`). In GitHub Actions gebeurt dat automatisch voor
+elke winkel in die lijst. Rapporten gaan naar `analytics/reports/<winkel>/`, de GitHub job summary
+en optioneel Discord/Slack (`REPORT_WEBHOOK_URL`).
 
 ---
 
@@ -152,13 +163,44 @@ ViewContent, AddToCart, InitiateCheckout, AddPaymentInfo, Purchase.
 2. Project settings → zet **cookieless server hash mode** aan (voor bezoekers die cookies weigeren)
 3. Dokploy → `POSTHOG_EVENTS_KEY=phc_...` op de backend en build arg `NEXT_PUBLIC_POSTHOG_KEY=phc_...` op de storefront → Redeploy
 4. Maak een **Personal API key** (scopes: query:read, insight:write, dashboard:write, experiment:write, feature_flag:write)
-5. Eenmalig: `cd analytics && cp .env.example .env && npm ci && npx --yes dotenv-cli -- npm run setup`
-   (of zet de variabelen in je shell)
+5. Zet het project-ID bij de winkel in `analytics/src/stores.ts` (`posthogProjectId`), dan eenmalig:
+   `cd analytics && cp .env.example .env && npm ci && npx --yes dotenv-cli -- npm run setup -- --store <id>`
 6. **GitHub** → repo → Settings → Secrets and variables → Actions:
    - Secrets: `POSTHOG_PERSONAL_API_KEY`, optioneel `REPORT_WEBHOOK_URL`, `ANTHROPIC_API_KEY`
-   - Variables: `POSTHOG_PROJECT_ID`, `ANALYTICS_ENABLED=true`, en voor volledig automatisch A/B-testen
+   - Variables: `ANALYTICS_ENABLED=true`, en voor volledig automatisch A/B-testen
      `AUTO_LAUNCH_EXPERIMENTS=true` + `AUTO_SHIP_WINNERS=true`
+   - Eén PostHog-project per winkel; de project-ID's staan in `analytics/src/stores.ts`, niet in GitHub
 7. Zonder `AUTO_LAUNCH_EXPERIMENTS`: start de experimenten zelf in PostHog (Experiments → *Launch*)
+
+## Advertenties automatisch (Meta)
+
+**1. URL-parameters op elke advertentie** (Ads Manager → advertentie → *URL-parameters*):
+
+```
+utm_source=meta&utm_medium=paid&utm_campaign={{campaign.id}}&utm_term={{adset.id}}&utm_content={{ad.id}}&angle=<invalshoek>
+```
+
+Meta vult `{{…}}` zelf in. `angle` kies je per advertentie uit `angles` in de winkelconfig
+(Lichtval: `sfeer`, `slaapkamer`, `cadeau`); de bezoeker ziet dan een hero die past bij de advertentie.
+Zonder (of met een onbekende) `angle` ziet hij de gewone pagina.
+
+**2. Meta laat de creatives testen**: zet per advertentieset meerdere advertenties (Advantage+ creative /
+dynamic creative), optimaliseer op *Purchase* (komt via pixel + Conversions API binnen).
+
+**3. Ads-autopilot** (`analytics/src/ads.ts`, regels in `ads-rules.ts`, getest):
+- **Pauzeren**: ≥ 2× break-even CPA uitgegeven zonder bestelling, of ≥ 3× uitgegeven met CPA > 1,5× break-even.
+  Nooit de laatste actieve advertentie in een set.
+- **Opschalen**: set met ≥ 3 bestellingen en CPA ≤ 0,7× break-even → dagbudget +20%, max. 1× per 72 uur,
+  nooit boven `ADS_MAX_DAILY_BUDGET`.
+- Bestellingen komen uit PostHog (`order_completed` met `ad_ad`), niet uit Meta's eigen toeschrijving.
+
+Aanzetten:
+1. Business Manager → Instellingen → **Systeemgebruikers** → token met `ads_read` + `ads_management` op het advertentieaccount
+2. `analytics/src/stores.ts` → bij de winkel `meta.adAccountId` (`act_…`) en `meta.breakEvenCpa` (rekensom in `docs/beslissingen/<id>.md`)
+3. GitHub → Secrets: `META_ADS_TOKEN` · Variables: `ADS_ENABLED=true`, optioneel `ADS_MAX_DAILY_BUDGET` (standaard 50)
+4. Draai een paar weken in **adviesmodus** (dagelijks rapport); daarna variable `ADS_AUTOPILOT=true`
+
+Lokaal proberen: `cd analytics && META_ADS_TOKEN=… npx --yes dotenv-cli -- npm run ads -- --store <id>`
 
 ### Een nieuw experiment toevoegen
 1. Voeg de key toe aan `EXPERIMENTS` in `apps/storefront/src/lib/analytics/constants.ts` en aan `analytics/src/config.ts` (hypothese, varianten, beslisregels)
@@ -203,6 +245,7 @@ strikte peer-dependencies (2.5.1) maar werkt met 2.22; pnpm geeft daar een waars
 - [ ] Mollie `live_` key; test-bestelling met echte iDEAL-betaling + terugbetaling
 - [ ] Back-ups van `<id>-db` (Dokploy → database → Backups, met S3-bestemming)
 - [ ] PostHog: cookieless server hash mode, session replay en heatmaps aan; `npm run setup` gedraaid
+- [ ] Privacyverklaring noemt de eigen cookies `jit_vid` (bezoekers-ID), `jit_ad` (advertentieklik, 30 dagen) en `jit_consent`
 
 Dit is geen juridisch advies. Laat de voorwaarden checken door iemand die er verstand van heeft.
 

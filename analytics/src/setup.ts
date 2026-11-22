@@ -8,6 +8,7 @@
  */
 import { CHECKOUT_STEPS, DASHBOARD_NAME, EVENTS, EXPERIMENTS, FUNNEL, MANAGED_TAG } from "./config"
 import { PostHogApi, envFromProcess } from "./posthog"
+import { currentStore } from "./stores"
 
 const ph = new PostHogApi(envFromProcess())
 
@@ -75,6 +76,34 @@ const INSIGHTS: InsightDef[] = [
       breakdownFilter: { breakdown: "error", breakdown_type: "event" },
       dateRange: { date_from: "-30d" },
       trendsFilter: { display: "ActionsBarValue" },
+    },
+  },
+  {
+    name: "Advertenties: omzet per advertentie",
+    description:
+      "order_completed.revenue per ad_ad (utm_content={{ad.id}} in Meta). Leeg = nog geen advertenties met UTM-tags.",
+    source: {
+      kind: "TrendsQuery",
+      series: [series(EVENTS.orderCompleted, { math: "sum", math_property: "revenue" })],
+      breakdownFilter: { breakdown: "ad_ad", breakdown_type: "event" },
+      dateRange: { date_from: "-30d" },
+      trendsFilter: { display: "ActionsBarValue" },
+    },
+  },
+  {
+    name: "Advertenties: funnel per invalshoek",
+    description: "Landingspagina → winkelmand → bestelling, uitgesplitst op ad_angle (angle=… in de advertentie-URL).",
+    source: {
+      kind: "FunnelsQuery",
+      series: [
+        series(EVENTS.productViewed),
+        series(EVENTS.productAddedToCart),
+        series(EVENTS.checkoutStarted),
+        series(EVENTS.orderCompleted),
+      ],
+      breakdownFilter: { breakdown: "ad_angle", breakdown_type: "event" },
+      funnelsFilter: { funnelWindowInterval: 7, funnelWindowIntervalUnit: "day" },
+      dateRange: { date_from: "-30d" },
     },
   },
   {
@@ -184,7 +213,8 @@ async function ensureExperiments() {
   const experiments = await ph.listAll<{ id: number; feature_flag_key: string; archived?: boolean }>(
     "/experiments/"
   )
-  for (const exp of EXPERIMENTS) {
+  const enabled = currentStore()?.experiments
+  for (const exp of EXPERIMENTS.filter((e) => !enabled?.length || enabled.includes(e.key))) {
     if (experiments.some((e) => e.feature_flag_key === exp.key && !e.archived)) {
       console.log(`✓ Experiment bestaat al: ${exp.key}`)
       continue

@@ -1,6 +1,14 @@
 import { HttpTypes } from "@medusajs/types"
 import { NextRequest, NextResponse } from "next/server"
 import { VISITOR_COOKIE, VISITOR_HEADER } from "@lib/analytics/constants"
+import {
+  AD_COOKIE,
+  AD_COOKIE_MAX_AGE,
+  adTouchFromUrl,
+  decodeAdTouch,
+  encodeAdTouch,
+} from "@lib/analytics/ad-touch"
+import { store } from "@stores"
 
 const ONE_YEAR = 60 * 60 * 24 * 365
 
@@ -14,11 +22,31 @@ function visitor(request: NextRequest) {
   const id = existing || crypto.randomUUID()
   const headers = new Headers(request.headers)
   headers.set(VISITOR_HEADER, id)
+  // Klik op een advertentie (utm_*/fbclid/angle in de URL): laatste klik bewaren.
+  const ad = adTouchFromUrl(request.nextUrl)
+  if (ad) {
+    // Ook voor server components in dit eerste request (cookie staat er nog niet).
+    const cookie = request.headers.get("cookie")
+    headers.set("cookie", `${cookie ? `${cookie}; ` : ""}${AD_COOKIE}=${encodeAdTouch(ad)}`)
+  }
   return {
+    /** Advertentie-invalshoek van deze klik of een eerdere (cookie), als de winkel hem kent. */
+    angle: (() => {
+      const a = ad?.angle ?? decodeAdTouch(request.cookies.get(AD_COOKIE)?.value)?.angle
+      return a && store.angles?.[a] ? a : undefined
+    })(),
     init: { request: { headers } },
     attach<T extends NextResponse>(res: T): T {
       if (!existing) {
         res.cookies.set(VISITOR_COOKIE, id, { maxAge: ONE_YEAR, sameSite: "lax", path: "/" })
+      }
+      if (ad) {
+        // Next encodeert de waarde zelf; geef hier de ruwe JSON mee.
+        res.cookies.set(AD_COOKIE, JSON.stringify(ad), {
+          maxAge: AD_COOKIE_MAX_AGE,
+          sameSite: "lax",
+          path: "/",
+        })
       }
       return res
     },
@@ -131,10 +159,21 @@ export async function middleware(request: NextRequest) {
   // crawlers get the storefront content directly from the root URL.
   if (urlHasCountry || request.nextUrl.pathname === "/") {
     const v = visitor(request)
+    const isHome =
+      request.nextUrl.pathname === "/" ||
+      request.nextUrl.pathname.replace(/\/$/, "") === `/${firstPathSegment}`
+    // Homepage + advertentie-invalshoek → statische landingspagina voor die angle
+    // (zelfde URL voor de bezoeker, zie app/[countryCode]/(main)/a/[angle]).
+    const target =
+      isHome && v.angle
+        ? `/${country}/a/${v.angle}`
+        : urlHasCountry
+        ? null
+        : `/${country}`
     const response = v.attach(
-      urlHasCountry
-        ? NextResponse.next(v.init)
-        : NextResponse.rewrite(new URL(`/${country}`, request.url), v.init)
+      target
+        ? NextResponse.rewrite(new URL(target + request.nextUrl.search, request.url), v.init)
+        : NextResponse.next(v.init)
     )
     if (!cacheIdCookie) {
       response.cookies.set("_medusa_cache_id", cacheId, {

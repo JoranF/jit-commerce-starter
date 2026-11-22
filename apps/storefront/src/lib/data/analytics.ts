@@ -3,6 +3,7 @@
 import { cookies, headers } from "next/headers"
 import { sdk } from "@lib/config"
 import { CONSENT_COOKIE } from "@lib/analytics/constants"
+import { AD_COOKIE, adProperties, decodeAdTouch } from "@lib/analytics/ad-touch"
 import { getFeatureProperties, getVisitorId } from "@lib/analytics/server"
 import { getAuthHeaders, getCartId } from "./cookies"
 
@@ -11,6 +12,7 @@ import { getAuthHeaders, getCartId } from "./cookies"
  * backend leest dit uit bij `order.placed`:
  * - PostHog: `order_completed` met dezelfde distinct_id en experiment-varianten,
  *   zodat omzet aan de juiste A/B-variant wordt toegeschreven.
+ * - Advertentie (`ad_*`, uit de cookie `jit_ad`): omzet per advertentie.
  * - Meta Conversions API: alleen als de bezoeker cookies accepteerde
  *   (`meta_consent`), met _fbp/_fbc, user agent en IP voor de matching.
  *
@@ -32,6 +34,8 @@ export async function attachAnalyticsToCart(cartId?: string) {
     )
 
     const features = distinctId ? await getFeatureProperties(distinctId) : {}
+    // Met welke advertentie kwam deze klant binnen (ad_source, ad_campaign, ad_ad, …)?
+    const ad = adProperties(decodeAdTouch(jar.get(AD_COOKIE)?.value))
     const meta = consent
       ? {
           meta_consent: true,
@@ -50,6 +54,7 @@ export async function attachAnalyticsToCart(cartId?: string) {
           ...(cart.metadata ?? {}),
           ...(distinctId ? { ph_distinct_id: distinctId } : {}),
           ...features,
+          ...ad,
           ...meta,
         },
       },

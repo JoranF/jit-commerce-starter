@@ -1,0 +1,59 @@
+name: Advertenties – dagelijkse check
+
+# Per winkel met een Meta-advertentieaccount (analytics/src/stores.ts → meta).
+# Standaard alleen advies in het rapport; met variable ADS_AUTOPILOT=true worden
+# verliezers echt gepauzeerd en winnende sets opgeschaald (zie analytics/src/ads-rules.ts).
+
+on:
+  schedule:
+    # Dagelijks 05:47 (UTC), vóór de A/B-check
+    - cron: "47 5 * * *"
+  workflow_dispatch:
+
+jobs:
+  stores:
+    runs-on: ubuntu-latest
+    if: ${{ vars.ADS_ENABLED == 'true' }}
+    outputs:
+      ids: ${{ steps.list.outputs.ids }}
+    defaults:
+      run:
+        working-directory: analytics
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: analytics/package-lock.json
+      - run: npm ci
+      - id: list
+        run: echo "ids=$(npm run -s stores -- --ads)" >> "$GITHUB_OUTPUT"
+
+  ads:
+    needs: stores
+    if: ${{ needs.stores.outputs.ids != '[]' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        store: ${{ fromJson(needs.stores.outputs.ids) }}
+    defaults:
+      run:
+        working-directory: analytics
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: analytics/package-lock.json
+      - run: npm ci
+      - run: npm run ads -- --store ${{ matrix.store }}
+        env:
+          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          POSTHOG_APP_HOST: ${{ vars.POSTHOG_APP_HOST || 'https://eu.posthog.com' }}
+          META_ADS_TOKEN: ${{ secrets.META_ADS_TOKEN }}
+          REPORT_WEBHOOK_URL: ${{ secrets.REPORT_WEBHOOK_URL }}
+          ADS_AUTOPILOT: ${{ vars.ADS_AUTOPILOT || 'false' }}
+          ADS_MAX_DAILY_BUDGET: ${{ vars.ADS_MAX_DAILY_BUDGET || '50' }}

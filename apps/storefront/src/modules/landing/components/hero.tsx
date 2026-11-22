@@ -2,12 +2,25 @@ import { store } from "@stores"
 import { getImageProps } from "next/image"
 import type { CSSProperties } from "react"
 
+const pick = (o?: { title?: string; lead?: string; cta?: string }) =>
+  Object.fromEntries(
+    Object.entries({ title: o?.title, lead: o?.lead, cta: o?.cta }).filter(([, v]) => !!v)
+  )
+
 /**
  * Hero: de muur bij schemering. Bij het laden "gaat de lamp aan" (CSS in
  * globals.css: .lamp-on / .rise). Breed beeld op desktop, staand beeld op mobiel.
  */
-export default function Hero({ price }: { price?: string | null }) {
-  const { hero } = store
+export default function Hero({
+  price,
+  angle,
+}: {
+  price?: string | null
+  /** Advertentie-invalshoek (store.angles): andere kop/tekst, zelfde pagina. */
+  angle?: string
+}) {
+  const override = angle ? store.angles?.[angle] : undefined
+  const hero = { ...store.hero, ...pick(override) }
   const { wide, tall, lightOrigin } = hero
 
   const common = { alt: hero.tall.alt, sizes: "100vw" }

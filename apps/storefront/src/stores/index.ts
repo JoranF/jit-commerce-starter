@@ -1,4 +1,5 @@
 import { lichtval } from "./lichtval"
+// new-store:import
 import type { StoreConfig } from "./types"
 
 export type { StoreConfig, StoreImage } from "./types"
@@ -9,6 +10,7 @@ export type { StoreConfig, StoreImage } from "./types"
  */
 const STORES: Record<string, StoreConfig> = {
   [lichtval.id]: lichtval,
+  // new-store:register
 }
 
 const id = (process.env.NEXT_PUBLIC_STORE_ID || lichtval.id).toLowerCase()

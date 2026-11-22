@@ -97,4 +97,5 @@ export const STORE_SETUPS: Record<string, StoreSetup> = {
     hideShippingCodes: ["express"],
     hideDemoProducts: true,
   },
+  // new-store:insert (niet weghalen: hier voegt `pnpm new-store` winkels toe)
 }
