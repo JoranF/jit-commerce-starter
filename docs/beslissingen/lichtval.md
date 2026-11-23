@@ -21,6 +21,7 @@ handelsnaam inschrijven.
 |---|---|
 | Leverancier | CJ Dropshipping, product "Advanced Modern And Minimalist Stainless Steel Corrugated Wall Lamp" |
 | SKU bij CJ | CJYD206157001AZ, variant **Small Size Warm Light** (850 g) |
+| CJ-id's | pid `2406160622081612100`, vid `2406160622081612300` (gekoppeld 2026-11-23, $36,31 bevestigd via de API) |
 | Verzendmethode | **CJPacket Ordinary E** (goedkoper dan Sensitive) |
 | Inkoop per lamp naar NL | $36,31 + verzending $14,64 + "customs duty" $3,20 = **$54,15 ≈ €49** |
 | Voorraad | Fabriek in China (CJ zelf 0), geen EU-magazijn |
@@ -110,7 +111,7 @@ Kosten: 12 beelden ≈ $1,80. De kop "Waterlicht op je muur." blijft voorlopig s
 
 1. Sample bestellen (1 lamp, Ordinary E, $54,15): levertijd, verpakking, lamp aan op video.
 2. Bij CJ navragen: prijs Duo (2 in één pakket), CE/RoHS, stekker of vaste aansluiting, Kelvin.
-3. `cj_vid` van de variant ophalen (met `CJ_API_KEY`) en in `definitions.ts` zetten
-   (`metadata: { cj_vid }`, voor de Duo `{ cj_vid, cj_quantity: 2 }`).
+3. ✅ `cj_vid` staat in `definitions.ts` (1 lamp `{ cj_vid }`, Duo `{ cj_vid, cj_quantity: 2 }`).
+   Testbestelling met `CJ_SANDBOX=true`, daarna het sample als echte bestelling.
 4. Alles voor livegang: [`../launch-checklist.md`](../launch-checklist.md). Potentie en
    rekensom met de CJ-prijs: [`../product-research/2026-11-lichtval-hercheck.md`](../product-research/2026-11-lichtval-hercheck.md).

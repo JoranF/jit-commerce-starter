@@ -13,9 +13,9 @@ zegt dat ook eerlijk vanaf half november.
 - ⬜ **Sample bestellen** (1 lamp, CJPacket Ordinary E, ≈ $54). Vraag CJ tegelijk: prijs Duo (2 in één
   pakket), **stekker of vaste aansluiting**, lichtkleur (Kelvin), CE-verklaring + testrapporten
   (LVD, EMC, RoHS), stevige verpakking, en neutraal verpakken (geen factuur/prijzen).
-- ⬜ CJ-variant koppelen in `apps/backend/src/scripts/stores/definitions.ts`:
-  1 lamp `metadata: { cj_vid: "<vid>" }`, 2 lampen `metadata: { cj_vid: "<vid>", cj_quantity: 2 }`.
-  De vid zie je op `https://<api>/admin/cj/products/<pid>?to=NL`. Verhoog `revision`.
+- ✅ CJ-variant gekoppeld in `apps/backend/src/scripts/stores/definitions.ts` (vid `2406160622081612300`):
+  1 lamp `{ cj_vid }`, 2 lampen `{ cj_vid, cj_quantity: 2 }`. De setup zet dit bij elke start op de
+  varianten, ook in een bestaande database. Controle: admin → product → variant → Metadata.
 - ⬜ Dokploy backend: `CJ_API_KEY`, `CJ_LOGISTICS=CJPacket Ordinary`. Eerst `CJ_AUTO_PAY=false`
   (jij betaalt elke bestelling in CJ); na 3 goede bestellingen saldo opwaarderen en `true`.
 - ✅ Duo stuurt nu echt 2 lampen naar CJ (`cj_quantity`; was een bug: er ging er 1).

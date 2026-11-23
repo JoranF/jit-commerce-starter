@@ -35,7 +35,10 @@ export type StoreSetup = {
       sku: string
       /** Verkoopprijs in EUR inclusief btw (prijzen zijn incl. btw ingesteld). */
       priceEur: number
-      /** Bv. { cj_vid: "...", cj_quantity: 2 } zodra de CJ-variant bekend is (dropshipping). */
+      /**
+       * Bv. { cj_vid: "...", cj_quantity: 2 } (dropshipping). Wordt bij elke setup op de
+       * variant gezet (alleen deze keys); wijzig je ze in de admin, dan zet de setup ze terug.
+       */
       metadata?: Record<string, unknown>
     }[]
   }
@@ -71,6 +74,9 @@ export type StoreSetup = {
   }
 }
 
+/** CJ-variant van de Lichtval-lamp (Small Size Warm Light, SKU CJYD206157001AZ). */
+const CJ_VID_LICHTVAL = "2406160622081612300"
+
 export const STORE_SETUPS: Record<string, StoreSetup> = {
   lichtval: {
     id: "lichtval",
@@ -94,10 +100,16 @@ export const STORE_SETUPS: Record<string, StoreSetup> = {
       // Keuzes en rekensom: docs/beslissingen/lichtval.md
       optionTitle: "Aantal",
       variants: [
-        { title: "1 lamp", sku: "LICHTVAL-WANDLAMP", priceEur: 129 },
-        // Zodra de vid bekend is: metadata: { cj_vid: "<vid van de lamp>", cj_quantity: 2 }
-        // (één Duo = twee lampen bij CJ; zonder cj_quantity stuurt CJ er maar één).
-        { title: "2 lampen", sku: "LICHTVAL-WANDLAMP-DUO", priceEur: 219 },
+        // CJ: pid 2406160622081612100, variant CJYD206157001AZ "Small Size Warm Light".
+        // vid altijd als tekst: als getal is hij te groot voor JavaScript en klopt hij niet meer.
+        { title: "1 lamp", sku: "LICHTVAL-WANDLAMP", priceEur: 129, metadata: { cj_vid: CJ_VID_LICHTVAL } },
+        // Eén Duo = twee lampen bij CJ; zonder cj_quantity stuurt CJ er maar één.
+        {
+          title: "2 lampen",
+          sku: "LICHTVAL-WANDLAMP-DUO",
+          priceEur: 219,
+          metadata: { cj_vid: CJ_VID_LICHTVAL, cj_quantity: 2 },
+        },
       ],
     },
     // Dropshipping vanuit China (CJ, CJPacket Ordinary E): 1–3 werkdagen verwerking, 7–12 werkdagen onderweg.
