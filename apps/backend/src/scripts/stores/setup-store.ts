@@ -51,7 +51,20 @@ async function uploadImages(container: ExecArgs["container"], setup: StoreSetup)
 type ExistingProduct = {
   id: string
   options?: { id: string; title: string; values?: { value: string }[] | null }[] | null
-  variants?: { id: string; sku?: string | null }[] | null
+  variants?: { id: string; sku?: string | null; metadata?: Record<string, unknown> | null }[] | null
+}
+
+/**
+ * Bestaande metadata + de keys uit de definitie, of undefined als er niets verandert.
+ * Waarden worden vergeleken als tekst (in de admin is metadata altijd tekst).
+ */
+export function mergedMetadata(
+  current: Record<string, unknown> | null | undefined,
+  wanted: Record<string, unknown> | undefined
+): Record<string, unknown> | undefined {
+  if (!wanted) return undefined
+  const changed = Object.entries(wanted).some(([k, v]) => String(current?.[k] ?? "") !== String(v))
+  return changed ? { ...(current ?? {}), ...wanted } : undefined
 }
 
 /**
@@ -107,16 +120,27 @@ async function syncVariants(
     },
   })
 
-  // 3. Bekende varianten de juiste optiewaarde geven.
+  // 3. Bekende varianten de juiste optiewaarde geven, en de metadata uit de definitie
+  //    (bv. cj_vid) erbij zetten. Alleen de keys uit de definitie; andere keys blijven staan.
+  const metadataUpdated: string[] = []
   for (const pv of variants) {
     const def = p.variants.find((v) => v.sku === pv.sku)
     if (!def) continue
+    const metadata = mergedMetadata(pv.metadata, def.metadata)
+    if (metadata) metadataUpdated.push(def.title)
     await updateProductVariantsWorkflow(container).run({
       input: {
         selector: { id: pv.id },
-        update: { title: def.title, options: { [p.optionTitle]: def.title } },
+        update: {
+          title: def.title,
+          options: { [p.optionTitle]: def.title },
+          ...(metadata ? { metadata } : {}),
+        },
       },
     })
+  }
+  if (metadataUpdated.length) {
+    log(`metadata bijgewerkt: ${metadataUpdated.join(", ")}`)
   }
 
   // 4. Ontbrekende varianten aanmaken.
@@ -340,6 +364,7 @@ export default async function setupStore({ container, args }: ExecArgs) {
       "images.id",
       "variants.id",
       "variants.sku",
+      "variants.metadata",
       "options.id",
       "options.title",
       "options.values.value",
