@@ -13,7 +13,13 @@ const upper = (v: unknown) => (typeof v === "string" ? v.toUpperCase() : undefin
 const TO_META: Partial<Record<AnalyticsEvent, (p: Props) => [string, Props]>> = {
   [EVENTS.productViewed]: (p) => [
     "ViewContent",
-    { content_ids: [p.product_id], content_name: p.product_name, content_type: "product" },
+    {
+      content_ids: [p.product_id],
+      content_name: p.product_name,
+      content_type: "product",
+      // Zonder waarde kan Meta niet op waarde optimaliseren en is ViewContent minder bruikbaar.
+      ...(typeof p.value === "number" ? { value: p.value, currency: upper(p.currency) ?? "EUR" } : {}),
+    },
   ],
   [EVENTS.productAddedToCart]: (p) => [
     "AddToCart",

@@ -15,9 +15,13 @@ export type MetaInsight = {
   campaignName: string
   spend: number
   purchases: number
+  impressions: number
+  linkClicks: number
+  addToCarts: number
 }
 
 const n = (v: unknown) => Number(v ?? 0) || 0
+const action = (r: any, types: string[]) => n((r.actions ?? []).find((a: any) => types.includes(a.action_type))?.value)
 
 export class MetaAds {
   private host: string
@@ -64,7 +68,7 @@ export class MetaAds {
     const day = (d: Date) => d.toISOString().slice(0, 10)
     const rows = await this.all<any>(`${account}/insights`, {
       level: "ad",
-      fields: "ad_id,ad_name,adset_id,adset_name,campaign_name,spend,actions",
+      fields: "ad_id,ad_name,adset_id,adset_name,campaign_name,spend,impressions,actions",
       time_range: JSON.stringify({ since: day(since), until: day(until) }),
     })
     return rows.map((r) => ({
@@ -74,11 +78,10 @@ export class MetaAds {
       adsetName: String(r.adset_name ?? ""),
       campaignName: String(r.campaign_name ?? ""),
       spend: n(r.spend),
-      purchases: n(
-        (r.actions ?? []).find((a: any) =>
-          ["purchase", "offsite_conversion.fb_pixel_purchase", "omni_purchase"].includes(a.action_type)
-        )?.value
-      ),
+      purchases: action(r, ["purchase", "offsite_conversion.fb_pixel_purchase", "omni_purchase"]),
+      impressions: n(r.impressions),
+      linkClicks: action(r, ["link_click"]),
+      addToCarts: action(r, ["add_to_cart", "offsite_conversion.fb_pixel_add_to_cart", "omni_add_to_cart"]),
     }))
   }
 

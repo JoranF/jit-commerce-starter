@@ -43,15 +43,52 @@ function loadPixel(pixelId: string) {
   fbq("init", pixelId)
 }
 
+/** Events die we naast de pixel ook server-side (Conversions API) sturen. Purchase doet de backend zelf. */
+const RELAYED = new Set(["ViewContent", "AddToCart", "InitiateCheckout", "AddPaymentInfo"])
+
+const cookie = (name: string) =>
+  document.cookie
+    .split("; ")
+    .find((c) => c.startsWith(`${name}=`))
+    ?.slice(name.length + 1)
+
+/**
+ * Zelfde event nog een keer via onze backend naar Meta (Conversions API), met hetzelfde
+ * event_id als de pixel zodat Meta het ontdubbelt. Adblockers en iOS missen 10-30% van
+ * de browser-events; de server niet. Faalt stil: tracking mag nooit de winkel hinderen.
+ */
+function relayToCapi(event: string, params: Record<string, unknown>, eventId: string) {
+  const base = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+  if (!base) return
+  const fbp = cookie("_fbp")
+  const fbc = cookie("_fbc")
+  try {
+    void fetch(`${base.replace(/\/$/, "")}/store/meta-event`, {
+      method: "POST",
+      keepalive: true,
+      headers: {
+        "Content-Type": "application/json",
+        "x-publishable-api-key": process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY || "",
+      },
+      body: JSON.stringify({ event, event_id: eventId, url: location.href, params, fbp, fbc }),
+    }).catch(() => {})
+  } catch {
+    /* negeren */
+  }
+}
+
 /**
  * Stuur een standaard Meta-event (ViewContent, AddToCart, Purchase, …).
  * No-op zonder pixel of zonder toestemming. Met `eventId` ontdubbelt Meta dit
- * event tegen hetzelfde event uit de Conversions API (backend).
+ * event tegen hetzelfde event uit de Conversions API (backend). Funnel-events
+ * krijgen automatisch een event_id en gaan ook server-side mee.
  */
 export function pixelTrack(event: string, params?: Record<string, unknown>, eventId?: string) {
   if (typeof window === "undefined" || !window.fbq) return
-  if (eventId) window.fbq("track", event, params ?? {}, { eventID: eventId })
+  const id = eventId ?? (RELAYED.has(event) ? crypto.randomUUID() : undefined)
+  if (id) window.fbq("track", event, params ?? {}, { eventID: id })
   else window.fbq("track", event, params ?? {})
+  if (id && RELAYED.has(event)) relayToCapi(event, params ?? {}, id)
 }
 
 /**

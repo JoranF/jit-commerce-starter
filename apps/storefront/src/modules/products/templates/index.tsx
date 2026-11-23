@@ -1,3 +1,4 @@
+import { getProductPrice } from "@lib/util/get-product-price"
 import React, { Suspense } from "react"
 
 import VariantImageGallery from "@modules/products/components/image-gallery/variant-image-gallery"
@@ -115,6 +116,8 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         handle: product.handle,
         collection: product.collection?.title,
         country: countryCode,
+        value: getProductPrice({ product }).cheapestPrice?.calculated_price_number,
+        currency: getProductPrice({ product }).cheapestPrice?.currency_code,
       }}
     />
   )

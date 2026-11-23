@@ -57,3 +57,34 @@ describe("meta-capi", () => {
     expect(hasMarketingConsent(undefined)).toBe(false)
   })
 })
+
+import { buildFunnelEvent } from "../meta-capi"
+
+describe("meta-capi funnel events", () => {
+  const req = { ip: "1.2.3.4", ua: "UA" }
+  it("neemt alleen toegestane velden over en gebruikt ip/ua van het verzoek", () => {
+    const e = buildFunnelEvent(
+      {
+        event: "AddToCart",
+        event_id: "abc",
+        url: "https://x.nl/nl/products/lamp",
+        params: { value: 129, currency: "eur", content_ids: ["prod_1"], content_type: "product", evil: "x" },
+        fbp: "fb.1.1700000000000.123456",
+        fbc: "fb.1.1700000000000.AbCdEf123",
+      },
+      req,
+      1_700_000_000_000
+    )!
+    expect(e.event_name).toBe("AddToCart")
+    expect(e.event_time).toBe(1_700_000_000)
+    expect(e.custom_data).toEqual({ value: 129, currency: "EUR", content_ids: ["prod_1"], content_type: "product" })
+    expect(e.user_data).toMatchObject({ fbp: "fb.1.1700000000000.123456", client_ip_address: "1.2.3.4", client_user_agent: "UA" })
+  })
+  it("weigert onbekende events en slechte cookies", () => {
+    expect(buildFunnelEvent({ event: "Purchase", event_id: "a" }, req)).toBeNull()
+    expect(buildFunnelEvent({ event: "ViewContent", event_id: "" }, req)).toBeNull()
+    const e = buildFunnelEvent({ event: "ViewContent", event_id: "a", fbp: "rommel", fbc: "<script>" }, req)!
+    expect(e.user_data).not.toHaveProperty("fbp")
+    expect(e.user_data).not.toHaveProperty("fbc")
+  })
+})
