@@ -17,7 +17,7 @@ import type { StoreConfig } from "./types"
  *
  * TODO vóór livegang (na ontvangst sample):
  * - Beelden zijn AI-sfeerbeelden (fal, op basis van de CJ-productfoto's, 22 nov 2026).
- *   Vervang door eigen foto's van de sample en haal dan `imageNote` weg.
+ *   Vervang door eigen foto's van de sample (de melding "Sfeerbeelden" is op verzoek al weg).
  * - Nog controleren met de sample: aansluiting (stekker of vaste aansluiting), lichtkleur,
  *   of het patroon stilstaat, en de maten in `buy.facts`.
  */
@@ -53,6 +53,7 @@ export const lichtval: StoreConfig = {
     title: "Waterlicht op je muur.",
     lead: "Een wandlamp met een plaat van gegolfd staal. Zet hem aan en er valt een zachte sluier van warm licht over je muur.",
     cta: "Bekijk de lamp",
+    trust: ["Gratis verzending", "Gratis retour", "Betaal in 3 termijnen"],
     wide: {
       src: "/stores/lichtval/hero-breed.jpg",
       alt: "De Lichtval wandlamp aan op een blauwgrijze muur in de schemering, met een sluier van warm licht eromheen.",
@@ -70,7 +71,7 @@ export const lichtval: StoreConfig = {
 
   intro: {
     title: "Rust, zodra het donker wordt.",
-    body: "Achter de ronde schijf zit een plaat van gegolfd staal. Het licht valt erop en breekt in zachte plooien, zoals licht dat door water op de bodem valt. Overdag een rustig object, 's avonds de mooiste plek van de kamer.",
+    body: "Achter de ronde schijf zit een plaat van gegolfd staal. Het licht valt erop en breekt in zachte plooien, zoals licht dat door water op de bodem valt. Overdag een rustig object aan de muur, 's avonds de plek waar iedereen naar kijkt. De grote lamp mag uit.",
     image: {
       src: "/stores/lichtval/detail.jpg",
       alt: "Close-up van de wandlamp aan op een ruwe muur: een donkere ronde schijf op een smalle staaf, met een sluier van warm licht eromheen.",
@@ -90,7 +91,7 @@ export const lichtval: StoreConfig = {
           height: 1862,
         },
         title: "Boven de bank",
-        body: "Als sfeerlicht voor de avond. De grote lamp kan uit.",
+        body: "Sfeerlicht voor de avond. Eén lamp is genoeg om de hele muur warm te maken.",
       },
       {
         image: {
@@ -100,7 +101,7 @@ export const lichtval: StoreConfig = {
           height: 1862,
         },
         title: "Naast het bed",
-        body: "Eén aan elke kant, met de set van twee. Zacht genoeg om in slaap te vallen.",
+        body: "Eén aan elke kant, met de set van twee betaal je minder per lamp. Zacht genoeg om bij in slaap te vallen.",
       },
       {
         image: {
@@ -110,7 +111,7 @@ export const lichtval: StoreConfig = {
           height: 1862,
         },
         title: "In de hal",
-        body: "Het eerste wat je ziet als je thuiskomt.",
+        body: "Het eerste wat je ziet als je thuiskomt. Ook mooi in een smalle gang zonder raam.",
       },
     ],
   },
@@ -129,9 +130,9 @@ export const lichtval: StoreConfig = {
       { label: "Licht", value: "Warm wit, 220 V" },
     ],
     promises: [
-      "In huis binnen {levertijd} werkdagen, met track & trace",
-      "Verzendkosten {verzendkosten}, betalen met iDEAL",
-      "{bedenktijd} dagen bedenktijd",
+      "Gratis verzending, in huis binnen {levertijd} werkdagen met track & trace",
+      "Niet blij? Binnen {bedenktijd} dagen gratis retour, je krijgt je geld terug",
+      "Betaal met iDEAL, of in 3 termijnen zonder rente met in3",
       "2 jaar garantie",
     ],
     ctaText: { control: "In winkelmand", test: "Bestel de lamp" },
@@ -160,7 +161,7 @@ export const lichtval: StoreConfig = {
       {
         // TODO bij het sample controleren: kwam het pakket zonder extra kosten aan?
         q: "Moet ik bij de bezorging nog iets betalen?",
-        a: "Nee. Alle kosten zitten in de prijs en de verzendkosten. Je betaalt bij de bezorging niets extra, ook geen douane- of invoerkosten.",
+        a: "Nee. Alle kosten zitten in de prijs, ook de verzending. Je betaalt bij de bezorging niets extra, ook geen douane- of invoerkosten.",
       },
       {
         q: "Wat als mijn lamp beschadigd aankomt?",
@@ -172,19 +173,19 @@ export const lichtval: StoreConfig = {
       },
       {
         q: "Kan ik er twee bestellen?",
-        a: "Ja. Kies bij het bestellen voor 2 lampen: dan betaal je minder dan voor twee losse lampen. Mooi aan weerszijden van het bed of naast elkaar in de hal.",
+        a: "Ja. Kies bij het bestellen voor 2 lampen: dan betaal je minder dan voor twee losse lampen (je ziet de besparing bij de keuze). Mooi aan weerszijden van het bed, links en rechts van de bank of naast elkaar in de hal.",
       },
       {
         q: "Kan ik de lamp terugsturen?",
-        a: "Ja. Je hebt {bedenktijd} dagen bedenktijd na ontvangst. Stuur ons een e-mail, dan regelen we de retour. De verzendkosten voor het terugsturen zijn voor jou; je krijgt je geld terug zodra de lamp bij ons is.",
+        a: "Ja, en dat is gratis. Je hebt {bedenktijd} dagen bedenktijd na ontvangst. Stuur ons een e-mail, dan krijg je een gratis retourlabel. Je krijgt je geld terug zodra de lamp bij ons is.",
       },
       {
         q: "Hoe zit het met garantie?",
         a: "Je hebt 2 jaar garantie. Werkt je lamp niet goed, stuur ons dan een foto of video. We zorgen voor een oplossing.",
       },
       {
-        q: "Hoe betaal ik?",
-        a: "Je betaalt veilig via Mollie, bijvoorbeeld met iDEAL, Bancontact of creditcard.",
+        q: "Hoe betaal ik? Kan het in termijnen?",
+        a: "Je betaalt veilig via Mollie: met iDEAL, Bancontact, creditcard, PayPal of Apple Pay. Liever in delen? Kies in3: dan betaal je in 3 termijnen, zonder rente. Het eerste deel betaal je bij het bestellen.",
       },
     ],
   },
@@ -204,8 +205,6 @@ export const lichtval: StoreConfig = {
     },
   },
 
-  imageNote: "Sfeerbeelden. De lamp die je ontvangt kan in afwerking licht afwijken.",
-
   // TODO vóór livegang: fabrikant (naam + adres uit de CE-verklaring van CJ) en
   // waarschuwingen (aansluiting) invullen; tot dan meldt `pnpm check-store` dit.
   // productSafety: {
@@ -215,7 +214,7 @@ export const lichtval: StoreConfig = {
   //   warnings: ["Alleen voor gebruik binnenshuis.", "..."],
   // },
 
-  paymentMethods: ["ideal", "bancontact", "card", "paypal", "applepay"],
+  paymentMethods: ["ideal", "in3", "bancontact", "card", "paypal", "applepay"],
 
   // A/B-tests zonder code; los bestand zodat de autopilot alleen dát mag aanpassen.
   experimentContent: lichtvalExperiments,

@@ -85,8 +85,18 @@ zegt dat ook eerlijk vanaf half november.
 - ⬜ 3–5 video's van het echte licht (eerste 2 seconden: lamp gaat aan in het donker), formaat
   4:5 en 9:16. Invalshoeken: `sfeer`, `slaapkamer`, `cadeau` (cadeau pas weer na de feestdagen).
   URL-parameters per advertentie: zie README → "Advertenties automatisch".
-- ⬜ Campagne: doel Verkoop, optimaliseren op Purchase, NL + BE, €25–30 per dag, 7–10 dagen.
+- ⬜ Campagne: doel Verkoop, optimaliseren op Purchase, NL + BE, breed, één set met 6–8 verschillende
+  advertenties, **€50–60 per dag** (met €25–30 haal je maar ≈ 4 aankopen per week: te weinig om te leren),
+  10 dagen. Volledig draaiboek, doel < €50 per verkoop en beslisboom: [meta-ads-playbook.md](./meta-ads-playbook.md).
   Stopregels staan in de hercheck (en de ads-autopilot past ze toe).
+- ⬜ Events Manager → Test events: elk event (ViewContent, AddToCart, InitiateCheckout, AddPaymentInfo,
+  Purchase) komt één keer binnen (pixel + server ontdubbeld); EMQ ≥ 6.
+- ✅ in3 staat in de checkout (eigen provider `pp_mollie-in3_mollie`); ✅ in3 aangezet in Mollie. ⬜ Testbetaling met in3
+  in Mollie-testmodus (telefoonnummer is verplicht; de checkout vraagt erom).
+- ✅ Gratis verzending (€134 / €224) en gratis retour. ⬜ Retourlabels regelen (Sendcloud of PostNL zakelijk) + retouradres.
+- ✅ Herinnering bij een niet afgeronde bestelling (vinkje in de checkout, job `cart-reminder`). Werkt pas met
+  e-mail aan (Resend/Brevo) en `STORE_URL` op de backend.
+- ⬜ Echte reviews en foto's vóór de eerste advertentie.
 - ⬜ Back-ups van de database (Dokploy → Backups naar S3) en een uptime-monitor op
   `/api/health` (storefront) en `/health` (backend), bv. UptimeRobot of Better Stack (gratis).
 

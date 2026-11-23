@@ -5,6 +5,7 @@ import Input from "@modules/common/components/input"
 import { mapKeys } from "lodash"
 import React, { useEffect, useMemo, useState } from "react"
 import { useParams } from "next/navigation"
+import { setReminderOptIn } from "@lib/data/cart"
 import AddressSelect from "../address-select"
 import CountrySelect from "../country-select"
 
@@ -21,6 +22,8 @@ const ShippingAddress = ({
 }) => {
   const countryCode = (useParams().countryCode as string | undefined)?.toLowerCase()
   const [showCompany, setShowCompany] = useState(false)
+  // Staat standaard uit (AVG: toestemming moet actief gegeven worden).
+  const [reminder, setReminder] = useState(cart?.metadata?.reminder_opt_in === true)
   const [formData, setFormData] = useState<Record<string, string>>({
     "shipping_address.first_name": cart?.shipping_address?.first_name || "",
     "shipping_address.last_name": cart?.shipping_address?.last_name || "",
@@ -139,12 +142,29 @@ const ShippingAddress = ({
             autoComplete="email"
             value={formData.email}
             onChange={handleChange}
+            onBlur={() => {
+              if (reminder) void setReminderOptIn(formData.email, true)
+            }}
             required
             data-testid="shipping-email-input"
           />
           <p className="mt-1.5 text-small-regular text-ui-fg-subtle">
             Voor je orderbevestiging en de track &amp; trace.
           </p>
+          <label className="mt-3 flex cursor-pointer items-start gap-2.5 text-small-regular text-ui-fg-subtle">
+            <input
+              type="checkbox"
+              name="reminder_opt_in"
+              className="mt-0.5 h-4 w-4 shrink-0 accent-current"
+              checked={reminder}
+              onChange={(e) => {
+                setReminder(e.target.checked)
+                void setReminderOptIn(formData.email, e.target.checked)
+              }}
+              data-testid="reminder-opt-in"
+            />
+            <span>Stuur me één herinnering als ik mijn bestelling niet afrond.</span>
+          </label>
         </div>
         <Input
           label="Voornaam"

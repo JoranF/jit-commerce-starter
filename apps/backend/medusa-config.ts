@@ -37,7 +37,7 @@ const redisModules = REDIS_URL
   : []
 
 /**
- * Betalingen: Mollie (iDEAL, Bancontact, creditcard, PayPal, Apple Pay).
+ * Betalingen: Mollie (iDEAL, Bancontact, creditcard, PayPal, Apple Pay, in3).
  * Zonder MOLLIE_API_KEY is alleen de handmatige testbetaling beschikbaar.
  */
 const paymentModule = MOLLIE_API_KEY
@@ -48,6 +48,18 @@ const paymentModule = MOLLIE_API_KEY
           providers: [
             {
               resolve: "@variablevic/mollie-payments-medusa/providers/mollie",
+              id: "mollie",
+              options: {
+                apiKey: MOLLIE_API_KEY,
+                redirectUrl: process.env.MOLLIE_REDIRECT_URL,
+                medusaUrl: process.env.MEDUSA_BACKEND_URL,
+                autoCapture: true,
+                description: process.env.MOLLIE_DESCRIPTION || "Bestelling",
+              },
+            },
+            {
+              // in3 (in 3 termijnen): eigen provider, de plugin heeft hem niet. pp_mollie-in3_mollie
+              resolve: "./src/modules/mollie-in3",
               id: "mollie",
               options: {
                 apiKey: MOLLIE_API_KEY,

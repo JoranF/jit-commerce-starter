@@ -462,3 +462,23 @@ export async function listCartOptions() {
     cache: "force-cache",
   })
 }
+
+/**
+ * Vinkje "stuur me een herinnering" in de checkout: bewaart het e-mailadres en de
+ * toestemming direct (niet pas bij "verder"), want juist wie hier afhaakt heeft er iets aan.
+ * De backend (job `cart-reminder`) stuurt hooguit één mail. Faalt stil.
+ */
+export async function setReminderOptIn(email: string, optIn: boolean) {
+  try {
+    const id = await getCartId()
+    if (!id) return
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    const { cart } = await sdk.store.cart.retrieve(id, { fields: "id,metadata" }, await getAuthHeaders())
+    await updateCart({
+      ...(optIn && valid ? { email } : {}),
+      metadata: { ...(cart.metadata ?? {}), reminder_opt_in: optIn && valid },
+    })
+  } catch (e) {
+    console.warn("[cart] herinnering opslaan mislukt", e)
+  }
+}

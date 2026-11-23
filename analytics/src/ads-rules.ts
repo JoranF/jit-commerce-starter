@@ -13,7 +13,10 @@
  *  2. OPSCHALEN (advertentieset): ≥ 3 bestellingen en CPA ≤ 0,7× break-even,
  *     gerekend over de advertenties die blijven lopen.
  *     Dagbudget +20%, hooguit één keer per 72 uur, nooit boven het maximum.
- *  3. Anders: LATEN LOPEN (te weinig data of rond break-even).
+ *  3. VROEG PAUZEREN (creative): ≥ 3000 vertoningen, ≥ 0,6× break-even uitgegeven en
+ *     linkklik-CTR < 0,6%. Een advertentie die niemand aanklikt wordt nooit goedkoop per
+ *     verkoop; dit scheelt tientallen euro's per verliezer. Alleen als Meta de cijfers geeft.
+ *  4. Anders: LATEN LOPEN (te weinig data of rond break-even).
  */
 export type AdStats = {
   adId: string
@@ -28,7 +31,15 @@ export type AdStats = {
   revenue: number
   /** Ter vergelijking: aankopen volgens Meta. */
   metaPurchases: number
+  /** Optioneel (Meta): voor de vroege creative-regel en het rapport. */
+  impressions?: number
+  linkClicks?: number
+  addToCarts?: number
 }
+
+/** Linkklik-CTR in procenten; null zonder vertoningen. */
+export const linkCtr = (a: Pick<AdStats, "impressions" | "linkClicks">) =>
+  a.impressions ? ((a.linkClicks ?? 0) / a.impressions) * 100 : null
 
 export type AdsetInfo = {
   id: string
@@ -80,6 +91,10 @@ export function decideAds(ads: AdStats[], rules: Rules): AdDecision[] {
       reason = `${eur(ad.spend)} uitgegeven (≥ 2× break-even ${eur(be)}) zonder bestelling`
     } else if (ad.orders > 0 && ad.spend >= 3 * be && cpa(ad) > 1.5 * be) {
       reason = `CPA ${eur(cpa(ad))} is > 1,5× break-even (${eur(be)}) na ${eur(ad.spend)}`
+    }
+    const ctr = linkCtr(ad)
+    if (!reason && ad.orders === 0 && (ad.impressions ?? 0) >= 3000 && ad.spend >= 0.6 * be && ctr !== null && ctr < 0.6) {
+      reason = `linkklik-CTR ${ctr.toFixed(2).replace(".", ",")}% na ${ad.impressions} vertoningen en ${eur(ad.spend)}: de advertentie trekt geen klikken`
     }
     const left = activePerAdset.get(ad.adsetId) ?? 0
     if (reason && left > 1) {

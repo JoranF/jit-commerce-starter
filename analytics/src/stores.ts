@@ -25,6 +25,8 @@ export type StoreAnalytics = {
      * Rekensom per winkel in docs/beslissingen/<id>.md.
      */
     breakEvenCpa: number
+    /** Doel: kosten per verkoop waar je naartoe werkt (lager dan break-even, dat is de winst). */
+    targetCpa?: number
     /** Gemiddelde omzet per bestelling incl. btw als er nog geen data is (EUR). */
     expectedOrderValue?: number
   }
@@ -37,9 +39,11 @@ export const STORES: StoreAnalytics[] = [
     posthogProjectId: "162315",
     meta: {
       adAccountId: "",
-      // docs/beslissingen/lichtval.md: 1 lamp €129 → max. ≈ €53 advertentiekosten per verkoop.
+      // docs/beslissingen/lichtval.md: 1 lamp €134 incl. gratis verzending → break-even ≈ €55; voorzichtig op €53.
       breakEvenCpa: 53,
-      expectedOrderValue: 134,
+      // docs/meta-ads-playbook.md: doel < €50 per verkoop.
+      targetCpa: 50,
+      expectedOrderValue: 140,
     },
   },
   {

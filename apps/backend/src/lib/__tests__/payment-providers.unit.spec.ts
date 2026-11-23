@@ -16,12 +16,18 @@ describe("wantedRegionProviders", () => {
   it("removes the test payment but keeps the merchant's own Mollie selection", () => {
     expect(
       wantedRegionProviders(["pp_mollie-ideal_mollie", "pp_system_default"], { mollie: true, allowTest: false, available })
-    ).toEqual(["pp_mollie-ideal_mollie"])
+    ).toEqual(["pp_mollie-ideal_mollie", "pp_mollie-in3_mollie"])
+  })
+
+  it("adds in3 to a region that already had Mollie", () => {
+    expect(
+      wantedRegionProviders(["pp_mollie-ideal_mollie"], { mollie: true, allowTest: false, available })
+    ).toEqual(["pp_mollie-ideal_mollie", "pp_mollie-in3_mollie"])
   })
 
   it("keeps the test payment with ALLOW_TEST_PAYMENT", () => {
     expect(
-      wantedRegionProviders(["pp_mollie-ideal_mollie", "pp_system_default"], { mollie: true, allowTest: true, available })
+      wantedRegionProviders(["pp_mollie-ideal_mollie", "pp_mollie-in3_mollie", "pp_system_default"], { mollie: true, allowTest: true, available })
     ).toBeNull()
   })
 

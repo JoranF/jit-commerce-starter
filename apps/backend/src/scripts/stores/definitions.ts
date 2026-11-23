@@ -96,35 +96,37 @@ export const STORE_SETUPS: Record<string, StoreSetup> = {
         { file: "5-hal.jpg", alt: "De wandlamp aan in een smalle hal met jassen aan de haak." },
       ],
       // 2: foto's van de echte CJ-lamp, prijs 1 lamp €119 → €129 (22 nov 2026).
-      revision: 2,
+      // 3: gratis verzending, verzendkosten in de prijs: €129 → €134, set €219 → €224 (23 nov 2026).
+      revision: 3,
       // Keuzes en rekensom: docs/beslissingen/lichtval.md
       optionTitle: "Aantal",
       variants: [
         // CJ: pid 2406160622081612100, variant CJYD206157001AZ "Small Size Warm Light".
         // vid altijd als tekst: als getal is hij te groot voor JavaScript en klopt hij niet meer.
-        { title: "1 lamp", sku: "LICHTVAL-WANDLAMP", priceEur: 129, metadata: { cj_vid: CJ_VID_LICHTVAL } },
+        { title: "1 lamp", sku: "LICHTVAL-WANDLAMP", priceEur: 134, metadata: { cj_vid: CJ_VID_LICHTVAL } },
         // Eén Duo = twee lampen bij CJ; zonder cj_quantity stuurt CJ er maar één.
         {
           title: "2 lampen",
           sku: "LICHTVAL-WANDLAMP-DUO",
-          priceEur: 219,
+          priceEur: 224,
           metadata: { cj_vid: CJ_VID_LICHTVAL, cj_quantity: 2 },
         },
       ],
     },
     // Dropshipping vanuit China (CJ, CJPacket Ordinary E): 1–3 werkdagen verwerking, 7–12 werkdagen onderweg.
     // Pas aan zodra de leverancier vaststaat (EU-magazijn = veel korter).
+    // Gratis verzending en gratis retour (23 nov 2026); rekensom in docs/beslissingen/lichtval.md.
     policies: {
       return_window_days: 14,
-      free_returns: false,
-      shipping_rate: 4.95,
+      free_returns: true,
+      shipping_rate: 0,
       handling_days_min: 1,
       handling_days_max: 3,
       transit_days_min: 7,
       transit_days_max: 12,
     },
     standardShipping: {
-      name: "Verzending met track & trace (8–15 werkdagen)",
+      name: "Gratis verzending met track & trace (8–15 werkdagen)",
       description: "Binnen 8–15 werkdagen in huis, met track & trace.",
     },
     hideShippingCodes: ["express"],

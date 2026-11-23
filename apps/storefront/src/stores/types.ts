@@ -58,6 +58,8 @@ export type StoreConfig = {
     title: string
     lead: string
     cta: string
+    /** Korte geruststelling onder de knop, bv. ["Gratis verzending", "Betaal in 3 termijnen"]. Alleen wat waar is. */
+    trust?: string[]
     /** Breed beeld (desktop) en staand beeld (mobiel). */
     wide: StoreImage
     tall: StoreImage
@@ -165,7 +167,7 @@ export type StoreConfig = {
   }
 
   /** Betaalmethodes onder de koopknop (logo's). Standaard iDEAL, Bancontact, kaart, PayPal. */
-  paymentMethods?: ("ideal" | "bancontact" | "card" | "paypal" | "applepay")[]
+  paymentMethods?: ("ideal" | "bancontact" | "card" | "paypal" | "applepay" | "in3")[]
 
   faq: { title: string; items: { q: string; a: string }[] }
 

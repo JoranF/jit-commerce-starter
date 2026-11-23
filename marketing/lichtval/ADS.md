@@ -38,21 +38,21 @@ waarde uit de tabel hierboven. Controleer het pad naar het product in de live wi
 
 - **Primaire tekst:** Zet hem aan en er valt een zachte sluier van warm licht over je muur, zoals licht door water. Een wandlamp die de muur zelf het mooiste deel maakt.
 - **Kop:** Waterlicht op je muur.
-- **Beschrijving:** 8–15 werkdagen, met track & trace.
+- **Beschrijving:** Gratis verzending en gratis retour.
 - **Knop:** Bekijk de lamp
 
 ### Slaapkamer (`angle=slaapkamer`)
 
 - **Primaire tekst:** Zacht licht naast je bed. Een wandlamp die een sluier van warm licht over je muur legt. Genoeg om bij te lezen, zacht genoeg om bij in slaap te vallen. Nu ook als set van twee, één voor elke kant van het bed.
 - **Kop:** Zacht licht naast je bed.
-- **Beschrijving:** Set van twee: €219 (bespaar €39).
+- **Beschrijving:** Set van twee: €224 (bespaar €44). Gratis verzending.
 - **Knop:** Bekijk de set
 
 ### Cadeau (`angle=cadeau`)
 
 - **Primaire tekst:** Een cadeau dat elke avond aangaat. Een wandlamp met een plaat van gegolfd staal: zet hem aan en er valt een zachte sluier van warm licht over de muur. 14 dagen bedenktijd.
 - **Kop:** Een cadeau dat elke avond aangaat.
-- **Beschrijving:** Nu bestellen: levering 8–15 werkdagen.
+- **Beschrijving:** Gratis verzending, ook in 3 termijnen te betalen.
 - **Knop:** Bekijk de lamp
 
 Let op: voor een kerstcadeau is levering vóór kerst niet meer haalbaar (8–15 werkdagen). Gebruik de
@@ -61,13 +61,14 @@ cadeauhoek daarom pas voor verjaardagen of na de feestdagen, en zet geen "voor k
 ## Wat niet in een advertentie mag
 
 - Geen herkomst of "uit Nederland verzonden", geen nepschaarste ("nog maar 3"), geen nepreviews.
-- Geen "gratis verzending" (klant betaalt €4,95) en geen kortingspercentages die niet kloppen.
+- "Gratis verzending", "gratis retour" en "in 3 termijnen (in3)" mogen (sinds 23 nov waar). Geen kortingspercentages die niet kloppen.
 - Zorg dat het licht in de advertentie niet sterker, groter of anders is dan dat van de echte lamp.
   Het lichtpatroon verandert per lamp en per muur; houd de beweging zacht.
 
 ## Testplan
 
-Uit `docs/product-research/2026-11-lichtval-hercheck.md`: 3–5 advertenties, €25–30 per dag,
-7–10 dagen, NL + BE, 30–65 jaar. Stop bij €80 zonder verkoop per advertentieset; na €300 totaal
+Bijgewerkt in [`docs/meta-ads-playbook.md`](../../docs/meta-ads-playbook.md): één set met 6–8 verschillende
+advertenties, €50–60 per dag (met €25–30 per dag zijn er te weinig aankopen om van te leren), 10 dagen,
+NL + BE, breed. Stop bij €80 zonder verkoop per advertentieset; na €300 totaal
 met een kosten per verkoop > €70 en < 3% "in winkelmand" stoppen. Kosten per verkoop ≤ €55: budget
 +20% per 3 dagen (ads-autopilot, `analytics/src/ads-rules.ts`).

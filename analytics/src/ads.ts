@@ -11,7 +11,7 @@
  * Instellingen per winkel in src/stores.ts (meta.adAccountId, meta.breakEvenCpa).
  * ADS_DAYS (standaard 7), ADS_MAX_DAILY_BUDGET (EUR, standaard 50), ADS_SCALE_STEP (0.2).
  */
-import { cpa, decideAds, decideAdsets, type AdStats } from "./ads-rules"
+import { cpa, decideAds, decideAdsets, linkCtr, type AdStats } from "./ads-rules"
 import { MetaAds } from "./meta"
 import { eur, int, publish, table } from "./notify"
 import { PostHogApi, envFromProcess } from "./posthog"
@@ -55,6 +55,9 @@ async function main() {
     orders: byAd.get(i.adId)?.orders ?? 0,
     revenue: byAd.get(i.adId)?.revenue ?? 0,
     metaPurchases: i.purchases,
+    impressions: i.impressions,
+    linkClicks: i.linkClicks,
+    addToCarts: i.addToCarts,
   }))
 
   const adDecisions = decideAds(ads, rules)
@@ -86,18 +89,20 @@ async function main() {
     `## 📣 Advertenties — laatste ${days} dagen (${new Date().toLocaleDateString("nl-NL")})`,
     "",
     table(
-      ["Uitgaven", "Bestellingen", "Omzet (incl. btw)", "CPA", "Break-even CPA", "ROAS"],
-      [[eur(spend), int(orders), eur(rev), orders ? eur(spend / orders) : "–", eur(rules.breakEvenCpa), spend ? (rev / spend).toFixed(2) : "–"]]
+      ["Uitgaven", "Bestellingen", "Omzet (incl. btw)", "CPA", "Doel-CPA", "Break-even CPA", "ROAS"],
+      [[eur(spend), int(orders), eur(rev), orders ? eur(spend / orders) : "–", store.meta.targetCpa ? eur(store.meta.targetCpa) : "–", eur(rules.breakEvenCpa), spend ? (rev / spend).toFixed(2) : "–"]]
     ),
     "",
     ads.length
       ? table(
-          ["Advertentie", "Set", "Status", "Uitgaven", "Best. (PostHog)", "Aank. (Meta)", "CPA", "Besluit"],
+          ["Advertentie", "Set", "Status", "Uitgaven", "CTR (link)", "In winkelmand", "Best. (PostHog)", "Aank. (Meta)", "CPA", "Besluit"],
           adDecisions.map((d) => [
             d.ad.adName,
             d.ad.adsetName,
             d.ad.status,
             eur(d.ad.spend),
+            linkCtr(d.ad) === null ? "–" : `${linkCtr(d.ad)!.toFixed(2).replace(".", ",")}%`,
+            int(d.ad.addToCarts ?? 0),
             int(d.ad.orders),
             int(d.ad.metaPurchases),
             Number.isFinite(cpa(d.ad)) ? eur(cpa(d.ad)) : "–",

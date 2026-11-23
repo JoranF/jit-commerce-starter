@@ -27,6 +27,11 @@ export default function PrivacyPage() {
         Naam, adres, e-mailadres, telefoonnummer (als je dat opgeeft) en je bestelling. Betaalgegevens
         verwerkt onze betaalprovider; die zien wij niet.
       </p>
+      <p>
+        Vink je bij het afrekenen aan dat je een herinnering wilt, dan bewaren we je e-mailadres
+        en winkelmand en sturen we je hooguit één e-mail als je je bestelling niet afrondt. Zonder
+        dat vinkje sturen we je zo&apos;n e-mail nooit.
+      </p>
       <h2>Met wie we ze delen</h2>
       <p>
         Om je bestelling te kunnen leveren, geven we je naam, adres en telefoonnummer door aan

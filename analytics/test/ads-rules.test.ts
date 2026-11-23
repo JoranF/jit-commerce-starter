@@ -42,3 +42,24 @@ test("schaalt een goede set op met 20%, tot het maximum, en niet binnen 72 uur",
   const tooFew = decideAdsets([ad({ spend: 40, orders: 2 })], [{ id: "s1", name: "Set 1", dailyBudget: 20 }], rules)
   assert.equal(tooFew.length, 0)
 })
+
+test("pauzeert vroeg een advertentie die geen klikken trekt (CTR < 0,6%)", () => {
+  const out = decideAds(
+    [
+      ad({ adId: "stil", spend: 35, impressions: 5000, linkClicks: 15 }),
+      ad({ adId: "goed", spend: 35, impressions: 5000, linkClicks: 70 }),
+    ],
+    rules
+  )
+  assert.equal(out.find((d) => d.ad.adId === "stil")?.action, "pause")
+  assert.match(out.find((d) => d.ad.adId === "stil")!.reason, /CTR/)
+  assert.equal(out.find((d) => d.ad.adId === "goed")?.action, "keep")
+})
+
+test("CTR-regel wacht op genoeg vertoningen en uitgaven", () => {
+  const out = decideAds(
+    [ad({ adId: "a", spend: 35, impressions: 1500, linkClicks: 2 }), ad({ adId: "b", spend: 10, impressions: 5000, linkClicks: 5 })],
+    rules
+  )
+  assert.ok(out.every((d) => d.action === "keep"))
+})

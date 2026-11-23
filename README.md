@@ -26,6 +26,7 @@ Gebouwd op de officiële [Medusa DTC Starter](https://github.com/medusajs/dtc-st
 - Regio *Benelux & Duitsland* (NL/BE/DE), EUR, **prijzen incl. btw** (21% / 21% / 19%)
 - Verzending: Standaard €4,95 · Express €7,95 (aan te passen in de admin)
 - Mollie-checkout met redirect + webhook (bestelling wordt ook afgerond als de klant het tabblad sluit)
+- **in3** (in 3 termijnen, zonder rente) als eigen betaalmethode: `apps/backend/src/modules/mollie-in3` (`pp_mollie-in3_mollie`); de plugin heeft hem niet. Zet in3 ook aan in Mollie
 - Prijzen in NL-notatie (`€ 24,95`), winkelbeleid: 14 dagen herroepingsrecht, 1-2 dagen levertijd
 - Eerste `db:migrate` seedt de winkel + demo-producten (`src/migration-scripts/initial-data-seed.ts`, idempotent; `SEED_DEMO=false` = zonder demo-producten)
 - Container-start: vaste publishable key en admin-account (`src/scripts/bootstrap.ts`)
@@ -47,6 +48,7 @@ Gebouwd op de officiële [Medusa DTC Starter](https://github.com/medusajs/dtc-st
 - Orderbevestiging met bedrijfsgegevens, verwachte bezorgdatum, bedenktijd en modelformulier (wettelijk verplicht), verzendmail met track & trace, "nog onderweg"-mail als de vroegste verwachte datum voorbij is, annuleringsmail. Via Resend of Brevo; zonder key alleen gelogd. Teksten: `apps/backend/src/lib/emails/`, bekijken: `pnpm medusa exec ./src/scripts/preview-emails.ts`
 - **Volg je bestelling** (`/<land>/order/<id>/status`): stappen in gewone taal en de verwachte datum, met de vervoerder als extra link
 - Jij krijgt een mail bij elke bestelling en elke ochtend een lijstje met bestellingen die aandacht vragen (CJ-fout, onbetaald in CJ, te laat verzonden, te lang onderweg); job `order-care`
+- **Herinnering bij een niet afgeronde bestelling**: alleen als de klant in de checkout het vinkje aanzet (staat uit), één mail 1–48 uur later met een link die de winkelmand terugzet (`/<land>/herstel/<cart_id>`). Job `cart-reminder` (elk uur), regels in `apps/backend/src/lib/cart-reminder.ts`
 - CJ verpakt neutraal (geen factuur of prijzen in het pakket), alleen echt betaalde bestellingen worden verstuurd, een set van twee (`cj_quantity: 2`) gaat als twee stuks naar CJ
 
 **Meten**

@@ -10,6 +10,7 @@ const LABELS: Record<string, { label: string; icon?: ReactNode }> = {
   card: { label: "Creditcard" },
   paypal: { label: "PayPal", icon: <PayPal /> },
   applepay: { label: "Apple Pay" },
+  in3: { label: "in3: in 3 termijnen" },
 }
 
 /** "Veilig betalen" met de betaalmethodes, vlak onder de koopknop. */

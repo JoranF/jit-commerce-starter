@@ -29,7 +29,8 @@ export default function LandingTemplate({
   /** Advertentie-invalshoek (store.angles), via /<land>/a/<angle>. */
   angle?: string
 }) {
-  const price = product ? getProductPrice({ product }).cheapestPrice?.calculated_price : null
+  const cheapest = product ? getProductPrice({ product }).cheapestPrice : null
+  const price = cheapest?.calculated_price ?? null
 
   // Vragen met een termijn die (nog) niet in het winkelbeleid staat, vallen weg.
   const faq = store.faq.items
@@ -62,6 +63,8 @@ export default function LandingTemplate({
             page: "landing",
             landing_angle: angle ?? "standaard",
             price,
+            value: cheapest?.calculated_price_number,
+            currency: cheapest?.currency_code,
           }}
         />
       )}

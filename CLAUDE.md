@@ -35,6 +35,8 @@ separate npm package.
   CJ stuurt alleen echt betaalde bestellingen door.
 - A/B-tests zonder code: inhoud in `apps/storefront/src/stores/<id>.experiments.ts`; wachtrij en regels van de
   autopilot (Claude, wekelijks als PR) in `docs/autopilot/README.md`. `cd analytics && npm test` controleert de keys.
+- Meta-advertenties, doel < €50 per verkoop (hefbomen, campagne-opzet, beslisboom): `docs/meta-ads-playbook.md`.
+  Funnel-events gaan ook server-side naar Meta via `POST /store/meta-event` (`lib/meta-capi.ts`, `buildFunnelEvent`).
 - Wat er nog moet voor livegang: `docs/launch-checklist.md`.
 - Checks: `pnpm --filter @dtc/backend build`, `pnpm --filter @dtc/storefront build`,
   `cd apps/storefront && npx tsc --noEmit` (0 fouten verwacht), `cd analytics && npm test`.

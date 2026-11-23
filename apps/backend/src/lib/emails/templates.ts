@@ -401,3 +401,41 @@ export function ownerCareDigest(b: Brand, issues: { message: string }[], adminUr
     text: [...lines.map((l) => `- ${l}`), adminUrl ? `\n${adminUrl}/app/orders` : ""].join("\n"),
   }
 }
+
+/**
+ * Herinnering aan een niet afgeronde bestelling. Alleen voor mensen die er in de checkout
+ * zelf om vroegen (vinkje, staat standaard uit); één keer per winkelmand. Rustig, zonder
+ * korting of druk: alleen de link terug naar hun winkelmand.
+ */
+export function cartReminder(
+  c: { id: string; email?: string | null; currency_code?: string | null; items?: EmailItem[] | null; total?: unknown; shipping_address?: { first_name?: string | null } | null },
+  b: Brand,
+  recoverUrl: string
+): RenderedEmail {
+  const firstName = c.shipping_address?.first_name?.trim()
+  const cur = c.currency_code || "EUR"
+  const items = (c.items ?? []).map((i) => `${Number(i.quantity ?? 1)}× ${itemName(i)}`)
+  const lines = [
+    firstName ? `Hoi ${firstName},` : "Hoi,",
+    `Je was bijna klaar met je bestelling bij ${b.name}. We hebben je winkelmand voor je bewaard, dus je kunt verder waar je was.`,
+    "Twijfel je nog, of liep er iets mis bij het betalen? Antwoord op deze e-mail, dan helpen we je.",
+  ]
+  const summary = `${items.join(", ")}${c.total != null ? ` · ${eur(c.total, cur)}` : ""}`
+  const why = "Je krijgt deze ene e-mail omdat je bij het afrekenen om een herinnering vroeg. We sturen er geen tweede."
+  return {
+    subject: `Je winkelmand bij ${b.name} staat nog klaar`,
+    html: layout(b, {
+      preheader: "We hebben je winkelmand voor je bewaard.",
+      title: "Je winkelmand staat nog klaar",
+      body: [
+        ...lines.map((l) => p(esc(l))),
+        items.length ? p(`<strong>${esc(summary)}</strong>`) : "",
+        button(b, recoverUrl, "Verder met bestellen"),
+        p(`<span style="font-size:13px;opacity:.7;">${esc(why)}</span>`),
+      ].join("\n"),
+    }),
+    text: [...lines, items.length ? summary : "", `Verder met bestellen: ${recoverUrl}`, why, "", ...companyLines(b)]
+      .filter(Boolean)
+      .join("\n\n"),
+  }
+}

@@ -10,7 +10,12 @@ export const MOLLIE_PROVIDER_IDS = [
   "pp_mollie-card_mollie",
   "pp_mollie-paypal_mollie",
   "pp_mollie-apple-pay_mollie",
+  // in3: eigen provider (src/modules/mollie-in3). Zet in3 ook aan in het Mollie-dashboard.
+  "pp_mollie-in3_mollie",
 ]
+
+/** Methodes die later bij kwamen en ook op bestaande regio's moeten. */
+export const ADDED_LATER = ["pp_mollie-in3_mollie"]
 
 /** Medusa's handmatige "testbetaling": plaatst een bestelling zonder dat er geld binnenkomt. */
 export const TEST_PAYMENT_PROVIDER_ID = "pp_system_default"
@@ -35,6 +40,12 @@ export function wantedRegionProviders(
   let next = current.filter((id) => opts.allowTest || !isTestPaymentProvider(id))
   if (!next.some((id) => id.includes("mollie"))) {
     next = [...next, ...MOLLIE_PROVIDER_IDS.filter((id) => opts.available.includes(id))]
+  }
+  // Later toegevoegde methodes ook op een regio die al Mollie had (eenmalig nodig;
+  // haal je hem in de admin weg, dan zet de volgende start hem terug: zet hem dan
+  // in Mollie zelf uit).
+  for (const id of ADDED_LATER) {
+    if (opts.available.includes(id) && !next.includes(id)) next = [...next, id]
   }
   if (!next.length) {
     // Nooit een regio zonder betaalmethode achterlaten.

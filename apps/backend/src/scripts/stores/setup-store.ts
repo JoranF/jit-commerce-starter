@@ -10,6 +10,7 @@ import {
   updateProductsWorkflow,
   updateProductVariantsWorkflow,
   updateRegionsWorkflow,
+  updateShippingOptionsWorkflow,
   uploadFilesWorkflow,
 } from "@medusajs/medusa/core-flows"
 import { STORE_SETUPS, type StoreSetup } from "./definitions"
@@ -328,7 +329,7 @@ export default async function setupStore({ container, args }: ExecArgs) {
   const fulfillment = container.resolve(Modules.FULFILLMENT)
   const { data: options } = await query.graph({
     entity: "shipping_option",
-    fields: ["id", "name", "type.code", "type.id", "type.description", "rules.id", "rules.attribute", "rules.value"],
+    fields: ["id", "name", "type.code", "type.id", "type.description", "rules.id", "rules.attribute", "rules.value", "prices.id", "prices.amount"],
   })
   for (const option of options) {
     const code = option.type?.code
@@ -340,6 +341,15 @@ export default async function setupStore({ container, args }: ExecArgs) {
       if (description && option.type && option.type.description !== description) {
         await fulfillment.updateShippingOptionTypes(option.type.id, { description })
       }
+    }
+    // Verzendkosten van "standaard" gelijk aan het winkelbeleid (bv. 0 = gratis verzending).
+    const rate = setup.policies.shipping_rate
+    const prices = ((option as any).prices ?? []) as { id: string; amount: number }[]
+    if (code === "standard" && typeof rate === "number" && prices.some((pr) => Number(pr.amount) !== rate)) {
+      await updateShippingOptionsWorkflow(container).run({
+        input: [{ id: option.id, prices: prices.map((pr) => ({ id: pr.id, amount: rate })) }],
+      })
+      log(`verzendkosten "${option.name}" → €${rate}`)
     }
     if (code && setup.hideShippingCodes?.includes(code)) {
       const rule = option.rules?.find((r) => r?.attribute === "enabled_in_store")
