@@ -65,11 +65,11 @@ Een verbetering van conversie 1,2% → 1,8% verlaagt je CPA met een derde, zonde
   Niets verzinnen (zie `docs/autopilot/README.md` regel 4).
 - ⬜ **WebwinkelKeur / Trustpilot** zichtbaar bij de knop en in de checkout. Onafhankelijke cijfers over het effect
   zijn er niet gevonden, maar vertrouwen is de rem bij een onbekende winkel met een product van €129.
-- ⬜ **Achteraf betalen / in3 / Klarna** via Mollie aanzetten (in Mollie-dashboard, en in de admin bij
+- ✅ **in3** staat in de checkout (23 nov). Klarna kan later ook. ~~Achteraf betalen / in3 / Klarna via Mollie aanzetten~~ (in Mollie-dashboard, en in de admin bij
   de regio "Alle betaalmethodes (Mollie)" aanvinken). Voor een aankoop van €129–219 is gespreid betalen
   waarschijnlijk een van de weinige dingen die de drempel echt verlaagt ⚠️ (geen harde cijfers gevonden;
   test met de A/B-pipeline of vergelijk voor/na).
-- ⬜ **Verzendkosten**: €4,95 bij de kassa is een bekende afhaker. Optie: prijs naar €133,95 met "gratis
+- ✅ **Gratis verzending en gratis retour** (23 nov, prijs €134/€224). Was: €4,95 bij de kassa is een bekende afhaker. Optie: prijs naar €133,95 met "gratis
   verzending" (zelfde opbrengst). Dat is een prijsbesluit voor jou, geen autopilot. 
 - ⬜ **Snelheid op mobiel** in de Instagram/Facebook-browser: meet `/nl` en `/nl/a/<angle>` met
   Lighthouse (mobiel) vóór je start; elke seconde laden kost kliks die je al betaald hebt.

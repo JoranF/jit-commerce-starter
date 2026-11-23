@@ -54,7 +54,9 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
           <span>Verzending</span>
           <span data-testid="cart-shipping" data-value={shipping}>
             {!shippingUnknown
-              ? money(shipping)
+              ? shipping === 0
+                ? "Gratis"
+                : money(shipping)
               : shippingEstimate === null
               ? "Bij het afrekenen"
               : shippingEstimate === 0

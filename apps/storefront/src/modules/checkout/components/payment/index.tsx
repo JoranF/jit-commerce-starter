@@ -2,6 +2,7 @@
 import { RadioGroup } from "@headlessui/react"
 import { getPaymentInfo, isStripeLike } from "@lib/constants"
 import { initiatePaymentSession } from "@lib/data/cart"
+import { in3Billing, isIn3 } from "@lib/util/in3"
 import { CheckCircleSolid, CreditCard } from "@medusajs/icons"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import PaymentContainer, {
@@ -90,6 +91,11 @@ const Payment = ({
   }
 
   const handleSubmit = async () => {
+    if (isIn3(selectedPaymentMethod) && !in3Billing(cart).phone) {
+      // in3 stuurt je een sms; zonder telefoonnummer weigert Mollie de betaling.
+      setError("Voor in3 is je telefoonnummer nodig. Vul het in bij je adres (stap hierboven).")
+      return
+    }
     setIsLoading(true)
     try {
       const shouldInputPaymentDetails =
@@ -101,6 +107,7 @@ const Payment = ({
       if (!checkActiveSession) {
         await initiatePaymentSession(cart, {
           provider_id: selectedPaymentMethod,
+          ...(isIn3(selectedPaymentMethod) ? { data: { billing: in3Billing(cart) } } : {}),
         })
       }
 

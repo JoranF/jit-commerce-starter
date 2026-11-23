@@ -31,6 +31,10 @@ export const paymentInfoMap: Record<
   "pp_mollie-card_mollie": { title: "Creditcard", icon: <CreditCard /> },
   "pp_mollie-paypal_mollie": { title: "PayPal", icon: <PayPal /> },
   "pp_mollie-apple-pay_mollie": { title: "Apple Pay", icon: <CreditCard /> },
+  "pp_mollie-in3_mollie": {
+    title: "in3: betaal in 3 termijnen, zonder rente",
+    icon: <CreditCard />,
+  },
   "pp_mollie-giftcard_mollie": { title: "Cadeaukaart", icon: <CreditCard /> },
   "pp_mollie-hosted-checkout_mollie": {
     title: "Alle betaalmethodes (Mollie)",

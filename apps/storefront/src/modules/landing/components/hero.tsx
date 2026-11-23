@@ -88,6 +88,7 @@ export default function Hero({
           // Geen kop-test op advertentiepagina's (/a/<angle>): daar hoort de kop bij de advertentie.
           test={override ? undefined : store.experimentContent?.heroCopy}
           price={price}
+          trust={hero.trust}
         />
       </div>
     </section>

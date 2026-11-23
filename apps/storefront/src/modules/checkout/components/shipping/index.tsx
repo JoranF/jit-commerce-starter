@@ -3,6 +3,10 @@ import { Radio, RadioGroup } from "@headlessui/react"
 import { setShippingMethod } from "@lib/data/cart"
 import { calculatePriceForShippingOption } from "@lib/data/fulfillment"
 import { convertToLocale } from "@lib/util/money"
+
+/** "Gratis" in plaats van "€ 0,00". */
+const shippingPrice = (amount: number, currency_code: string) =>
+  Number(amount) === 0 ? "Gratis" : convertToLocale({ amount, currency_code })
 import { CheckCircleSolid, Loader } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import ErrorMessage from "@modules/checkout/components/error-message"
@@ -284,10 +288,7 @@ const Shipping: React.FC<ShippingProps> = ({
                         </div>
                         <span className="justify-self-end text-ui-fg-base">
                           {option.price_type === "flat" ? (
-                            convertToLocale({
-                              amount: option.amount!,
-                              currency_code: cart?.currency_code,
-                            })
+                            shippingPrice(option.amount!, cart?.currency_code)
                           ) : calculatedPricesMap[option.id] ? (
                             convertToLocale({
                               amount: calculatedPricesMap[option.id],
@@ -361,10 +362,7 @@ const Shipping: React.FC<ShippingProps> = ({
                             </div>
                           </div>
                           <span className="justify-self-end text-ui-fg-base">
-                            {convertToLocale({
-                              amount: option.amount!,
-                              currency_code: cart?.currency_code,
-                            })}
+                            {shippingPrice(option.amount!, cart?.currency_code)}
                           </span>
                         </Radio>
                       )
@@ -402,10 +400,7 @@ const Shipping: React.FC<ShippingProps> = ({
                 </Text>
                 <Text className="txt-medium text-ui-fg-subtle">
                   {cart.shipping_methods!.at(-1)!.name}{" "}
-                  {convertToLocale({
-                    amount: cart.shipping_methods!.at(-1)!.amount!,
-                    currency_code: cart?.currency_code,
-                  })}
+                  {shippingPrice(cart.shipping_methods!.at(-1)!.amount!, cart?.currency_code)}
                 </Text>
               </div>
             )}

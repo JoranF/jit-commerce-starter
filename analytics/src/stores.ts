@@ -39,11 +39,11 @@ export const STORES: StoreAnalytics[] = [
     posthogProjectId: "162315",
     meta: {
       adAccountId: "",
-      // docs/beslissingen/lichtval.md: 1 lamp €129 → max. ≈ €53 advertentiekosten per verkoop.
+      // docs/beslissingen/lichtval.md: 1 lamp €134 incl. gratis verzending → break-even ≈ €55; voorzichtig op €53.
       breakEvenCpa: 53,
       // docs/meta-ads-playbook.md: doel < €50 per verkoop.
       targetCpa: 50,
-      expectedOrderValue: 134,
+      expectedOrderValue: 140,
     },
   },
   {

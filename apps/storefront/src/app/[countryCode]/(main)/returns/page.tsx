@@ -38,7 +38,7 @@ export default async function ReturnsPage(props: {
           <h2>Zo werkt het</h2>
           <p>
             Laat ons binnen de bedenktijd weten dat je de bestelling wilt terugsturen, per
-            e-mail of met het modelformulier hieronder. Je krijgt dan van ons het retouradres.
+            e-mail of met het modelformulier hieronder. Je krijgt dan van ons {current.freeReturns ? "een gratis retourlabel" : "het retouradres"}.
             Stuur het product daarna binnen 14 dagen terug, compleet en goed verpakt.
           </p>
           <p>

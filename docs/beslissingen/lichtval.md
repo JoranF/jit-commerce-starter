@@ -29,12 +29,35 @@ handelsnaam inschrijven.
 
 Details en vragen aan de leverancier: [`../product-research/2026-11-cj-sourcing-lichtval.md`](../product-research/2026-11-cj-sourcing-lichtval.md).
 
+## Gratis verzending, gratis retour, in3 (2026-11-23)
+
+Besluit van de eigenaar, om de kans op een verkoop te vergroten (verzendkosten bij de kassa zijn
+een bekende reden om af te haken; een gratis retour haalt de twijfel bij een onbekende winkel weg).
+
+| Keuze | Waarde | Waar in de code |
+|---|---|---|
+| Verzending | **Gratis** (was €4,95), verzendkosten zitten in de prijs | `definitions.ts` → `policies.shipping_rate: 0`; de setup zet de verzendoptie op €0 |
+| Prijs 1 lamp | **€134** (was €129 + €4,95 verzending) | `definitions.ts`, `revision: 3` |
+| Prijs 2 lampen | **€224** (was €219 + €4,95); "Bespaar €44" | idem |
+| Retour | **Gratis**: klant mailt, krijgt een gratis retourlabel van ons | `policies.free_returns: true`, FAQ, pagina Retourneren |
+| in3 | Betalen in 3 termijnen, zonder rente (Mollie) | `apps/backend/src/modules/mollie-in3` |
+| "Sfeerbeelden"-melding | Weggehaald op verzoek. ⚠️ Vervang de AI-beelden zo snel mogelijk door eigen foto's van het sample: als de lamp er anders uitziet, krijg je retouren (nu gratis) | `lichtval.ts` |
+
+Rekensom 1 lamp (€134): €110,74 ex btw − inkoop €49,30 − betaalkosten ≈ €0,60 (in3 is duurder per
+transactie, zie de Mollie-tarieven) − reserve retour/breuk 5% €5,54 = **≈ €55 break-even CPA**, gelijk
+aan eerst (toen kwam er €4,09 verzendkosten bij). Gratis retour kost extra: een retourlabel (≈ €7 ⚠️)
+per retour, plus de lamp die je mogelijk niet opnieuw kunt verkopen. Bij 5% retouren ≈ €0,35 per
+verkoop extra bovenop de reserve. De ads-autopilot blijft op €53 (voorzichtig).
+
+Nog te regelen voor gratis retour: een manier om retourlabels te maken (bv. Sendcloud of
+PostNL zakelijk) en een retouradres (zakelijk adres, zie de launch-checklist).
+
 ## Prijs en varianten (2026-11-22)
 
 | Variant | SKU | Prijs incl. btw |
 |---|---|---|
-| 1 lamp | `LICHTVAL-WANDLAMP` | **€129** (was €119) |
-| 2 lampen | `LICHTVAL-WANDLAMP-DUO` | **€219** |
+| 1 lamp | `LICHTVAL-WANDLAMP` | **€129** (was €119); sinds 23 nov €134 met gratis verzending |
+| 2 lampen | `LICHTVAL-WANDLAMP-DUO` | **€219**; sinds 23 nov €224 met gratis verzending |
 
 Code: `apps/backend/src/scripts/stores/definitions.ts` (optie "Aantal"). Bij een bestaande
 database voegt de setup de Duo toe. Prijzen en foto's van een bestaand product worden alleen
@@ -68,9 +91,9 @@ als hoofdaanbod. Beide is nu zo ingesteld.
 | Keuze | Waarde | Waar |
 |---|---|---|
 | Tekst op de site | 8–15 werkdagen, met track & trace | `definitions.ts` → `policies`, `standardShipping` |
-| Verzendkosten klant | €4,95 | idem (`shipping_rate`) |
+| Verzendkosten klant | Gratis (sinds 23 nov; was €4,95) | idem (`shipping_rate`) |
 | Express | Verborgen (kan niet vanuit China) | `hideShippingCodes` |
-| Retour | 14 dagen bedenktijd, retourkosten voor de klant | `policies` |
+| Retour | 14 dagen bedenktijd, gratis retour (sinds 23 nov; was voor de klant) | `policies` |
 
 CJ's 7–15 dagen zijn waarschijnlijk kalenderdagen en passen dan binnen 8–15 werkdagen.
 Na de sample controleren; duurt het langer, dan `transit_days_max` verhogen.
