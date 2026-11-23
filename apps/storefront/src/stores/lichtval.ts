@@ -169,7 +169,7 @@ export const lichtval: StoreConfig = {
       },
       {
         q: "Beweegt het licht?",
-        a: "Nee, het patroon staat stil, net als de schaduw van een raam. Het is een zachte, vaste sluier van licht op je muur.",
+        a: "Nee. Het lijkt op licht dat door water valt, maar het patroon staat stil. Je krijgt een rustige, vaste gloed op je muur, zonder flikkeren of bewegen.",
       },
       {
         q: "Kan ik er twee bestellen?",
