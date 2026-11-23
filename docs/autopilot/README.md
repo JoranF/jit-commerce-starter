@@ -110,8 +110,7 @@ reden voor geven (zet de reden in het logboek).
 4. **pdp-cta-text** (staat klaar): "Bestel de lamp" in plaats van "In winkelmand".
 5. Idee, inhoud: hero-kop rond de slaapkamer ("Zacht licht naast je bed.") als die
    invalshoek in de advertenties het beste converteert (zie `ad_angle` in het weekrapport).
-6. Idee, **code nodig**: gratis verzending (verzendkosten in de prijs) versus €4,95 erbij.
-   Grootste verwachte effect op conversie, maar raakt de rekensom; eerst advies aan de eigenaar.
+6. ~~Idee: gratis verzending~~ Gedaan door de eigenaar (23 nov): gratis verzending en retour, €134/€224.
 7. Idee, **code nodig**: video-sectie ("Zie het licht aangaan") zodra er eigen beelden van het
    sample zijn (`store.video` bestaat al; alleen nog het bestand).
 
