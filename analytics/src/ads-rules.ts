@@ -146,3 +146,85 @@ export function decideAdsets(
   }
   return out
 }
+
+/**
+ * Testfase van een nieuw product (hele account, niet per advertentie). Uit het testplan:
+ *  - Stap A, na `stepASpend` (€150): STOPPEN als de CPC > `maxCpc` (€1,20) of als er nog
+ *    niemand iets in de winkelmand heeft gelegd. Dan ligt het aan de advertentie of het product,
+ *    niet aan het budget.
+ *  - Stap B, na `stepBSpend` (€300): DOORGAAN als de kosten per verkoop ≤ `continueCpa` (€55);
+ *    STOPPEN als die > `stopCpa` (€70) zijn én minder dan `minAtcRate` (3%) van de klikken in
+ *    de winkelmand eindigt (of er geen verkoop is). Daartussen: TWIJFEL, nieuwe creatives proberen.
+ * Puur advies: het script pauzeert hierop niets, het zet het oordeel bovenaan het rapport.
+ */
+export type TestPlan = {
+  stepASpend: number
+  maxCpc: number
+  stepBSpend: number
+  continueCpa: number
+  stopCpa: number
+  /** Fractie, 0.03 = 3% van de linkklikken legt iets in de winkelmand. */
+  minAtcRate: number
+}
+
+export const DEFAULT_TEST_PLAN: TestPlan = {
+  stepASpend: 150,
+  maxCpc: 1.2,
+  stepBSpend: 300,
+  continueCpa: 55,
+  stopCpa: 70,
+  minAtcRate: 0.03,
+}
+
+export type TestVerdict = {
+  phase: "voor stap A" | "stap A" | "stap B"
+  verdict: "loopt" | "stoppen" | "doorgaan" | "twijfel"
+  reason: string
+  spend: number
+  cpc: number | null
+  atcRate: number | null
+  cpa: number | null
+}
+
+export function testPhaseVerdict(ads: AdStats[], plan: TestPlan = DEFAULT_TEST_PLAN): TestVerdict {
+  const sum = (f: (a: AdStats) => number) => ads.reduce((n, a) => n + f(a), 0)
+  const spend = sum((a) => a.spend)
+  const clicks = sum((a) => a.linkClicks ?? 0)
+  const atc = sum((a) => a.addToCarts ?? 0)
+  const orders = sum((a) => a.orders)
+  const cpc = clicks ? spend / clicks : null
+  const atcRate = clicks ? atc / clicks : null
+  const cpaNow = orders ? spend / orders : null
+  const pct = (n: number) => `${(n * 100).toFixed(1).replace(".", ",")}%`
+  const base = { spend, cpc, atcRate, cpa: cpaNow }
+
+  if (spend < plan.stepASpend) {
+    return { ...base, phase: "voor stap A", verdict: "loopt", reason: `${eur(spend)} van ${eur(plan.stepASpend)} uitgegeven; nog te vroeg voor een oordeel` }
+  }
+  if (spend < plan.stepBSpend) {
+    if (cpc === null || cpc > plan.maxCpc) {
+      return { ...base, phase: "stap A", verdict: "stoppen", reason: cpc === null ? `${eur(spend)} uitgegeven zonder linkklikken` : `CPC ${eur(cpc)} is hoger dan ${eur(plan.maxCpc)} na ${eur(spend)}` }
+    }
+    if (atc === 0 && orders === 0) {
+      return { ...base, phase: "stap A", verdict: "stoppen", reason: `${eur(spend)} uitgegeven en nog niemand heeft iets in de winkelmand gelegd` }
+    }
+    return { ...base, phase: "stap A", verdict: "loopt", reason: `CPC ${eur(cpc)} en ${atc} keer in winkelmand: door naar ${eur(plan.stepBSpend)}` }
+  }
+  if (cpaNow !== null && cpaNow <= plan.continueCpa) {
+    return { ...base, phase: "stap B", verdict: "doorgaan", reason: `kosten per verkoop ${eur(cpaNow)} ≤ ${eur(plan.continueCpa)} na ${eur(spend)}` }
+  }
+  if ((cpaNow === null || cpaNow > plan.stopCpa) && (atcRate === null || atcRate < plan.minAtcRate)) {
+    return {
+      ...base,
+      phase: "stap B",
+      verdict: "stoppen",
+      reason: `${cpaNow === null ? "geen verkoop" : `kosten per verkoop ${eur(cpaNow)}`} en ${atcRate === null ? "geen klikken" : `${pct(atcRate)} in winkelmand`} na ${eur(spend)}`,
+    }
+  }
+  return {
+    ...base,
+    phase: "stap B",
+    verdict: "twijfel",
+    reason: `${cpaNow === null ? "nog geen verkoop" : `kosten per verkoop ${eur(cpaNow)}`}, ${atcRate === null ? "geen klikken" : `${pct(atcRate)} in winkelmand`}: probeer nieuwe creatives voor je meer uitgeeft`,
+  }
+}
