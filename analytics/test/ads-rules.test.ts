@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import { decideAds, decideAdsets, type AdStats } from "../src/ads-rules"
+import { DEFAULT_TEST_PLAN, decideAds, decideAdsets, testPhaseVerdict, type AdStats } from "../src/ads-rules"
 
 const rules = { breakEvenCpa: 50, maxDailyBudget: 40, scaleStep: 0.2, now: new Date("2026-11-22T12:00:00Z") }
 const ad = (p: Partial<AdStats>): AdStats => ({
@@ -62,4 +62,26 @@ test("CTR-regel wacht op genoeg vertoningen en uitgaven", () => {
     rules
   )
   assert.ok(out.every((d) => d.action === "keep"))
+})
+
+test("testplan: te vroeg voor €150, stoppen bij dure klikken of geen winkelmand in stap A", () => {
+  assert.equal(testPhaseVerdict([ad({ spend: 100, linkClicks: 50 })]).verdict, "loopt")
+  const duur = testPhaseVerdict([ad({ spend: 160, linkClicks: 100, addToCarts: 5 })])
+  assert.equal(duur.phase, "stap A")
+  assert.equal(duur.verdict, "stoppen")
+  assert.match(duur.reason, /CPC/)
+  const leeg = testPhaseVerdict([ad({ spend: 160, linkClicks: 200, addToCarts: 0 })])
+  assert.equal(leeg.verdict, "stoppen")
+  assert.match(leeg.reason, /winkelmand/)
+  assert.equal(testPhaseVerdict([ad({ spend: 160, linkClicks: 200, addToCarts: 4 })]).verdict, "loopt")
+})
+
+test("testplan stap B: doorgaan bij ≤ €55 per verkoop, stoppen bij > €70 en < 3% winkelmand", () => {
+  assert.equal(testPhaseVerdict([ad({ spend: 300, linkClicks: 400, addToCarts: 20, orders: 6 })]).verdict, "doorgaan")
+  assert.equal(testPhaseVerdict([ad({ spend: 320, linkClicks: 400, addToCarts: 8, orders: 2 })]).verdict, "stoppen")
+  assert.equal(testPhaseVerdict([ad({ spend: 320, linkClicks: 400, addToCarts: 8, orders: 0 })]).verdict, "stoppen")
+  // Veel winkelmandjes maar nog te duur: twijfel, niet meteen stoppen.
+  assert.equal(testPhaseVerdict([ad({ spend: 320, linkClicks: 400, addToCarts: 30, orders: 4 })]).verdict, "twijfel")
+  // Afwijkend plan per winkel.
+  assert.equal(testPhaseVerdict([ad({ spend: 320, linkClicks: 400, addToCarts: 30, orders: 4 })], { ...DEFAULT_TEST_PLAN, continueCpa: 80 }).verdict, "doorgaan")
 })

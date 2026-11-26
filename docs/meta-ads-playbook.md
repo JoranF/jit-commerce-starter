@@ -142,7 +142,8 @@ Ieder verbeterpunt aan de kostenkant rekent mee als extra ruimte voor advertenti
 | **Nieuw:** pauzeren op creative-signaal: CTR < 0,6% na ≥ 3000 vertoningen en ≥ 0,6× break-even uitgegeven | ✅ |
 | Rapport met CTR, winkelmandjes, doel-CPA (€50) naast break-even (€53) | ✅ nieuw |
 | Opschalen +20% per 72 uur bij CPA ≤ 0,7× break-even | ✅ |
-| Meta-account koppelen (`adAccountId` in `analytics/src/stores.ts`, `META_ADS_TOKEN`) | ⬜ jij |
+| Meta-account in `analytics/src/stores.ts` (`act_2646404642529844`) | ✅ |
+| `META_ADS_TOKEN` als GitHub-secret (zonder token slaat de dagelijkse check zich over) | ⬜ jij |
 | Pixel + CAPI-sleutels, domeinverificatie | ⬜ jij |
 | Video's van het echte licht (sample) | ⬜ jij |
 
@@ -158,7 +159,12 @@ Ieder verbeterpunt aan de kostenkant rekent mee als extra ruimte voor advertenti
 | CPM > €15 | doelgroep te smal of Q4-veiling | breder, wachten tot januari |
 | Frequentie > 2,5 binnen 7 dagen | creatives uitgeput | nieuwe concepten |
 
-**Stoppen:** na €300 uitgegeven met 0 aankopen én < 3% winkelmand → product stoppen (bestaande regel uit de hercheck).
+**Testplan (het advertentierapport zet dit oordeel bovenaan, `testPhaseVerdict` in `analytics/src/ads-rules.ts`):**
+- **Stap A, na €150:** stoppen als de CPC > €1,20 is of nog niemand iets in de winkelmand legde.
+- **Stap B, na €300:** doorgaan als de kosten per verkoop ≤ €55 zijn; stoppen bij > €70 én < 3% van de klikken
+  in de winkelmand (of geen verkoop). Daartussen: nieuwe creatives proberen voor je meer uitgeeft.
+- Bedragen per winkel aan te passen met `meta.testPlan` in `analytics/src/stores.ts`. Puur advies: het script pauzeert hier niets op.
+
 **Door:** CPA < €50 over ≥ 10 aankopen → +20% per 3 dagen.
 
 ## 5. Eerlijke kanttekeningen

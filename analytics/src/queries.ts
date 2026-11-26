@@ -1,6 +1,16 @@
 import { CHECKOUT_STEPS, EVENTS } from "./config"
 import { PostHogApi, sqlString } from "./posthog"
 import type { VariantResult } from "./stats"
+import { currentStore } from "./stores"
+
+/**
+ * Alleen events van de gekozen winkel (property `store`, gezet door storefront en backend).
+ * Nodig omdat een PostHog-project ook verkeer van andere apps of winkels kan bevatten.
+ */
+export function inStore(): string {
+  const s = currentStore()
+  return s ? `properties.store = ${sqlString(s.id)}` : "1 = 1"
+}
 
 export type Kpis = {
   visitors: number
@@ -27,7 +37,7 @@ export async function getKpis(ph: PostHogApi, daysAgoFrom: number, daysAgoTo: nu
        countIf(event = ${sqlString(EVENTS.orderCompleted)}) AS orders,
        sumIf(toFloat(properties.revenue), event = ${sqlString(EVENTS.orderCompleted)}) AS revenue
      FROM events
-     WHERE ${window}`,
+     WHERE ${inStore()} AND ${window}`,
     "jit: kpis"
   )
   const visitors = n(row?.visitors)
@@ -56,7 +66,7 @@ export async function getTopProducts(ph: PostHogApi, days: number, limit = 10): 
                 countIf(event = ${sqlString(EVENTS.productViewed)}) AS views,
                 countIf(event = ${sqlString(EVENTS.productAddedToCart)}) AS carts
          FROM events
-         WHERE event IN (${sqlString(EVENTS.productViewed)}, ${sqlString(EVENTS.productAddedToCart)})
+         WHERE ${inStore()} AND event IN (${sqlString(EVENTS.productViewed)}, ${sqlString(EVENTS.productAddedToCart)})
            AND timestamp >= now() - INTERVAL ${days} DAY
          GROUP BY name
        ),
@@ -66,7 +76,7 @@ export async function getTopProducts(ph: PostHogApi, days: number, limit = 10): 
                 sum(JSONExtractFloat(p, 'quantity') * JSONExtractFloat(p, 'price')) AS revenue
          FROM events
          ARRAY JOIN JSONExtractArrayRaw(toString(properties.products)) AS p
-         WHERE event = ${sqlString(EVENTS.orderCompleted)}
+         WHERE ${inStore()} AND event = ${sqlString(EVENTS.orderCompleted)}
            AND timestamp >= now() - INTERVAL ${days} DAY
          GROUP BY name
        )
@@ -107,7 +117,7 @@ export async function getExperimentResults(
                 argMin(toString(properties.$feature_flag_response), timestamp) AS variant,
                 min(timestamp) AS first_seen
          FROM events
-         WHERE event = '$feature_flag_called'
+         WHERE ${inStore()} AND event = '$feature_flag_called'
            AND properties.$feature_flag = ${sqlString(flag)}
            AND coalesce(toString(properties.$cookieless_mode), '') != 'true'
            AND timestamp >= toDateTime(${sqlString(sinceIso)})
@@ -116,7 +126,7 @@ export async function getExperimentResults(
        orders AS (
          SELECT distinct_id, timestamp, toFloat(properties.revenue) AS revenue
          FROM events
-         WHERE event = ${sqlString(EVENTS.orderCompleted)}
+         WHERE ${inStore()} AND event = ${sqlString(EVENTS.orderCompleted)}
            AND timestamp >= toDateTime(${sqlString(sinceIso)})
        ),
        per_visitor AS (
@@ -169,7 +179,7 @@ export async function getCheckoutSteps(ph: PostHogApi, days: number): Promise<Ch
        ).join(",\n       ")},
        uniqIf(distinct_id, event IN (${sqlString(EVENTS.paymentRedirected)}, ${sqlString(EVENTS.orderCompleted)})) AS submitted
      FROM events
-     WHERE timestamp >= now() - INTERVAL ${days} DAY`,
+     WHERE ${inStore()} AND timestamp >= now() - INTERVAL ${days} DAY`,
     "jit: checkout steps"
   )
   return CHECKOUT_STEPS.map((s) => ({
@@ -187,7 +197,7 @@ export async function getCheckoutErrors(ph: PostHogApi, days: number, limit = 5)
   const rows = await ph.hogql(
     `SELECT toString(properties.step) AS step, toString(properties.error) AS error, uniq(distinct_id) AS visitors
      FROM events
-     WHERE event = ${sqlString(EVENTS.checkoutError)}
+     WHERE ${inStore()} AND event = ${sqlString(EVENTS.checkoutError)}
        AND timestamp >= now() - INTERVAL ${days} DAY
      GROUP BY step, error
      ORDER BY visitors DESC
@@ -206,7 +216,7 @@ export async function getAdRevenue(ph: PostHogApi, days: number): Promise<AdReve
             count() AS orders,
             sum(toFloat(properties.revenue)) AS revenue
      FROM events
-     WHERE event = ${sqlString(EVENTS.orderCompleted)}
+     WHERE ${inStore()} AND event = ${sqlString(EVENTS.orderCompleted)}
        AND timestamp >= now() - INTERVAL ${days} DAY
        AND toString(properties.ad_ad) != ''
      GROUP BY ad_id`,

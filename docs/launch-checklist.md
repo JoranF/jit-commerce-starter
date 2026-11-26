@@ -76,9 +76,14 @@ zegt dat ook eerlijk vanaf half november.
   checkout in één kolom met e-mail eerst, geruststelling bij het betalen, alles in het Nederlands.
 - ✅ Bug: kiezen van "2 lampen" sprong naar boven op de pagina (Duo-verkoop liep daardoor weg).
 - ✅ "Volg je bestelling"-pagina met stappen in gewone taal (link in alle mails).
-- ⬜ PostHog: keys op storefront (build arg) en backend, cookieless mode aan, session replay aan,
-  `cd analytics && npm run setup -- --store lichtval`.
-- ⬜ Meta: pixel-ID (build arg `NEXT_PUBLIC_META_PIXEL_ID`), `META_PIXEL_ID` + `META_CAPI_TOKEN`
+- ✅ PostHog (26 nov): project 162315 in EUR, dashboard "Lichtval – advertentietest" (alleen `store = lichtval`,
+  zonder testverkeer), draft-experimenten voor alle vier de A/B-keys. Let op: de Billie-app stuurt ook naar dit
+  project; filter altijd op `store`. De analytics-scripts doen dat nu zelf.
+- ⬜ PostHog: keys op storefront (build arg) en backend, cookieless mode aan, session replay aan.
+- ⬜ Zelf getest vanaf een nieuw apparaat? Zet die persoon in PostHog op "intern/test" (person property
+  `$internal_or_test_user = true`), anders tellen je testbestellingen mee.
+- ⬜ Meta: **pixel aanmaken** in advertentieaccount `act_2646404642529844` (heeft er nog geen, check 26 nov),
+  pixel-ID (build arg `NEXT_PUBLIC_META_PIXEL_ID`), `META_PIXEL_ID` + `META_CAPI_TOKEN`
   op de backend, domein verifiëren in Business Manager, testen met `META_TEST_EVENT_CODE`.
   ✅ Klikte iemand op een advertentie en accepteerde hij pas later cookies, dan krijgt Meta de
   klik nu toch mee (fbc uit de bewaarde fbclid): betere toeschrijving.
@@ -88,7 +93,7 @@ zegt dat ook eerlijk vanaf half november.
 - ⬜ Campagne: doel Verkoop, optimaliseren op Purchase, NL + BE, breed, één set met 6–8 verschillende
   advertenties, **€50–60 per dag** (met €25–30 haal je maar ≈ 4 aankopen per week: te weinig om te leren),
   10 dagen. Volledig draaiboek, doel < €50 per verkoop en beslisboom: [meta-ads-playbook.md](./meta-ads-playbook.md).
-  Stopregels staan in de hercheck (en de ads-autopilot past ze toe).
+  Stopregels (stap A na €150, stap B na €300) staan bovenaan het dagelijkse advertentierapport.
 - ⬜ Events Manager → Test events: elk event (ViewContent, AddToCart, InitiateCheckout, AddPaymentInfo,
   Purchase) komt één keer binnen (pixel + server ontdubbeld); EMQ ≥ 6.
 - ✅ in3 staat in de checkout (eigen provider `pp_mollie-in3_mollie`); ✅ in3 aangezet in Mollie. ⬜ Testbetaling met in3

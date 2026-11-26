@@ -1,3 +1,5 @@
+import type { TestPlan } from "./ads-rules"
+
 /**
  * Winkels voor de automatisering. Elke winkel heeft een eigen PostHog-project
  * (eigen data, eigen feature flags, zelfde event-namen en experiment-keys) en
@@ -29,6 +31,8 @@ export type StoreAnalytics = {
     targetCpa?: number
     /** Gemiddelde omzet per bestelling incl. btw als er nog geen data is (EUR). */
     expectedOrderValue?: number
+    /** Afwijkingen op het testplan (stap A/B) uit ads-rules.ts DEFAULT_TEST_PLAN. */
+    testPlan?: Partial<TestPlan>
   }
 }
 
@@ -38,7 +42,7 @@ export const STORES: StoreAnalytics[] = [
     name: "Lichtval",
     posthogProjectId: "162315",
     meta: {
-      adAccountId: "",
+      adAccountId: "act_2646404642529844",
       // docs/beslissingen/lichtval.md: 1 lamp €134 incl. gratis verzending → break-even ≈ €55; voorzichtig op €53.
       breakEvenCpa: 53,
       // docs/meta-ads-playbook.md: doel < €50 per verkoop.

@@ -11,7 +11,7 @@
  * Instellingen per winkel in src/stores.ts (meta.adAccountId, meta.breakEvenCpa).
  * ADS_DAYS (standaard 7), ADS_MAX_DAILY_BUDGET (EUR, standaard 50), ADS_SCALE_STEP (0.2).
  */
-import { cpa, decideAds, decideAdsets, linkCtr, type AdStats } from "./ads-rules"
+import { cpa, decideAds, decideAdsets, linkCtr, testPhaseVerdict, DEFAULT_TEST_PLAN, type AdStats } from "./ads-rules"
 import { MetaAds } from "./meta"
 import { eur, int, publish, table } from "./notify"
 import { PostHogApi, envFromProcess } from "./posthog"
@@ -23,6 +23,11 @@ async function main() {
   if (!store) throw new Error("Kies een winkel: npm run ads -- --store <id>")
   if (!store.meta?.adAccountId) {
     console.log(`${store.name}: geen Meta-advertentieaccount in src/stores.ts, niets te doen.`)
+    return
+  }
+  if (!process.env.META_ADS_TOKEN) {
+    // Account staat al in stores.ts, maar de token (GitHub-secret META_ADS_TOKEN) nog niet: niet falen.
+    console.log(`${store.name}: META_ADS_TOKEN ontbreekt, advertentiecheck overgeslagen.`)
     return
   }
   const days = Number(process.env.ADS_DAYS || 7)
@@ -85,8 +90,16 @@ async function main() {
   const orders = ads.reduce((n, a) => n + a.orders, 0)
   const rev = ads.reduce((n, a) => n + a.revenue, 0)
 
+  // Testplan (stap A/B) over de hele looptijd van de test: ADS_TEST_DAYS (standaard 30).
+  const testDays = Number(process.env.ADS_TEST_DAYS || 30)
+  const testAds = testDays === days ? ads : await adsForDays(meta, ph, account, testDays)
+  const verdict = testPhaseVerdict(testAds, { ...DEFAULT_TEST_PLAN, ...store.meta.testPlan })
+  const icon = { loopt: "⏳", stoppen: "🛑", doorgaan: "✅", twijfel: "🤔" }[verdict.verdict]
+
   const md = [
     `## 📣 Advertenties — laatste ${days} dagen (${new Date().toLocaleDateString("nl-NL")})`,
+    "",
+    `**Testplan (${verdict.phase}, laatste ${testDays} dagen): ${icon} ${verdict.verdict}**: ${verdict.reason}.`,
     "",
     table(
       ["Uitgaven", "Bestellingen", "Omzet (incl. btw)", "CPA", "Doel-CPA", "Break-even CPA", "ROAS"],
@@ -130,9 +143,30 @@ async function main() {
 
   console.log(md)
   const actionable = adDecisions.some((d) => d.action === "pause") || setDecisions.length > 0
-  if (actionable || done.length || process.argv.includes("--always-publish")) {
+  if (actionable || done.length || verdict.verdict === "stoppen" || verdict.verdict === "doorgaan" || process.argv.includes("--always-publish")) {
     await publish(`ads-${new Date().toISOString().slice(0, 10)}`, md)
   }
+}
+
+/** Zelfde koppeling als hierboven, maar over een andere periode (voor het testplan). */
+async function adsForDays(meta: MetaAds, ph: PostHogApi, account: string, days: number): Promise<AdStats[]> {
+  const [insights, revenue] = await Promise.all([meta.adInsights(account, days), getAdRevenue(ph, days)])
+  const byAd = new Map(revenue.map((r) => [r.adId, r]))
+  return insights.map((i) => ({
+    adId: i.adId,
+    adName: i.adName,
+    adsetId: i.adsetId,
+    adsetName: i.adsetName,
+    campaignName: i.campaignName,
+    status: "UNKNOWN",
+    spend: i.spend,
+    orders: byAd.get(i.adId)?.orders ?? 0,
+    revenue: byAd.get(i.adId)?.revenue ?? 0,
+    metaPurchases: i.purchases,
+    impressions: i.impressions,
+    linkClicks: i.linkClicks,
+    addToCarts: i.addToCarts,
+  }))
 }
 
 main().catch((e) => {
