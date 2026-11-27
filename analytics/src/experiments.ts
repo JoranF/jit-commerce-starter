@@ -9,7 +9,7 @@
  * automatisch gestart, zodat er altijd een test loopt zonder dat je iets hoeft te doen:
  * hooguit MAX_CONCURRENT_EXPERIMENTS tegelijk (standaard 1), in de volgorde van config.ts.
  */
-import { evaluateAll, launchExperiment, shipWinner } from "./evaluate"
+import { concludeKeepControl, evaluateAll, launchExperiment, shipWinner } from "./evaluate"
 import { publish } from "./notify"
 import { renderExperiment } from "./render"
 import { PostHogApi, envFromProcess } from "./posthog"
@@ -20,9 +20,23 @@ async function main() {
   const autoShip = process.env.AUTO_SHIP_WINNERS === "true"
   const autoLaunch = process.env.AUTO_LAUNCH_EXPERIMENTS === "true"
 
+  // Eerst afronden (winnaar uitrollen, of control houden), dan pas de wachtrij aanvullen:
+  // zo start de volgende test op dezelfde dag dat de vorige klaar is.
+  const shipped: string[] = []
+  const concluded: string[] = []
+  for (const e of evaluations) {
+    if (!(autoShip && e.config.autoShip && e.status === "running")) continue
+    if (e.decision.status === "winner" && (await shipWinner(ph, e))) {
+      shipped.push(`${e.config.key} → ${e.decision.variant}`)
+      e.status = "stopped"
+    } else if (e.decision.status === "keep-control" && (await concludeKeepControl(ph, e))) {
+      concluded.push(e.config.key)
+      e.status = "stopped"
+    }
+  }
+
   // Wachtrij: met weinig verkeer liefst één test tegelijk (MAX_CONCURRENT_EXPERIMENTS,
-  // standaard 1). Volgorde in config.EXPERIMENTS = prioriteit. Is een test klaar
-  // (winnaar uitgerold of gestopt), dan start de volgende vanzelf.
+  // standaard 1). Volgorde in config.EXPERIMENTS = prioriteit.
   const maxConcurrent = Math.max(1, Number(process.env.MAX_CONCURRENT_EXPERIMENTS || 1))
   let running = evaluations.filter((e) => e.status === "running").length
   const launched: string[] = []
@@ -36,18 +50,12 @@ async function main() {
     }
   }
 
-  const shipped: string[] = []
-  for (const e of evaluations) {
-    if (autoShip && e.config.autoShip && e.status === "running" && e.decision.status === "winner") {
-      if (await shipWinner(ph, e)) shipped.push(`${e.config.key} → ${e.decision.variant}`)
-    }
-  }
-
   const md = [
     `## 🧪 A/B-tests — ${new Date().toLocaleDateString("nl-NL")}`,
     "",
     ...evaluations.map(renderExperiment).flatMap((s) => [s, ""]),
     launched.length ? `**Automatisch gestart:** ${launched.join(", ")}\n` : "",
+    concluded.length ? `**Gestopt, control blijft:** ${concluded.join(", ")}\n` : "",
     shipped.length
       ? `**Automatisch uitgerold:** ${shipped.join(", ")}`
       : autoShip
@@ -57,7 +65,7 @@ async function main() {
 
   console.log(md)
   // Alleen naar de webhook als er iets te melden is (geen dagelijkse spam).
-  const noteworthy = shipped.length > 0 || launched.length > 0 || evaluations.some((e) => e.decision.status !== "running")
+  const noteworthy = shipped.length > 0 || concluded.length > 0 || launched.length > 0 || evaluations.some((e) => e.decision.status !== "running")
   if (noteworthy) await publish(`experiments-${new Date().toISOString().slice(0, 10)}`, md)
 }
 

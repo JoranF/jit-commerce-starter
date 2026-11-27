@@ -25,7 +25,15 @@ onder), het dagelijkse lijstje met probleembestellingen afhandelen, en klantmail
    weinig verkeer maken meer tests elkaar onbetrouwbaar.
 2. **Niet tussentijds stoppen** omdat het er goed of slecht uitziet. De beslisregels in
    `analytics/src/config.ts` (≥ 14 dagen, ≥ 500 bezoekers per variant, ≥ 95% zekerheid)
-   bepalen het. Die regels nooit versoepelen.
+   bepalen het. Die regels nooit versoepelen. Geen winnaar na **28 dagen** (`maxDays`)? Dan
+   stopt de dagelijkse job de test zelf met control ("geen verschil gevonden") en start de
+   volgende. Met ±80 bezoekers per dag is dat voor kleine effecten de normale uitkomst.
+   **Metric kiezen naar verkeer.** Bij ±1% conversie heb je in 4 weken per variant maar ±10
+   bestellingen: alleen een enorm verschil is dan te zien. Tests bovenin de pagina (kop,
+   knoptekst) beslissen daarom op `metric: "add_to_cart"` (±5× zoveel gebeurtenissen), met
+   bestellingen als rem: wint een variant op winkelmand maar loopt hij bij de bestellingen
+   duidelijk achter, dan wordt hij niet uitgerold. Tests die de orderwaarde raken:
+   `revenue_per_visitor`. Checkout-tests: `conversion`.
 3. **Geen prijzen wijzigen of testen.** Prijstests per bezoeker zijn juridisch lastig
    (gepersonaliseerde prijzen moet je melden) en raken de rekensom in
    `docs/beslissingen/lichtval.md`. Een prijswijziging is een besluit van de eigenaar.

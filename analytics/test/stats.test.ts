@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import { compareVariants, decide, normalCdf, twoProportionPValue } from "../src/stats"
+import { compareVariants, decide, decideExperiment, normalCdf, twoProportionPValue } from "../src/stats"
 
 test("normalCdf klopt op bekende punten", () => {
   assert.ok(Math.abs(normalCdf(0) - 0.5) < 1e-6)
@@ -58,4 +58,45 @@ test("revenue_per_visitor: minder bestellingen maar hogere orderwaarde kan winne
   const rev = compareVariants(results, "control", 20_000, 42, "revenue_per_visitor").find((c) => c.variant === "test")!
   assert.ok(conv.probabilityBetterThanControl < 0.5)
   assert.ok(rev.probabilityBetterThanControl > 0.8)
+})
+
+test("maxDays: geen winnaar na 28 dagen → control houden (inconclusive), wachtrij loopt door", () => {
+  const results = [
+    { variant: "control", exposed: 800, converted: 8, revenue: 0 },
+    { variant: "test", exposed: 800, converted: 9, revenue: 0 },
+  ]
+  const opts = { minExposuresPerVariant: 500, minDays: 14, winProbability: 0.95, maxDays: 28 }
+  assert.equal(decide(results, compareVariants(results), { ...opts, daysRunning: 20 }).status, "running")
+  const d = decide(results, compareVariants(results), { ...opts, daysRunning: 28 })
+  assert.equal(d.status, "keep-control")
+  assert.equal(d.status === "keep-control" && d.conclusion, "inconclusive")
+})
+
+test("maxDays: te weinig verkeer na 28 dagen → ook stoppen", () => {
+  const results = [
+    { variant: "control", exposed: 200, converted: 2, revenue: 0 },
+    { variant: "test", exposed: 210, converted: 3, revenue: 0 },
+  ]
+  const d = decide(results, compareVariants(results), {
+    minExposuresPerVariant: 500, minDays: 14, winProbability: 0.95, maxDays: 28, daysRunning: 30,
+  })
+  assert.equal(d.status, "keep-control")
+  assert.match(d.reason, /te weinig verkeer/)
+})
+
+test("add_to_cart: beslist op winkelmand, bestellingen als rem", () => {
+  const base = { minExposuresPerVariant: 500, minDays: 14, winProbability: 0.95, maxDays: 28, metric: "add_to_cart" as const }
+  // Duidelijk meer winkelmanden, bestellingen gelijk → winnaar
+  const win = decideExperiment([
+    { variant: "control", exposed: 1000, converted: 10, revenue: 0, added: 50 },
+    { variant: "test", exposed: 1000, converted: 11, revenue: 0, added: 85 },
+  ], { ...base, daysRunning: 15 })
+  assert.equal(win.decision.status, "winner")
+  // Meer winkelmanden, maar duidelijk minder bestellingen → niet uitrollen
+  const rem = decideExperiment([
+    { variant: "control", exposed: 1000, converted: 20, revenue: 0, added: 50 },
+    { variant: "test", exposed: 1000, converted: 6, revenue: 0, added: 85 },
+  ], { ...base, daysRunning: 15 })
+  assert.equal(rem.decision.status, "running")
+  assert.match(rem.decision.reason, /bestellingen lopen achter/)
 })

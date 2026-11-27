@@ -2,7 +2,8 @@ name: Advertenties – dagelijkse check
 
 # Per winkel met een Meta-advertentieaccount (analytics/src/stores.ts → meta).
 # Standaard alleen advies in het rapport; met variable ADS_AUTOPILOT=true worden
-# verliezers echt gepauzeerd en winnende sets opgeschaald (zie analytics/src/ads-rules.ts).
+# verliezers echt gepauzeerd en winnende sets opgeschaald (zie analytics/src/ads-rules.ts),
+# en bij een "stoppen" uit het testplan (stap A €150 / stap B €300) gaat alles op pauze.
 
 on:
   schedule:
@@ -57,3 +58,7 @@ jobs:
           REPORT_WEBHOOK_URL: ${{ secrets.REPORT_WEBHOOK_URL }}
           ADS_AUTOPILOT: ${{ vars.ADS_AUTOPILOT || 'false' }}
           ADS_MAX_DAILY_BUDGET: ${{ vars.ADS_MAX_DAILY_BUDGET || '50' }}
+          # Stop-loss (alleen met ADS_AUTOPILOT=true): alle sets op pauze als het testplan "stoppen" zegt.
+          ADS_STOP_LOSS: ${{ vars.ADS_STOP_LOSS || 'true' }}
+          # true = elke ochtend het rapport naar de webhook, ook als er niets te doen is (handig tijdens de test).
+          ADS_DAILY_REPORT: ${{ vars.ADS_DAILY_REPORT || 'false' }}

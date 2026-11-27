@@ -117,6 +117,8 @@ zegt dat ook eerlijk vanaf half november.
 | Variable | `ANALYTICS_ENABLED=true` | weekrapport + dagelijkse testcheck |
 | Variable | `AUTO_LAUNCH_EXPERIMENTS=true`, `AUTO_SHIP_WINNERS=true` | tests starten en winnaars uitrollen, één tegelijk |
 | Variable | `ADS_ENABLED=true` (2 weken advies), dan `ADS_AUTOPILOT=true` | advertenties |
+| Variable | `ADS_DAILY_REPORT=true` | elke ochtend het advertentierapport naar Discord/Slack, ook zonder acties (tijdens de test) |
+| Variable (standaard aan) | `ADS_STOP_LOSS` | met `ADS_AUTOPILOT=true`: alles op pauze zodra het testplan "stoppen" zegt (stap A €150, stap B €300). Weer starten: `ADS_STOP_LOSS=false` |
 | Variable | `AUTOPILOT_ENABLED=true` | Claude elke dinsdag: volgende test of winnaar inbakken, als PR |
 | Variable (optioneel) | `AUTOPILOT_AUTOMERGE=true` | PR's die alleen testinhoud raken gaan zelf live |
 

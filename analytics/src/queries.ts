@@ -102,6 +102,8 @@ export async function getTopProducts(ph: PostHogApi, days: number, limit = 10): 
  * Blootstelling = eerste `$feature_flag_called` voor de flag (de variant die de
  * bezoeker zag). Conversie = `order_completed` van dezelfde distinct_id ná
  * blootstelling. Werkt omdat storefront en backend dezelfde distinct_id gebruiken.
+ * `added` = bezoeker legde ná blootstelling iets in de winkelmand (aparte join, zodat
+ * bestellingen en winkelmanden elkaar niet vermenigvuldigen).
  * Cookieless bezoekers (nog geen toestemming) hebben in de browser een andere ID
  * dan hun bestelling; die tellen niet mee, anders lijkt hun conversie 0%.
  */
@@ -129,6 +131,12 @@ export async function getExperimentResults(
          WHERE ${inStore()} AND event = ${sqlString(EVENTS.orderCompleted)}
            AND timestamp >= toDateTime(${sqlString(sinceIso)})
        ),
+       carts AS (
+         SELECT distinct_id, timestamp
+         FROM events
+         WHERE ${inStore()} AND event = ${sqlString(EVENTS.productAddedToCart)}
+           AND timestamp >= toDateTime(${sqlString(sinceIso)})
+       ),
        per_visitor AS (
          SELECT e.distinct_id AS distinct_id, e.variant AS variant, e.first_seen AS first_seen,
                 countIf(o.timestamp >= e.first_seen) AS n_orders,
@@ -136,13 +144,22 @@ export async function getExperimentResults(
          FROM exposures e
          LEFT JOIN orders o ON o.distinct_id = e.distinct_id
          GROUP BY e.distinct_id, e.variant, e.first_seen
+       ),
+       with_carts AS (
+         SELECT p.distinct_id AS distinct_id, any(p.variant) AS variant, any(p.first_seen) AS first_seen,
+                any(p.n_orders) AS n_orders, any(p.revenue) AS revenue,
+                if(countIf(c.timestamp >= p.first_seen) > 0, 1, 0) AS added
+         FROM per_visitor p
+         LEFT JOIN carts c ON c.distinct_id = p.distinct_id
+         GROUP BY p.distinct_id
        )
      SELECT variant,
             count() AS exposed,
             countIf(n_orders > 0) AS converted,
             sum(revenue) AS revenue,
+            sum(added) AS added,
             min(first_seen) AS first_exposure
-     FROM per_visitor
+     FROM with_carts
      WHERE variant NOT IN ('', 'false', 'null')
      GROUP BY variant
      ORDER BY variant`,
@@ -158,6 +175,7 @@ export async function getExperimentResults(
       exposed: n(r.exposed),
       converted: n(r.converted),
       revenue: n(r.revenue),
+      added: n(r.added),
     })),
     firstExposure,
   }

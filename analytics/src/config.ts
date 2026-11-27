@@ -54,8 +54,19 @@ export type ExperimentConfig = {
   /** Mag de automatisering de winnaar zelf op 100% zetten? (ook AUTO_SHIP_WINNERS=true nodig) */
   autoShip: boolean
   /** Waarop een winnaar wordt gekozen. Standaard conversie; omzet per bezoeker als de orderwaarde verandert. */
-  metric?: "conversion" | "revenue_per_visitor"
+  /**
+   * "add_to_cart": kans dat een bezoeker iets in de winkelmand legt. Voor tests bovenin de
+   * pagina (kop, knoptekst) als er te weinig bestellingen zijn om op te beslissen: ±5×
+   * zoveel gebeurtenissen. Bestellingen gelden dan als rem: een variant die op winkelmand
+   * wint maar bij de bestellingen duidelijk achterloopt, wordt niet uitgerold.
+   */
+  metric?: "conversion" | "revenue_per_visitor" | "add_to_cart"
+  /** Stop zonder winnaar na zoveel dagen en houd control (standaard DEFAULT_MAX_DAYS). */
+  maxDays?: number
 }
+
+/** Een test zonder winnaar stopt na 4 weken, zodat de volgende in de wachtrij kan starten. */
+export const DEFAULT_MAX_DAYS = 28
 
 /**
  * Volgorde = prioriteit. De dagelijkse check start er hooguit
@@ -91,6 +102,7 @@ export const EXPERIMENTS: ExperimentConfig[] = [
     minDays: 14,
     winProbability: 0.95,
     autoShip: true,
+    metric: "add_to_cart",
   },
   {
     key: "atc-flow",
@@ -120,6 +132,7 @@ export const EXPERIMENTS: ExperimentConfig[] = [
     minDays: 14,
     winProbability: 0.95,
     autoShip: true,
+    metric: "add_to_cart",
   },
 ]
 

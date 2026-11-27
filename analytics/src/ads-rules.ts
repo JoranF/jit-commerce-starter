@@ -186,6 +186,18 @@ export type TestVerdict = {
   cpa: number | null
 }
 
+/**
+ * Stop-loss: zegt het testplan "stoppen", dan gaan alle advertentiesets met een actieve
+ * advertentie op pauze (alleen met ADS_AUTOPILOT=true, uit te zetten met ADS_STOP_LOSS=false).
+ * Zo kost een mislukte test nooit meer dan stap A of stap B, ook als je een paar dagen niet
+ * kijkt. Weer starten = in Ads Manager zelf aanzetten én ADS_STOP_LOSS=false (anders pauzeert
+ * de volgende run ze opnieuw, want het oordeel kijkt 30 dagen terug).
+ */
+export function stopLossAdsets(ads: AdStats[], verdict: Pick<TestVerdict, "verdict">): string[] {
+  if (verdict.verdict !== "stoppen") return []
+  return [...new Set(ads.filter((a) => a.status === "ACTIVE").map((a) => a.adsetId))]
+}
+
 export function testPhaseVerdict(ads: AdStats[], plan: TestPlan = DEFAULT_TEST_PLAN): TestVerdict {
   const sum = (f: (a: AdStats) => number) => ads.reduce((n, a) => n + f(a), 0)
   const spend = sum((a) => a.spend)
