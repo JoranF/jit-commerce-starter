@@ -8,6 +8,7 @@ export function renderExperiment(e: ExperimentEvaluation) {
   const lines = [
     `### ${icon} ${e.config.name} \`${e.config.key}\``,
     `_${e.config.hypothesis}_`,
+    `Beslist op: ${{ conversion: "bestellingen per bezoeker", revenue_per_visitor: "omzet per bezoeker", add_to_cart: "winkelmand per bezoeker (bestellingen als rem)" }[e.config.metric ?? "conversion"]}`,
     "",
     `Status: **${e.status}** · ${e.daysRunning} dagen · ${e.decision.reason}`,
   ]
@@ -15,13 +16,14 @@ export function renderExperiment(e: ExperimentEvaluation) {
     lines.push(
       "",
       table(
-        ["Variant", "Bezoekers", "Bestellingen", "Conversie", "Lift", "Kans beter", "p-waarde", "Omzet/bezoeker"],
+        ["Variant", "Bezoekers", "Winkelmand", "Bestellingen", e.config.metric === "add_to_cart" ? "Winkelmand-%" : "Conversie", "Lift", "Kans beter", "p-waarde", "Omzet/bezoeker"],
         e.comparisons.map((c) => {
           const r = e.results.find((x) => x.variant === c.variant)!
           const isControl = c.variant === "control"
           return [
             c.variant,
             int(r.exposed),
+            int(r.added ?? 0),
             int(r.converted),
             pct(c.conversionRate, 2),
             isControl ? "–" : signedPct(c.relativeLift),

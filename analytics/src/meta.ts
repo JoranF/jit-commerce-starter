@@ -106,6 +106,10 @@ export class MetaAds {
     return out
   }
 
+  pauseAdset(adsetId: string) {
+    return this.call("POST", adsetId, { status: "PAUSED" })
+  }
+
   pauseAd(adId: string) {
     return this.call("POST", adId, { status: "PAUSED" })
   }

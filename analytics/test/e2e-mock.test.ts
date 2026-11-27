@@ -37,8 +37,9 @@ function mockPostHog() {
     if (req.url!.includes("/query/")) {
       const q: string = body.query.query
       if (q.includes("$feature_flag_called")) {
-        return json({ columns: ["variant", "exposed", "converted", "revenue", "first_exposure"], results: [
-          ["control", 1500, 30, 1650, start], ["test", 1500, 58, 3300, start]] })
+        // pdp-cta-text beslist op winkelmand ("added"); bestellingen als rem.
+        return json({ columns: ["variant", "exposed", "converted", "revenue", "added", "first_exposure"], results: [
+          ["control", 1500, 30, 1650, 90, start], ["test", 1500, 58, 3300, 150, start]] })
       }
       if (q.includes("ARRAY JOIN")) {
         return json({ columns: ["name", "views", "carts", "units", "revenue"], results: [

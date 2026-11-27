@@ -1,8 +1,8 @@
-import { EXPERIMENTS, type ExperimentConfig } from "./config"
+import { DEFAULT_MAX_DAYS, EXPERIMENTS, type ExperimentConfig } from "./config"
 import { PostHogApi } from "./posthog"
 import { currentStore } from "./stores"
 import { getExperimentResults } from "./queries"
-import { compareVariants, decide, type Comparison, type Decision, type VariantResult } from "./stats"
+import { decideExperiment, type Comparison, type Decision, type VariantResult } from "./stats"
 
 export type ExperimentEvaluation = {
   config: ExperimentConfig
@@ -58,11 +58,12 @@ export async function evaluateAll(ph: PostHogApi): Promise<ExperimentEvaluation[
       }
     }
 
-    const comparisons = compareVariants(results, "control", 20_000, 42, config.metric)
-    const decision = decide(results, comparisons, {
+    const { comparisons, decision } = decideExperiment(results, {
+      metric: config.metric,
       minExposuresPerVariant: config.minExposuresPerVariant,
       minDays: config.minDays,
       winProbability: config.winProbability,
+      maxDays: config.maxDays ?? DEFAULT_MAX_DAYS,
       daysRunning,
     })
 
@@ -105,6 +106,34 @@ export async function shipWinner(ph: PostHogApi, evaluation: ExperimentEvaluatio
     end_date: new Date().toISOString(),
     conclusion: "won",
     conclusion_comment: `Automatisch uitgerold door analytics/experiments.ts: ${evaluation.decision.reason}`,
+  })
+  return true
+}
+
+/**
+ * Stop een test die control houdt (control beter, of geen verschil na maxDays):
+ * flag naar 100% control en het experiment beëindigen, zodat de volgende kan starten.
+ * Zelfde voorwaarden als shipWinner (config.autoShip én AUTO_SHIP_WINNERS=true).
+ */
+export async function concludeKeepControl(ph: PostHogApi, evaluation: ExperimentEvaluation) {
+  if (evaluation.decision.status !== "keep-control" || !evaluation.posthogId) return false
+  const exp = await ph.request<PhExperiment>("GET", `/experiments/${evaluation.posthogId}/`)
+  const flag = exp.feature_flag
+  if (!flag) throw new Error(`Experiment ${evaluation.config.key} heeft geen feature flag`)
+  const filters = structuredClone(flag.filters ?? {})
+  const variants: { key: string; rollout_percentage: number }[] = filters.multivariate?.variants ?? []
+  if (!variants.some((v) => v.key === "control")) {
+    throw new Error(`Geen variant 'control' in flag ${evaluation.config.key}`)
+  }
+  filters.multivariate.variants = variants.map((v) => ({
+    ...v,
+    rollout_percentage: v.key === "control" ? 100 : 0,
+  }))
+  await ph.request("PATCH", `/feature_flags/${flag.id}/`, { filters })
+  await ph.request("PATCH", `/experiments/${evaluation.posthogId}/`, {
+    end_date: new Date().toISOString(),
+    conclusion: evaluation.decision.conclusion ?? "lost",
+    conclusion_comment: `Automatisch gestopt door analytics/experiments.ts: ${evaluation.decision.reason}`,
   })
   return true
 }

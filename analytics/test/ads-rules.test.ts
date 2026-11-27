@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { test } from "node:test"
-import { DEFAULT_TEST_PLAN, decideAds, decideAdsets, testPhaseVerdict, type AdStats } from "../src/ads-rules"
+import { DEFAULT_TEST_PLAN, decideAds, decideAdsets, stopLossAdsets, testPhaseVerdict, type AdStats } from "../src/ads-rules"
 
 const rules = { breakEvenCpa: 50, maxDailyBudget: 40, scaleStep: 0.2, now: new Date("2026-11-22T12:00:00Z") }
 const ad = (p: Partial<AdStats>): AdStats => ({
@@ -84,4 +84,14 @@ test("testplan stap B: doorgaan bij ≤ €55 per verkoop, stoppen bij > €70 e
   assert.equal(testPhaseVerdict([ad({ spend: 320, linkClicks: 400, addToCarts: 30, orders: 4 })]).verdict, "twijfel")
   // Afwijkend plan per winkel.
   assert.equal(testPhaseVerdict([ad({ spend: 320, linkClicks: 400, addToCarts: 30, orders: 4 })], { ...DEFAULT_TEST_PLAN, continueCpa: 80 }).verdict, "doorgaan")
+})
+
+test("stop-loss: bij 'stoppen' alle sets met een actieve advertentie, anders niets", () => {
+  const ads = [
+    ad({ adId: "a1", adsetId: "s1" }), ad({ adId: "a2", adsetId: "s1" }),
+    ad({ adId: "a3", adsetId: "s2", status: "PAUSED" }), ad({ adId: "a4", adsetId: "s3" }),
+  ]
+  assert.deepEqual(stopLossAdsets(ads, { verdict: "stoppen" }), ["s1", "s3"])
+  assert.deepEqual(stopLossAdsets(ads, { verdict: "twijfel" }), [])
+  assert.deepEqual(stopLossAdsets(ads, { verdict: "loopt" }), [])
 })

@@ -11,6 +11,8 @@ export type VariantResult = {
   exposed: number
   converted: number
   revenue: number
+  /** Bezoekers die na blootstelling iets in de winkelmand legden (voor metric "add_to_cart"). */
+  added?: number
 }
 
 export type Comparison = {
@@ -164,15 +166,27 @@ export function compareVariants(
 
 export type Decision =
   | { status: "winner"; variant: string; reason: string }
-  | { status: "keep-control"; reason: string }
+  | { status: "keep-control"; reason: string; conclusion?: "lost" | "inconclusive" }
   | { status: "running"; reason: string }
 
 export function decide(
   results: VariantResult[],
   comparisons: Comparison[],
-  opts: { minExposuresPerVariant: number; minDays: number; winProbability: number; daysRunning: number }
+  opts: {
+    minExposuresPerVariant: number
+    minDays: number
+    winProbability: number
+    daysRunning: number
+    /**
+     * Na zoveel dagen zonder winnaar stopt de test met control ("geen verschil gevonden"),
+     * zodat de wachtrij niet vastloopt. Met weinig verkeer is dat de normale uitkomst
+     * voor kleine effecten. Weglaten = nooit.
+     */
+    maxDays?: number
+  }
 ): Decision {
   const minExposed = Math.min(...results.map((r) => r.exposed))
+  const overTime = opts.maxDays !== undefined && opts.daysRunning >= opts.maxDays
   if (opts.daysRunning < opts.minDays) {
     return {
       status: "running",
@@ -180,6 +194,13 @@ export function decide(
     }
   }
   if (minExposed < opts.minExposuresPerVariant) {
+    if (overTime) {
+      return {
+        status: "keep-control",
+        conclusion: "inconclusive",
+        reason: `Na ${opts.daysRunning} dagen pas ${minExposed} van ${opts.minExposuresPerVariant} bezoekers in de kleinste variant: te weinig verkeer. Houd control, volgende test.`,
+      }
+    }
     return {
       status: "running",
       reason: `Kleinste variant heeft ${minExposed} van minimaal ${opts.minExposuresPerVariant} bezoekers.`,
@@ -198,13 +219,51 @@ export function decide(
   if (best && best.probabilityBetterThanControl <= 1 - opts.winProbability) {
     return {
       status: "keep-control",
+      conclusion: "lost",
       reason: `Control is met ${pct(1 - best.probabilityBetterThanControl)} zekerheid beter. Stop de test en houd control.`,
+    }
+  }
+  if (overTime) {
+    return {
+      status: "keep-control",
+      conclusion: "inconclusive",
+      reason: `Na ${opts.daysRunning} dagen geen duidelijke winnaar (beste variant: ${pct(best?.probabilityBetterThanControl ?? 0)} kans). Houd control, volgende test.`,
     }
   }
   return {
     status: "running",
     reason: `Nog geen duidelijke winnaar (beste variant: ${pct(best?.probabilityBetterThanControl ?? 0)} kans).`,
   }
+}
+
+/**
+ * Vergelijken + beslissen voor één experiment, volgens de metric uit config.ts.
+ * Bij "add_to_cart" wordt op winkelmand beslist en gelden bestellingen als rem: wint de
+ * variant op winkelmand maar is de kans dat hij ook op bestellingen beter is < 10%, dan
+ * wordt hij niet uitgerold (laat lopen; na maxDays houdt de test control).
+ */
+export function decideExperiment(
+  results: VariantResult[],
+  opts: Parameters<typeof decide>[2] & { metric?: "conversion" | "revenue_per_visitor" | "add_to_cart" }
+): { comparisons: Comparison[]; decision: Decision } {
+  if (opts.metric !== "add_to_cart") {
+    const comparisons = compareVariants(results, "control", 20_000, 42, opts.metric)
+    return { comparisons, decision: decide(results, comparisons, opts) }
+  }
+  const asCarts = results.map((r) => ({ ...r, converted: r.added ?? 0 }))
+  const comparisons = compareVariants(asCarts, "control", 20_000, 42, "conversion")
+  let decision = decide(asCarts, comparisons, opts)
+  if (decision.status === "winner") {
+    const winner = decision.variant
+    const orders = compareVariants(results, "control", 20_000, 42, "conversion").find((c) => c.variant === winner)
+    if (orders && results.some((r) => r.converted > 0) && orders.probabilityBetterThanControl < 0.1) {
+      const overTime = opts.maxDays !== undefined && opts.daysRunning >= opts.maxDays
+      decision = overTime
+        ? { status: "keep-control", conclusion: "inconclusive", reason: `'${winner}' wint op winkelmand, maar bestellingen lopen achter (${pct(orders.probabilityBetterThanControl)} kans beter) na ${opts.daysRunning} dagen. Houd control.` }
+        : { status: "running", reason: `'${winner}' wint op winkelmand (${decision.reason}), maar bestellingen lopen achter (${pct(orders.probabilityBetterThanControl)} kans beter). Laat lopen.` }
+    }
+  }
+  return { comparisons, decision }
 }
 
 export const pct = (x: number, digits = 1) => `${(x * 100).toFixed(digits)}%`

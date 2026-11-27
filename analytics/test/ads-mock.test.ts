@@ -32,8 +32,8 @@ function mockApis() {
     // Meta
     if (url.pathname.endsWith("/insights")) {
       return json({ data: [
-        { ad_id: "ad_win", ad_name: "Winnaar", adset_id: "set_1", adset_name: "Set 1", campaign_name: "C", spend: "120", actions: [{ action_type: "purchase", value: "3" }] },
-        { ad_id: "ad_bad", ad_name: "Verliezer", adset_id: "set_1", adset_name: "Set 1", campaign_name: "C", spend: "130", actions: [] },
+        { ad_id: "ad_win", ad_name: "Winnaar", adset_id: "set_1", adset_name: "Set 1", campaign_name: "C", spend: "120", actions: [{ action_type: "purchase", value: "3" }, { action_type: "link_click", value: "200" }, { action_type: "add_to_cart", value: "12" }] },
+        { ad_id: "ad_bad", ad_name: "Verliezer", adset_id: "set_1", adset_name: "Set 1", campaign_name: "C", spend: "130", actions: [{ action_type: "link_click", value: "150" }] },
         { ad_id: "ad_ok", ad_name: "Nieuw", adset_id: "set_2", adset_name: "Set 2", campaign_name: "C", spend: "20" },
       ] })
     }

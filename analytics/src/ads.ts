@@ -10,8 +10,10 @@
  *
  * Instellingen per winkel in src/stores.ts (meta.adAccountId, meta.breakEvenCpa).
  * ADS_DAYS (standaard 7), ADS_MAX_DAILY_BUDGET (EUR, standaard 50), ADS_SCALE_STEP (0.2).
+ * Stop-loss: met ADS_AUTOPILOT=true pauzeert het script alle sets zodra het testplan
+ * "stoppen" zegt (uit met ADS_STOP_LOSS=false). ADS_DAILY_REPORT=true: elke dag naar de webhook.
  */
-import { cpa, decideAds, decideAdsets, linkCtr, testPhaseVerdict, DEFAULT_TEST_PLAN, type AdStats } from "./ads-rules"
+import { cpa, decideAds, decideAdsets, linkCtr, stopLossAdsets, testPhaseVerdict, DEFAULT_TEST_PLAN, type AdStats } from "./ads-rules"
 import { MetaAds } from "./meta"
 import { eur, int, publish, table } from "./notify"
 import { PostHogApi, envFromProcess } from "./posthog"
@@ -70,8 +72,23 @@ async function main() {
   const pausing = new Set(adDecisions.filter((d) => d.action === "pause").map((d) => d.ad.adId))
   const setDecisions = decideAdsets(ads, adsets, rules, pausing)
 
+  // Testplan (stap A/B) over de hele looptijd van de test: ADS_TEST_DAYS (standaard 30).
+  const testDays = Number(process.env.ADS_TEST_DAYS || 30)
+  const testAds = testDays === days ? ads : await adsForDays(meta, ph, account, testDays)
+  const verdict = testPhaseVerdict(testAds, { ...DEFAULT_TEST_PLAN, ...store.meta.testPlan })
+  const icon = { loopt: "⏳", stoppen: "🛑", doorgaan: "✅", twijfel: "🤔" }[verdict.verdict]
+
+  const stopLoss = autopilot && process.env.ADS_STOP_LOSS !== "false" ? stopLossAdsets(ads, verdict) : []
+
   const done: string[] = []
-  if (autopilot) {
+  if (stopLoss.length) {
+    // Hele test stoppen: per-advertentie-acties en opschalen zijn dan niet meer zinvol.
+    for (const id of stopLoss) {
+      await meta.pauseAdset(id)
+      const name = ads.find((a) => a.adsetId === id)?.adsetName ?? id
+      done.push(`🛑 Stop-loss, set gepauzeerd: ${name} (${verdict.reason})`)
+    }
+  } else if (autopilot) {
     for (const d of adDecisions) {
       if (d.action !== "pause") continue
       await meta.pauseAd(d.ad.adId)
@@ -89,12 +106,6 @@ async function main() {
   const spend = ads.reduce((n, a) => n + a.spend, 0)
   const orders = ads.reduce((n, a) => n + a.orders, 0)
   const rev = ads.reduce((n, a) => n + a.revenue, 0)
-
-  // Testplan (stap A/B) over de hele looptijd van de test: ADS_TEST_DAYS (standaard 30).
-  const testDays = Number(process.env.ADS_TEST_DAYS || 30)
-  const testAds = testDays === days ? ads : await adsForDays(meta, ph, account, testDays)
-  const verdict = testPhaseVerdict(testAds, { ...DEFAULT_TEST_PLAN, ...store.meta.testPlan })
-  const icon = { loopt: "⏳", stoppen: "🛑", doorgaan: "✅", twijfel: "🤔" }[verdict.verdict]
 
   const md = [
     `## 📣 Advertenties — laatste ${days} dagen (${new Date().toLocaleDateString("nl-NL")})`,
@@ -143,7 +154,7 @@ async function main() {
 
   console.log(md)
   const actionable = adDecisions.some((d) => d.action === "pause") || setDecisions.length > 0
-  if (actionable || done.length || verdict.verdict === "stoppen" || verdict.verdict === "doorgaan" || process.argv.includes("--always-publish")) {
+  if (actionable || done.length || process.env.ADS_DAILY_REPORT === "true" || verdict.verdict === "stoppen" || verdict.verdict === "doorgaan" || process.argv.includes("--always-publish")) {
     await publish(`ads-${new Date().toISOString().slice(0, 10)}`, md)
   }
 }
